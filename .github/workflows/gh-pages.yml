@@ -23,7 +23,7 @@ jobs:
         run: npm run build
 
       - name: List dist directory
-        run: ls -la dist
+        run: ls -la
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
