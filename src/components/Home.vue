@@ -91,7 +91,7 @@
         </el-col>
 
         <el-col v-if="formModel.trainingPhase === 'pretrain'" :span="8">
-          <el-form-item label="JSON Keys" prop="jsonKeys">
+          <el-form-item required label="JSON Keys" prop="jsonKeys">
             <el-input v-model="formModel.jsonKeys" placeholder="请输入 JSON Keys"></el-input>
           </el-form-item>
         </el-col>
@@ -288,13 +288,13 @@ const handleSubmit = () => {
         );
         console.log(job_sh);
         generatedParams.value = job_sh; // 格式化显示
-        ElMessage.success("参数已生成并显示在页面上");
+        ElMessage.success("已生成成功");
       } catch (error) {
         ElMessage.error("生成参数时出错，请检查输入");
         console.error(error);
       }
     } else {
-      ElMessage.error("请完成表单验证后再提交");
+      ElMessage.error("有必填项未填写");
       return false;
     }
   });
