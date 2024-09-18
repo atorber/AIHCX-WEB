@@ -1,36 +1,42 @@
 name: GitHub Pages
+
 on:
   push:
     branches:
       - main
+
+permissions:
+  contents: write
+  pages: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
 
       - name: Setup Node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: "14.x"
+          node-version: "18.x"  # Updated Node version
 
       - name: Install Dependencies
         run: npm install
 
       - name: Build
-        run: npm run build
+        run: npm run build --verbose  # Added verbose logging
 
       - name: List dist directory
-        run: ls -la
+        run: ls -la ./dist  # Specify the directory
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GIT_TOKEN }}  # Ensure permissions are set
           publish_dir: ./dist
-          force_orphan: true
+          # force_orphan: true  # Consider removing if not necessary
 
       - name: Check gh-pages branch
         run: |
