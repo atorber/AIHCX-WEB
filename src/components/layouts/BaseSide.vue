@@ -2,7 +2,7 @@
   <el-menu default-active="2" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose">
     <el-menu-item index="2">
       <el-icon><icon-menu /></el-icon>
-      <template #title>训练启动命令</template>
+      <template #title>训练执行命令</template>
     </el-menu-item>
     <!-- <el-sub-menu index="1">
       <template #title>
@@ -36,6 +36,18 @@
       </el-icon>
       <template #title>并行策略搜索</template>
     </el-menu-item>
+    <el-menu-item index="5">
+      <el-icon>
+        <setting />
+      </el-icon>
+      <template #title>权重转换与切分</template>
+    </el-menu-item>
+    <el-menu-item disabled index="6">
+      <el-icon>
+        <setting />
+      </el-icon>
+      <template #title>数据预处理</template>
+    </el-menu-item>
   </el-menu>
 </template>
 
@@ -47,12 +59,13 @@ import { ref } from "vue";
 //   Menu as IconMenu,
 //   Setting,
 // } from "@element-plus/icons-vue";
-
+const currentKey = ref('')
 const isCollapse = ref(true);
 const handleOpen = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath);
+  console.log('handleOpen', key, keyPath);
+  currentKey.value = key
 };
 const handleClose = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath);
+  console.log('handleClose', key, keyPath);
 };
 </script>

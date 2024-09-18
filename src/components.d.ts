@@ -9,6 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     BaseHeader: typeof import('./components/layouts/BaseHeader.vue')['default']
     BaseSide: typeof import('./components/layouts/BaseSide.vue')['default']
+    ConvertCheckpoint: typeof import('./components/ConvertCheckpoint.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCol: typeof import('element-plus/es')['ElCol']
@@ -27,5 +28,7 @@ declare module 'vue' {
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     Home: typeof import('./components/Home.vue')['default']
     Logos: typeof import('./components/Logos.vue')['default']
+    PreprocessData: typeof import('./components/PreprocessData.vue')['default']
+    Training: typeof import('./components/Training.vue')['default']
   }
 }

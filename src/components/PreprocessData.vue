@@ -16,13 +16,6 @@
         </el-col>
 
         <el-col :span="8">
-          <el-form-item required label="副本数" prop="replicas">
-            <el-input-number v-model="formModel.replicas" :min="1" placeholder="请输入副本数"
-              style="width: 100%;"></el-input-number>
-          </el-form-item>
-        </el-col>
-
-        <el-col :span="8">
           <el-form-item required label="版本" prop="version">
             <el-input v-model="formModel.version" placeholder="请输入版本，允许数字、字母、中划线"></el-input>
           </el-form-item>
@@ -79,12 +72,6 @@
 
       <el-row :gutter="20">
         <el-col :span="8">
-          <el-form-item label="模型 URL" prop="modelUrl">
-            <el-input v-model="formModel.modelUrl" placeholder="请输入模型 URL，以bos:/开头"></el-input>
-          </el-form-item>
-        </el-col>
-
-        <el-col :span="8">
           <el-form-item label="数据集 URL" prop="datasetUrl">
             <el-input v-model="formModel.datasetUrl" placeholder="请输入数据集 URL，以bos:/开头"></el-input>
           </el-form-item>
@@ -101,8 +88,6 @@
         <el-text style="color: grey">
           参数说明：<br />
           - 模型名称：必选<br />
-          - 副本数：必选，根据模型参数选择，一般7b 1实例、13b 2实例、70b
-          4实例<br />
           - 版本：必填，本次训练的备注标识，通过版本可以区分训练任务<br />
           - 训练阶段：必选，支持选择pretrain和sft<br />
           - TP：选填，张量并行切分策略，不填写时默认使用AIAK推荐切分策略<br />
@@ -110,7 +95,6 @@
           - 数据集名称：可选，使用预置的测试数据集<br />
           - 镜像：必填，AIAK镜像地址，支持2.1.1.5以上<br />
           - 挂载路径：必填，挂载的PFS路径<br />
-          - 模型URL：选填，HF格式模型权重的BOS存储地址，填写时会使用填写的地址覆盖默认地址<br />
           - 数据集URL：选填，数据集的BOS存储地址，填写时会使用填写的地址覆盖默认测试数据集地址<br />
         </el-text>
       </div>
@@ -144,7 +128,7 @@
 <script setup lang="ts">
 import { reactive, computed, watch, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
-import { generateAiakParameter } from "./aiak-parms";
+import { generatePreprocessData } from "./aiak-parms";
 
 // 定义响应式的表单模型
 const formModel = reactive({
@@ -163,7 +147,7 @@ const formModel = reactive({
   jsonKeys: "text",
 });
 
-const msg = ref("AIAK全流程训练执行命令生成");
+const msg = ref("数据预处理命令生成");
 
 // 定义生成的参数
 const generatedParams = ref("");
@@ -275,7 +259,7 @@ const handleSubmit = () => {
       };
 
       try {
-        const job_sh = generateAiakParameter(aiakJobConfig);
+        const job_sh = generatePreprocessData(aiakJobConfig);
         console.log(job_sh);
         generatedParams.value = job_sh; // 格式化显示
         ElMessage.success("已生成成功");

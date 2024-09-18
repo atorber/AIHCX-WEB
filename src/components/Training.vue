@@ -144,7 +144,7 @@
 <script setup lang="ts">
 import { reactive, computed, watch, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
-import { generateAiakParameter } from "./aiak-parms";
+import { generateTraining } from "./aiak-parms";
 
 // 定义响应式的表单模型
 const formModel = reactive({
@@ -163,7 +163,7 @@ const formModel = reactive({
   jsonKeys: "text",
 });
 
-const msg = ref("AIAK全流程训练执行命令生成");
+const msg = ref("AIAK训练执行命令生成");
 
 // 定义生成的参数
 const generatedParams = ref("");
@@ -275,7 +275,7 @@ const handleSubmit = () => {
       };
 
       try {
-        const job_sh = generateAiakParameter(aiakJobConfig);
+        const job_sh = generateTraining(aiakJobConfig);
         console.log(job_sh);
         generatedParams.value = job_sh; // 格式化显示
         ElMessage.success("已生成成功");

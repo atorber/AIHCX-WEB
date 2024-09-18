@@ -1,7 +1,7 @@
 {
   "name": "aihcx-web",
   "private": true,
-  "version": "0.1.2",
+  "version": "1.0.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

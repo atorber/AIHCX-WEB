@@ -16,13 +16,6 @@
         </el-col>
 
         <el-col :span="8">
-          <el-form-item required label="副本数" prop="replicas">
-            <el-input-number v-model="formModel.replicas" :min="1" placeholder="请输入副本数"
-              style="width: 100%;"></el-input-number>
-          </el-form-item>
-        </el-col>
-
-        <el-col :span="8">
           <el-form-item required label="版本" prop="version">
             <el-input v-model="formModel.version" placeholder="请输入版本，允许数字、字母、中划线"></el-input>
           </el-form-item>
@@ -30,15 +23,6 @@
       </el-row>
 
       <el-row :gutter="20">
-        <el-col :span="8">
-          <el-form-item label="训练阶段" prop="trainingPhase">
-            <el-select v-model="formModel.trainingPhase" placeholder="请选择训练阶段">
-              <el-option label="SFT" value="sft"></el-option>
-              <el-option label="Pretrain" value="pretrain"></el-option>
-              <!-- 根据需要添加更多选项 -->
-            </el-select>
-          </el-form-item>
-        </el-col>
 
         <el-col :span="8">
           <el-form-item label="TP" prop="tp">
@@ -56,13 +40,6 @@
       </el-row>
 
       <el-row :gutter="20">
-        <el-col :span="8">
-          <el-form-item label="数据集名称" prop="datasetName">
-            <el-select v-model="formModel.datasetName" placeholder="请选择数据集名称">
-              <el-option v-for="dataset in datasetOptions" :key="dataset" :label="dataset" :value="dataset"></el-option>
-            </el-select>
-          </el-form-item>
-        </el-col>
 
         <el-col :span="8">
           <el-form-item required label="镜像" prop="image">
@@ -84,12 +61,6 @@
           </el-form-item>
         </el-col>
 
-        <el-col :span="8">
-          <el-form-item label="数据集 URL" prop="datasetUrl">
-            <el-input v-model="formModel.datasetUrl" placeholder="请输入数据集 URL，以bos:/开头"></el-input>
-          </el-form-item>
-        </el-col>
-
         <el-col v-if="formModel.trainingPhase === 'pretrain'" :span="8">
           <el-form-item required label="JSON Keys" prop="jsonKeys">
             <el-input v-model="formModel.jsonKeys" placeholder="请输入 JSON Keys"></el-input>
@@ -101,17 +72,12 @@
         <el-text style="color: grey">
           参数说明：<br />
           - 模型名称：必选<br />
-          - 副本数：必选，根据模型参数选择，一般7b 1实例、13b 2实例、70b
-          4实例<br />
           - 版本：必填，本次训练的备注标识，通过版本可以区分训练任务<br />
-          - 训练阶段：必选，支持选择pretrain和sft<br />
           - TP：选填，张量并行切分策略，不填写时默认使用AIAK推荐切分策略<br />
           - PP：选填，流水线并行切分策略，不填写时默认使用AIAK推荐切分策略<br />
-          - 数据集名称：可选，使用预置的测试数据集<br />
           - 镜像：必填，AIAK镜像地址，支持2.1.1.5以上<br />
           - 挂载路径：必填，挂载的PFS路径<br />
           - 模型URL：选填，HF格式模型权重的BOS存储地址，填写时会使用填写的地址覆盖默认地址<br />
-          - 数据集URL：选填，数据集的BOS存储地址，填写时会使用填写的地址覆盖默认测试数据集地址<br />
         </el-text>
       </div>
       <!-- 提交按钮 -->
@@ -144,7 +110,7 @@
 <script setup lang="ts">
 import { reactive, computed, watch, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
-import { generateAiakParameter } from "./aiak-parms";
+import { generateConvertCheckpoint  } from "./aiak-parms";
 
 // 定义响应式的表单模型
 const formModel = reactive({
@@ -163,7 +129,7 @@ const formModel = reactive({
   jsonKeys: "text",
 });
 
-const msg = ref("AIAK全流程训练执行命令生成");
+const msg = ref("权重转换与切分命令生成");
 
 // 定义生成的参数
 const generatedParams = ref("");
@@ -275,7 +241,7 @@ const handleSubmit = () => {
       };
 
       try {
-        const job_sh = generateAiakParameter(aiakJobConfig);
+        const job_sh = generateConvertCheckpoint(aiakJobConfig);
         console.log(job_sh);
         generatedParams.value = job_sh; // 格式化显示
         ElMessage.success("已生成成功");
