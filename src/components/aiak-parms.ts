@@ -491,7 +491,7 @@ function readChainInfo(): any {
 }
 
 // 生成 AIAK 参数
-export function generateAiakParameter(chainJobConfig: string, aiakJobConfig: any): string | void {
+export function generateAiakParameter(chainJobConfig: string, aiakJobConfig: any): string {
 
     const aiakJobInfo: any = aiakJobConfig;
 

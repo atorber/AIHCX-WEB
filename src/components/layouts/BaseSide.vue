@@ -2,9 +2,9 @@
   <el-menu default-active="2" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose">
     <el-menu-item index="2">
       <el-icon><icon-menu /></el-icon>
-      <template #title>AIAK训练参数</template>
+      <template #title>训练启动命令</template>
     </el-menu-item>
-    <el-sub-menu index="1">
+    <!-- <el-sub-menu index="1">
       <template #title>
         <el-icon>
           <location />
@@ -29,12 +29,12 @@
         <document />
       </el-icon>
       <template #title>Navigator Three</template>
-    </el-menu-item>
-    <el-menu-item index="4">
+    </el-menu-item> -->
+    <el-menu-item disabled index="4">
       <el-icon>
         <setting />
       </el-icon>
-      <template #title>Navigator Four</template>
+      <template #title>并行策略搜索</template>
     </el-menu-item>
   </el-menu>
 </template>

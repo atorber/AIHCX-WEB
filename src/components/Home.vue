@@ -1,29 +1,30 @@
 <template>
-  <div style="padding: 20px; max-width: 1200px; margin: 0 auto; text-align: left;">
+  <div style="padding: 20px; max-width: 1200px; margin: 0 auto; text-align: left">
     <h1 color="$ep-color-primary">{{ msg }}</h1>
 
     <!-- 表单开始 -->
-    <el-form @submit.prevent="handleSubmit" label-width="120px">
+    <el-form ref="formRef" :model="formModel" :rules="rules" @submit.prevent="handleSubmit" label-width="120px"
+      label-position="left">
       <el-row :gutter="20">
         <!-- 第一列 -->
         <el-col :span="8">
           <el-form-item label="模型名称" prop="modelName">
-            <el-select v-model="modelName" placeholder="请选择模型名称">
-              <el-option v-for="model in modelOptions" :key="model" :label="model" :value="model">
-              </el-option>
+            <el-select v-model="formModel.modelName" placeholder="请选择模型名称">
+              <el-option v-for="model in modelOptions" :key="model" :label="model" :value="model"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
 
         <el-col :span="8">
           <el-form-item required label="副本数" prop="replicas">
-            <el-input v-model="replicas" type="number" placeholder="请输入副本数"></el-input>
+            <el-input-number v-model="formModel.replicas" :min="1" placeholder="请输入副本数"
+              style="width: 100%;"></el-input-number>
           </el-form-item>
         </el-col>
 
         <el-col :span="8">
           <el-form-item required label="版本" prop="version">
-            <el-input v-model="version" placeholder="请输入版本"></el-input>
+            <el-input v-model="formModel.version" placeholder="请输入版本，允许数字、字母、中划线"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -31,7 +32,7 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item label="训练阶段" prop="trainingPhase">
-            <el-select v-model="trainingPhase" placeholder="请选择训练阶段">
+            <el-select v-model="formModel.trainingPhase" placeholder="请选择训练阶段">
               <el-option label="SFT" value="sft"></el-option>
               <el-option label="Pretrain" value="pretrain"></el-option>
               <!-- 根据需要添加更多选项 -->
@@ -41,13 +42,15 @@
 
         <el-col :span="8">
           <el-form-item label="TP" prop="tp">
-            <el-input v-model="tp" type="number" placeholder="请输入 TP 值"></el-input>
+            <el-input-number v-model="formModel.tp" :min="1" placeholder="请输入 TP 值，必须为正整数"
+              style="width: 100%;"></el-input-number>
           </el-form-item>
         </el-col>
 
         <el-col :span="8">
           <el-form-item label="PP" prop="pp">
-            <el-input v-model="pp" type="number" placeholder="请输入 PP 值"></el-input>
+            <el-input-number v-model="formModel.pp" :min="1" placeholder="请输入 PP 值，必须为正整数"
+              style="width: 100%;"></el-input-number>
           </el-form-item>
         </el-col>
       </el-row>
@@ -55,22 +58,21 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item label="数据集名称" prop="datasetName">
-            <el-select v-model="datasetName" placeholder="请选择数据集名称">
-              <el-option v-for="dataset in datasetOptions" :key="dataset" :label="dataset" :value="dataset">
-              </el-option>
+            <el-select v-model="formModel.datasetName" placeholder="请选择数据集名称">
+              <el-option v-for="dataset in datasetOptions" :key="dataset" :label="dataset" :value="dataset"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
 
         <el-col :span="8">
           <el-form-item required label="镜像" prop="image">
-            <el-input v-model="image" placeholder="请输入镜像地址"></el-input>
+            <el-input v-model="formModel.image" placeholder="请输入镜像地址"></el-input>
           </el-form-item>
         </el-col>
 
         <el-col :span="8">
           <el-form-item required label="挂载路径" prop="mountPath">
-            <el-input v-model="mountPath" placeholder="请输入挂载路径"></el-input>
+            <el-input v-model="formModel.mountPath" placeholder="请输入挂载路径"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -78,29 +80,51 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item label="模型 URL" prop="modelUrl">
-            <el-input v-model="modelUrl" placeholder="请输入模型 URL"></el-input>
+            <el-input v-model="formModel.modelUrl" placeholder="请输入模型 URL，以bos:/开头"></el-input>
           </el-form-item>
         </el-col>
 
         <el-col :span="8">
           <el-form-item label="数据集 URL" prop="datasetUrl">
-            <el-input v-model="datasetUrl" placeholder="请输入数据集 URL"></el-input>
+            <el-input v-model="formModel.datasetUrl" placeholder="请输入数据集 URL，以bos:/开头"></el-input>
           </el-form-item>
         </el-col>
 
-        <el-col v-if="trainingPhase == 'pretrain'" :span="8">
+        <el-col v-if="formModel.trainingPhase === 'pretrain'" :span="8">
           <el-form-item label="JSON Keys" prop="jsonKeys">
-            <el-input v-model="jsonKeys" placeholder="请输入 JSON Keys"></el-input>
+            <el-input v-model="formModel.jsonKeys" placeholder="请输入 JSON Keys"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
 
+      <div style="padding: 20px">
+        <el-text style="color: grey">
+          参数说明：<br />
+          1. 模型名称：必选<br />
+          2. 副本数：必选，根据模型参数选择，一般7b 1实例、13b 2实例、70b
+          4实例<br />
+          3. 版本：必填，本次训练的备注标识，通过版本可以区分训练任务<br />
+          4. 训练阶段：必选，支持选择pretrain和sft<br />
+          5. TP：选填，张量并行切分策略，不填写时默认使用AIAK推荐切分策略<br />
+          6. PP：选填，流水线并行切分策略，不填写时默认使用AIAK推荐切分策略<br />
+          7. 数据集名称：可选，使用预置的测试数据集<br />
+          8. 镜像：必填，AIAK镜像地址，支持2.1.1.5以上<br />
+          9. 挂载路径：必填，挂载的PFS路径<br />
+          10.
+          模型URL：选填，HF格式模型权重的BOS存储地址，填写时会使用填写的地址覆盖默认地址<br />
+          11.
+          数据集URL：选填，数据集的BOS存储地址，填写时会使用填写的地址覆盖默认测试数据集地址<br />
+        </el-text>
+      </div>
       <!-- 提交按钮 -->
       <el-row>
         <el-col :span="24" class="text-center">
           <el-form-item>
             <el-button type="primary" @click="handleSubmit">生成执行命令</el-button>
-            <el-button v-if="generatedParams" type="primary" @click="copyToClipboard">复制到剪切板</el-button>
+            <el-button @click="handleReset">重置</el-button>
+            <el-button v-if="generatedParams" type="primary" @click="copyToClipboard">
+              复制到剪切板
+            </el-button>
           </el-form-item>
         </el-col>
       </el-row>
@@ -108,10 +132,11 @@
     <!-- 表单结束 -->
 
     <!-- 生成的参数展示 -->
-    <el-card v-if="generatedParams" class="box-card" style="margin-top: 20px;">
+    <el-card v-if="generatedParams" class="box-card" style="margin-top: 20px">
       <div slot="header" class="clearfix">
-        <el-button style="float: right; padding: 3px 0" type="primary" size="small"
-          @click="copyToClipboard">复制到剪切板</el-button>
+        <el-button style="float: right; padding: 3px 0" type="primary" size="small" @click="copyToClipboard">
+          复制到剪切板
+        </el-button>
       </div>
       <pre class="pre-wrap">{{ generatedParams }}</pre>
     </el-card>
@@ -119,50 +144,61 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
-import { ElMessage } from "element-plus";
-import { generateAiakParameter } from './aiak-parms';
+import { reactive, computed, watch, ref } from "vue";
+import { ElMessage, FormRules } from "element-plus";
+import { generateAiakParameter } from "./aiak-parms";
 
-// 定义表单字段
-const modelName = ref("llama2-70b");
-const replicas = ref("4");
-const version = ref("v1");
-const trainingPhase = ref("sft");
-const tp = ref("");
-const pp = ref("");
-const datasetName = ref("alpaca_zh-llama3-train");
-const image = ref("registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.1.5_release");
-const mountPath = ref("/workspace/pfs");
-const modelUrl = ref("");
-const datasetUrl = ref("");
-const jsonKeys = ref("");
+// 定义响应式的表单模型
+const formModel = reactive({
+  modelName: "llama2-70b",
+  replicas: 4,
+  version: "v1",
+  trainingPhase: "sft",
+  tp: undefined as number | undefined,
+  pp: undefined as number | undefined,
+  datasetName: "alpaca_zh-llama3-train",
+  image:
+    "registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.1.5_release",
+  mountPath: "/workspace/pfs",
+  modelUrl: "",
+  datasetUrl: "",
+  jsonKeys: "text",
+});
 
-// 定义其他变量
-const count = ref(0);
-const input = ref("element-plus");
-const curDate = ref("");
-const value1 = ref(true);
+const msg = ref("AIAK训练启动命令生成");
 
 // 链接配置路径
-const chainJobConfigPath = ref("/Users/luyuchao/Documents/GitHub/bce-sdk-python/sample/aihc");
-
-// 显示消息
-const toast = () => {
-  ElMessage.success("Hello");
-};
+const chainJobConfigPath = ref(
+  "/Users/luyuchao/Documents/GitHub/bce-sdk-python/sample/aihc"
+);
 
 // 定义生成的参数
 const generatedParams = ref("");
 
 // 定义模型选项
 const modelOptions = [
-  "llama2-7b", "llama2-13b", "llama2-70b",
-  "llama3-8b", "llama3-70b",
-  "qwen2-0.5b", "qwen2-1.5b", "qwen2-7b", "qwen2-72b",
-  "baichuan2-7b", "baichuan2-13b",
-  "qwen-1.8b", "qwen-7b", "qwen-14b", "qwen-72b",
-  "qwen1.5-0.5b", "qwen1.5-1.8b", "qwen1.5-4b",
-  "qwen1.5-7b", "qwen1.5-14b", "qwen1.5-32b", "qwen1.5-72b"
+  "llama2-7b",
+  "llama2-13b",
+  "llama2-70b",
+  "llama3-8b",
+  "llama3-70b",
+  "qwen2-0.5b",
+  "qwen2-1.5b",
+  "qwen2-7b",
+  "qwen2-72b",
+  "baichuan2-7b",
+  "baichuan2-13b",
+  "qwen-1.8b",
+  "qwen-7b",
+  "qwen-14b",
+  "qwen-72b",
+  "qwen1.5-0.5b",
+  "qwen1.5-1.8b",
+  "qwen1.5-4b",
+  "qwen1.5-7b",
+  "qwen1.5-14b",
+  "qwen1.5-32b",
+  "qwen1.5-72b",
 ];
 
 // 定义数据集选项
@@ -171,9 +207,9 @@ const sftDatasets = ["alpaca_zh-llama3-train", "alpaca_zh-llama3-valid"];
 
 // 计算当前数据集选项
 const datasetOptions = computed(() => {
-  if (trainingPhase.value === "pretrain") {
+  if (formModel.trainingPhase === "pretrain") {
     return pretrainDatasets;
-  } else if (trainingPhase.value === "sft") {
+  } else if (formModel.trainingPhase === "sft") {
     return sftDatasets;
   } else {
     return [];
@@ -181,42 +217,87 @@ const datasetOptions = computed(() => {
 });
 
 // 监听 trainingPhase 变化，重置 datasetName
-watch(trainingPhase, (newPhase) => {
-  if (newPhase === "pretrain") {
-    datasetName.value = pretrainDatasets[0];
-  } else if (newPhase === "sft") {
-    datasetName.value = sftDatasets[0];
-  } else {
-    datasetName.value = "";
+watch(
+  () => formModel.trainingPhase,
+  (newPhase) => {
+    if (newPhase === "pretrain") {
+      formModel.datasetName = pretrainDatasets[0];
+    } else if (newPhase === "sft") {
+      formModel.datasetName = sftDatasets[0];
+    } else {
+      formModel.datasetName = "";
+    }
   }
-});
+);
+
+// 定义表单验证规则
+const rules: FormRules = {
+  modelName: [
+    { required: true, message: "请选择模型名称", trigger: "blur" },
+  ],
+  replicas: [
+    { required: true, message: "请输入副本数", trigger: "blur" },
+    { type: "number", min: 1, message: "副本数必须为正整数", trigger: "blur" },
+  ],
+  version: [
+    { required: true, message: "请输入版本", trigger: "blur" },
+    {
+      pattern: /^[A-Za-z0-9\-]+$/,
+      message: "版本只能包含数字、字母和中划线",
+      trigger: "blur",
+    },
+  ],
+  trainingPhase: [
+    { required: true, message: "请选择训练阶段", trigger: "blur" },
+  ],
+  image: [
+    { required: true, message: "请输入镜像地址", trigger: "blur" },
+  ],
+  mountPath: [
+    { required: true, message: "请输入挂载路径", trigger: "blur" },
+  ],
+  // 根据需要为其他字段添加更多规则
+};
+
+// 引用表单实例
+const formRef = ref();
 
 // 提交表单
 const handleSubmit = () => {
-  const aiakJobConfig = {
-    "MODEL_NAME": modelName.value,
-    "REPLICAS": replicas.value,
-    "VERSION": version.value,
-    "TRAINING_PHASE": trainingPhase.value,
-    "TP": tp.value,
-    "PP": pp.value,
-    "DATASET_NAME": datasetName.value,
-    "IMAGE": image.value,
-    "MOUNT_PATH": mountPath.value,
-    "MODEL_URL": modelUrl.value,
-    "DATASET_URL": datasetUrl.value,
-    "JSON_KEYS": jsonKeys.value
-  };
+  formRef.value.validate((valid: boolean) => {
+    if (valid) {
+      const aiakJobConfig = {
+        MODEL_NAME: formModel.modelName,
+        REPLICAS: formModel.replicas,
+        VERSION: formModel.version,
+        TRAINING_PHASE: formModel.trainingPhase,
+        TP: formModel.tp,
+        PP: formModel.pp,
+        DATASET_NAME: formModel.datasetName,
+        IMAGE: formModel.image,
+        MOUNT_PATH: formModel.mountPath,
+        MODEL_URL: formModel.modelUrl,
+        DATASET_URL: formModel.datasetUrl,
+        JSON_KEYS: formModel.jsonKeys,
+      };
 
-  try {
-    const job_sh = generateAiakParameter(chainJobConfigPath.value, aiakJobConfig);
-    console.log(job_sh);
-    generatedParams.value = job_sh; // 格式化显示
-    ElMessage.success("参数已生成并显示在页面上");
-  } catch (error) {
-    ElMessage.error("生成参数时出错，请检查输入");
-    console.error(error);
-  }
+      try {
+        const job_sh = generateAiakParameter(
+          chainJobConfigPath.value,
+          aiakJobConfig
+        );
+        console.log(job_sh);
+        generatedParams.value = job_sh; // 格式化显示
+        ElMessage.success("参数已生成并显示在页面上");
+      } catch (error) {
+        ElMessage.error("生成参数时出错，请检查输入");
+        console.error(error);
+      }
+    } else {
+      ElMessage.error("请完成表单验证后再提交");
+      return false;
+    }
+  });
 };
 
 // 复制到剪切板
@@ -231,6 +312,15 @@ const copyToClipboard = async () => {
   } catch (err) {
     ElMessage.error("复制失败，请手动复制");
     console.error(err);
+  }
+};
+
+// 重置表单
+const handleReset = () => {
+  if (formRef.value) {
+    formRef.value.resetFields();
+    generatedParams.value = ""; // 可选：清除生成的参数展示
+    ElMessage.success("表单已重置");
   }
 };
 </script>
