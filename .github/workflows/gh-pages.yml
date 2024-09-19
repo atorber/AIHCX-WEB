@@ -1,45 +1,61 @@
-name: GitHub Pages
+name: Build and Deploy to GitHub Pages
 
 on:
   push:
     branches:
-      - main
+      - main  # 触发构建的分支
+  workflow_dispatch:
 
-permissions:
-  contents: write
+permissions:  # 添加权限配置
+  contents: read
+  id-token: write
   pages: write
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
-          submodules: true
+          persist-credentials: false
 
-      - name: Setup Node
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18.x"  # Updated Node version
+          node-version: '16.x'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install Dependencies
         run: npm install
 
       - name: Build
-        run: npm run build --verbose  # Added verbose logging
+        run: npm run build
 
-      - name: List dist directory
-        run: ls -la ./dist  # Specify the directory
-
-      - name: Deploy
+      # 推送构建内容到 gh-pages 分支
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GIT_TOKEN }}  # Ensure permissions are set
+          github_token: ${{ secrets.GIT_TOKEN }}
           publish_dir: ./dist
-          # force_orphan: true  # Consider removing if not necessary
 
-      - name: Check gh-pages branch
-        run: |
-          git fetch origin gh-pages
-          git checkout gh-pages
-          ls -la
+  # 在 gh-pages 分支上触发 GitHub Pages 部署
+  deploy-to-pages:
+    runs-on: ubuntu-latest
+    needs: build-and-deploy  # 确保在构建完成后执行
+    steps:
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v3
+        with:
+          ref: 'gh-pages'
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v2
