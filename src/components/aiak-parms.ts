@@ -22,7 +22,7 @@ fi
 # 检查/mnt/cluster/huggingface.co/meta-llama/Llama-2-70b-hf是否存在，不存在则下载
 if [ ! -d "\${LOAD}" ]; then
     # 下载bcecmd程序
-    wget 
+    wget https://doc.bce.baidu.com/bce-documentation/BOS/linux-bcecmd-0.4.5.zip
     # 解压
     unzip linux-bcecmd-0.4.5.zip
     cd linux-bcecmd-0.4.5
