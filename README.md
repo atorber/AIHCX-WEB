@@ -2,4 +2,4 @@
 
 AIAK任务启动脚本快速生成工具，可以快速生成在AIHC控制台提交任务的执行命令和其他推荐参数
 
-<img src="https://github.com/user-attachments/assets/5621f152-1f03-43a3-906a-417b74d7e637" alt="AIHCX" style="border: 1px solid gray; border-radius: 4px;" />
+<img src="https://github.com/user-attachments/assets/5621f152-1f03-43a3-906a-417b74d7e637" alt="AIHCX" style="border: 2px solid gray; border-radius: 4px;" />
