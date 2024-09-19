@@ -4,8 +4,6 @@ import * as fs from 'fs';
 
 // 定义 Shell 命令
 const job1_convert_checkpoint = `
-#! /bin/bash
-
 echo "LOAD: \${LOAD}"
 echo "SAVE: \${SAVE}"
 echo "MODEL_BOS_PATH: \${MODEL_BOS_PATH}"
