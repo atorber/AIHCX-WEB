@@ -88,7 +88,7 @@ fi
 echo "Download data done."
 
 MEGATRON_PATH=/workspace/AIAK-Megatron
-AIAK_TRAINING_PATH=\${AIAK_TRAINING_PATH || "/workspace/AIAK-Training-LLM"}
+AIAK_TRAINING_PATH=\${AIAK_TRAINING_PATH:-"/workspace/AIAK-Training-LLM"}
 
 PYTHONPATH=\${MEGATRON_PATH}:\${AIAK_TRAINING_PATH}:\${PYTHONPATH} \
     python \${AIAK_TRAINING_PATH}/tools/data_preprocess/preprocess_pretrain_data.py \
@@ -121,7 +121,7 @@ fi
 echo "Download data done."
 
 MEGATRON_PATH=/workspace/AIAK-Megatron
-AIAK_TRAINING_PATH=\${AIAK_TRAINING_PATH || "/workspace/AIAK-Training-LLM"}
+AIAK_TRAINING_PATH=\${AIAK_TRAINING_PATH:-"/workspace/AIAK-Training-LLM"}
 
 PYTHONPATH=\${MEGATRON_PATH}:\${AIAK_TRAINING_PATH}:\${PYTHONPATH} \
     python \${AIAK_TRAINING_PATH}/tools/data_preprocess/preprocess_sft_data.py \
