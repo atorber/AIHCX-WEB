@@ -106,7 +106,7 @@ fi
 echo "Download data done."
 
 MEGATRON_PATH=/workspace/AIAK-Megatron
-AIAK_TRAINING_PATH=\${AIAK_TRAINING_PATH || "/workspace/AIAK-Training-LLM"}
+AIAK_TRAINING_PATH=\${AIAK_TRAINING_PATH:-"/workspace/AIAK-Training-LLM"}
 
 PYTHONPATH=\${MEGATRON_PATH}:\${AIAK_TRAINING_PATH}:\${PYTHONPATH}     python \${AIAK_TRAINING_PATH}/tools/data_preprocess/preprocess_pretrain_data.py         --input \${INPUT_DATA}         --output-prefix \${OUTPUT_PREFIX}         --tokenizer-type HFTokenizer         --hf-tokenizer-path \${TOKENIZER_PATH}         --json-keys \${JSON_KEYS}         --workers 50         --append-eod
 echo "Data preprocess done."
@@ -129,7 +129,7 @@ fi
 echo "Download data done."
 
 MEGATRON_PATH=/workspace/AIAK-Megatron
-AIAK_TRAINING_PATH=\${AIAK_TRAINING_PATH || "/workspace/AIAK-Training-LLM"}
+AIAK_TRAINING_PATH=\${AIAK_TRAINING_PATH:-"/workspace/AIAK-Training-LLM"}
 
 PYTHONPATH=\${MEGATRON_PATH}:\${AIAK_TRAINING_PATH}:\${PYTHONPATH}     python \${AIAK_TRAINING_PATH}/tools/data_preprocess/preprocess_sft_data.py         --input \${INPUT_DATA}         --output \${OUTPUT_PATH}         --seq-length 2048         --chat-template \${CHAT_TEMPLATE}         --tokenizer-type HFTokenizer         --hf-tokenizer-path \${TOKENIZER_PATH}         --workers 50         --split 100,0,0
         # --packing-sft-data         # --train-on-prompt         # --eod-mask-loss         # --sft-dataset-config /workspace/AIAK-Training-LLM/configs/sft_dataset_config.json         # --sft-dataset custom_dataset echo "Data preprocess done."
