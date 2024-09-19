@@ -35,12 +35,6 @@
       </el-icon>
       <template #title>Navigator Three</template>
     </el-menu-item> -->
-        <el-menu-item disabled index="4">
-          <el-icon>
-            <setting />
-          </el-icon>
-          <template #title>并行策略搜索</template>
-        </el-menu-item>
         <el-menu-item index="5">
           <el-icon>
             <setting />
@@ -58,6 +52,12 @@
             <setting />
           </el-icon>
           <template #title>AIAK训练任务</template>
+        </el-menu-item>
+        <el-menu-item disabled index="4">
+          <el-icon>
+            <setting />
+          </el-icon>
+          <template #title>并行策略搜索</template>
         </el-menu-item>
       </el-menu>
       <div w="full" py="4">
