@@ -7,7 +7,7 @@
         @select="handSelect">
         <el-menu-item index="2">
           <el-icon><icon-menu /></el-icon>
-          <template #title>快捷执行命令</template>
+          <template #title>All-in-one任务</template>
         </el-menu-item>
         <!-- <el-sub-menu index="1">
       <template #title>

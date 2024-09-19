@@ -163,7 +163,7 @@ const formModel = reactive({
   jsonKeys: "text",
 });
 
-const msg = ref("AIAK全流程训练执行命令生成");
+const msg = ref("All in one 训练执行命令生成");
 
 // 定义生成的参数
 const generatedParams = ref("");
