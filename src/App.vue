@@ -3,12 +3,8 @@
     <BaseHeader />
     <div class="flex main-container">
       <!-- <BaseSide /> -->
-      <el-menu default-active="2" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
+      <el-menu default-active="5" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
         @select="handSelect">
-        <el-menu-item index="2">
-          <el-icon><icon-menu /></el-icon>
-          <template #title>All-in-one任务</template>
-        </el-menu-item>
         <!-- <el-sub-menu index="1">
       <template #title>
         <el-icon>
@@ -53,6 +49,10 @@
           </el-icon>
           <template #title>AIAK训练任务</template>
         </el-menu-item>
+        <el-menu-item index="2">
+          <el-icon><icon-menu /></el-icon>
+          <template #title>All-in-one任务</template>
+        </el-menu-item>
         <el-menu-item disabled index="4">
           <el-icon>
             <setting />
@@ -75,7 +75,7 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 
-const currentKey = ref('2')
+const currentKey = ref('5')
 
 const handleOpen = (key: string, keyPath: string[]) => {
   console.log('handleOpen', key, keyPath);

@@ -1,78 +1,122 @@
 <template>
-  <div style="padding: 20px; max-width: 1200px; margin: 0 auto; text-align: left">
+  <div
+    style="padding: 20px; max-width: 1200px; margin: 0 auto; text-align: left"
+  >
     <h1 color="$ep-color-primary">{{ msg }}</h1>
 
     <!-- 表单开始 -->
-    <el-form ref="formRef" :model="formModel" :rules="rules" @submit.prevent="handleSubmit" label-width="120px"
-      label-position="left">
+    <el-form
+      ref="formRef"
+      :model="formModel"
+      :rules="rules"
+      @submit.prevent="handleSubmit"
+      label-width="120px"
+      label-position="left"
+    >
       <el-row :gutter="20">
         <!-- 第一列 -->
         <el-col :span="8">
           <el-form-item label="模型名称" prop="modelName">
-            <el-select v-model="formModel.modelName" placeholder="请选择模型名称">
-              <el-option v-for="model in modelOptions" :key="model" :label="model" :value="model"></el-option>
+            <el-select
+              v-model="formModel.modelName"
+              placeholder="请选择模型名称"
+            >
+              <el-option
+                v-for="model in modelOptions"
+                :key="model"
+                :label="model"
+                :value="model"
+              ></el-option>
             </el-select>
           </el-form-item>
         </el-col>
-
-        <el-col :span="8">
-          <el-form-item required label="副本数" prop="replicas">
-            <el-input-number v-model="formModel.replicas" :min="1" placeholder="请输入副本数"
-              style="width: 100%;"></el-input-number>
-          </el-form-item>
-        </el-col>
-
-        <el-col :span="8">
-          <el-form-item required label="版本" prop="version">
-            <el-input v-model="formModel.version" placeholder="请输入版本，允许数字、字母、中划线"></el-input>
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item label="训练阶段" prop="trainingPhase">
-            <el-select v-model="formModel.trainingPhase" placeholder="请选择训练阶段">
+            <el-select
+              v-model="formModel.trainingPhase"
+              placeholder="请选择训练阶段"
+            >
               <el-option label="SFT" value="sft"></el-option>
               <el-option label="Pretrain" value="pretrain"></el-option>
               <!-- 根据需要添加更多选项 -->
             </el-select>
           </el-form-item>
         </el-col>
-
         <el-col :span="8">
-          <el-form-item label="TP" prop="tp">
-            <el-input-number v-model="formModel.tp" :min="1" placeholder="请输入 TP 值，必须为正整数"
-              style="width: 100%;"></el-input-number>
-          </el-form-item>
-        </el-col>
-
-        <el-col :span="8">
-          <el-form-item label="PP" prop="pp">
-            <el-input-number v-model="formModel.pp" :min="1" placeholder="请输入 PP 值，必须为正整数"
-              style="width: 100%;"></el-input-number>
+          <el-form-item required label="版本" prop="version">
+            <el-input
+              v-model="formModel.version"
+              placeholder="请输入版本，允许数字、字母、中划线"
+            ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
-
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item label="数据集名称" prop="datasetName">
-            <el-select v-model="formModel.datasetName" placeholder="请选择数据集名称">
-              <el-option v-for="dataset in datasetOptions" :key="dataset" :label="dataset" :value="dataset"></el-option>
+            <el-select
+              v-model="formModel.datasetName"
+              placeholder="请选择数据集名称"
+            >
+              <el-option
+                v-for="dataset in datasetOptions"
+                :key="dataset"
+                :label="dataset"
+                :value="dataset"
+              ></el-option>
             </el-select>
           </el-form-item>
         </el-col>
 
         <el-col :span="8">
           <el-form-item required label="镜像" prop="image">
-            <el-input v-model="formModel.image" placeholder="请输入镜像地址"></el-input>
+            <el-input
+              v-model="formModel.image"
+              placeholder="请输入镜像地址"
+            ></el-input>
           </el-form-item>
         </el-col>
 
         <el-col :span="8">
           <el-form-item required label="挂载路径" prop="mountPath">
-            <el-input v-model="formModel.mountPath" placeholder="请输入挂载路径"></el-input>
+            <el-input
+              v-model="formModel.mountPath"
+              placeholder="请输入挂载路径"
+            ></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="8">
+          <el-form-item label="副本数" prop="replicas">
+            <el-input-number
+              v-model="formModel.replicas"
+              :min="1"
+              placeholder="请输入训练机数"
+              style="width: 100%"
+            ></el-input-number>
+          </el-form-item>
+        </el-col>
+
+        <el-col :span="8">
+          <el-form-item label="TP" prop="tp">
+            <el-input-number
+              v-model="formModel.tp"
+              :min="1"
+              placeholder="请输入 TP 值，必须为正整数"
+              style="width: 100%"
+            ></el-input-number>
+          </el-form-item>
+        </el-col>
+
+        <el-col :span="8">
+          <el-form-item label="PP" prop="pp">
+            <el-input-number
+              v-model="formModel.pp"
+              :min="1"
+              placeholder="请输入 PP 值，必须为正整数"
+              style="width: 100%"
+            ></el-input-number>
           </el-form-item>
         </el-col>
       </el-row>
@@ -80,19 +124,28 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item label="模型 URL" prop="modelUrl">
-            <el-input v-model="formModel.modelUrl" placeholder="请输入模型 URL，以bos:/开头"></el-input>
+            <el-input
+              v-model="formModel.modelUrl"
+              placeholder="请输入模型 URL，以bos:/开头"
+            ></el-input>
           </el-form-item>
         </el-col>
 
         <el-col :span="8">
           <el-form-item label="数据集 URL" prop="datasetUrl">
-            <el-input v-model="formModel.datasetUrl" placeholder="请输入数据集 URL，以bos:/开头"></el-input>
+            <el-input
+              v-model="formModel.datasetUrl"
+              placeholder="请输入数据集 URL，以bos:/开头"
+            ></el-input>
           </el-form-item>
         </el-col>
 
         <el-col v-if="formModel.trainingPhase === 'pretrain'" :span="8">
           <el-form-item required label="JSON Keys" prop="jsonKeys">
-            <el-input v-model="formModel.jsonKeys" placeholder="请输入 JSON Keys"></el-input>
+            <el-input
+              v-model="formModel.jsonKeys"
+              placeholder="请输入 JSON Keys"
+            ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -101,24 +154,28 @@
         <el-text style="color: grey">
           参数说明：<br />
           - 模型名称：必选<br />
-          - 副本数：必选，根据模型参数选择，一般7b 1实例、13b 2实例、70b
-          4实例<br />
-          - 版本：必填，本次训练的备注标识，通过版本可以区分训练任务<br />
           - 训练阶段：必选，支持选择pretrain和sft<br />
-          - TP：选填，张量并行切分策略，不填写时默认使用AIAK推荐切分策略<br />
-          - PP：选填，流水线并行切分策略，不填写时默认使用AIAK推荐切分策略<br />
+          - 版本：必填，本次训练的备注标识，通过版本可以区分训练任务<br />
           - 数据集名称：可选，使用预置的测试数据集<br />
           - 镜像：必填，AIAK镜像地址，支持2.1.1.5以上<br />
           - 挂载路径：必填，挂载的PFS路径<br />
-          - 模型URL：选填，HF格式模型权重的BOS存储地址，填写时会使用填写的地址覆盖默认地址<br />
-          - 数据集URL：选填，数据集的BOS存储地址，填写时会使用填写的地址覆盖默认测试数据集地址<br />
+          - 副本数：选填，根据模型参数选择，一般7b 1实例、13b 2实例、70b
+          4实例，不填写时默认使用AIAK推荐机数<br />
+          - TP：选填，张量并行切分策略，不填写时默认使用AIAK推荐切分策略<br />
+          - PP：选填，流水线并行切分策略，不填写时默认使用AIAK推荐切分策略<br />
+          -
+          模型URL：选填，HF格式模型权重的BOS存储地址，填写时会使用填写的地址覆盖默认地址<br />
+          -
+          数据集URL：选填，数据集的BOS存储地址，填写时会使用填写的地址覆盖默认测试数据集地址<br />
         </el-text>
       </div>
       <!-- 提交按钮 -->
       <el-row>
         <el-col :span="24" class="text-center">
           <el-form-item>
-            <el-button type="primary" @click="handleSubmit">生成执行命令</el-button>
+            <el-button type="primary" @click="handleSubmit"
+              >生成执行命令</el-button
+            >
             <el-button @click="handleReset">重置</el-button>
             <!-- <el-button v-if="generatedParams" type="primary" @click="copyToClipboard">
               复制到剪切板
@@ -131,8 +188,13 @@
 
     <!-- 生成的参数展示 -->
     <el-card v-if="generatedParams" class="box-card" style="margin-top: 20px">
-      <div slot="header" class="clearfix">
-        <el-button style="float: right; padding: 3px 0" type="primary" size="small" @click="copyToClipboard">
+      <div class="clearfix">
+        <el-button
+          style="float: right; padding: 3px 0"
+          type="primary"
+          size="small"
+          @click="copyToClipboard"
+        >
           复制到剪切板
         </el-button>
       </div>
@@ -144,13 +206,13 @@
 <script setup lang="ts">
 import { reactive, computed, watch, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
-import { generateAiakParameter } from "./aiak-parms";
+import { generateAiakParameter, timeStr, getReplicas } from "./aiak-parms";
 
 // 定义响应式的表单模型
 const formModel = reactive({
-  modelName: "llama2-70b",
-  replicas: 4,
-  version: "v1",
+  modelName: "llama2-7b",
+  replicas: 1,
+  version: timeStr(),
   trainingPhase: "sft",
   tp: undefined as number | undefined,
   pp: undefined as number | undefined,
@@ -223,13 +285,18 @@ watch(
   }
 );
 
+watch(
+  () => formModel.modelName,
+  (newName) => {
+    formModel.replicas = getReplicas(newName);
+  }
+);
+
 // 定义表单验证规则
 const rules: FormRules = {
-  modelName: [
-    { required: true, message: "请选择模型名称", trigger: "blur" },
-  ],
+  modelName: [{ required: true, message: "请选择模型名称", trigger: "blur" }],
   replicas: [
-    { required: true, message: "请输入副本数", trigger: "blur" },
+    { required: false, message: "请输入训练机数", trigger: "blur" },
     { type: "number", min: 1, message: "副本数必须为正整数", trigger: "blur" },
   ],
   version: [
@@ -243,12 +310,8 @@ const rules: FormRules = {
   trainingPhase: [
     { required: true, message: "请选择训练阶段", trigger: "blur" },
   ],
-  image: [
-    { required: true, message: "请输入镜像地址", trigger: "blur" },
-  ],
-  mountPath: [
-    { required: true, message: "请输入挂载路径", trigger: "blur" },
-  ],
+  image: [{ required: true, message: "请输入镜像地址", trigger: "blur" }],
+  mountPath: [{ required: true, message: "请输入挂载路径", trigger: "blur" }],
   // 根据需要为其他字段添加更多规则
 };
 
@@ -310,6 +373,7 @@ const handleReset = () => {
   if (formRef.value) {
     formRef.value.resetFields();
     generatedParams.value = ""; // 可选：清除生成的参数展示
+    formModel.version = timeStr(); // 重置版本号
     ElMessage.success("表单已重置");
   }
 };
@@ -320,7 +384,7 @@ const handleReset = () => {
   margin: 4px;
 }
 
-.ep-button+.ep-button {
+.ep-button + .ep-button {
   margin-left: 0;
   margin: 4px;
 }
