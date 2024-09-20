@@ -163,12 +163,12 @@ ${K.jobSpec.command}
 `.trim();return console.log(q),console.log(oe),console.log(`=============================
 `),console.log("任务配置信息：",JSON.stringify(t,null,4)),console.log("任务配置文件已生成：","chainJobConfigFile"),console.log("任务执行命令：","oneJobCommandConfigFile"),console.log("启动任务：","runCommand"),console.log(`
 =============================`),oe}function HO(e){const t=e,n=t.VERSION,r=t.DATASET_NAME,o=t.MODEL_NAME;let s=t.TP,a=t.PP;const l=t.JSON_KEYS||"",i=t.IMAGE,u=t.TRAINING_PHASE,c=t.REPLICAS,f=t.MOUNT_PATH,m=t.MODEL_URL||"",v=t.DATASET_URL||"",d=m||Wt[o][0];s=t.TP||Wt[o][1],a=t.PP||Wt[o][2];const p=d.split("/").slice(2).join("/"),b=`${f}/models/${o}/hf/${p}`,h=b,T=`${f}/models/${o}/mcore/${p}/tp${s}_pp${a}`,O=v||Ma[r],y=O.split("/").slice(2).join("/"),S=`${f}/datasets/${y}`,$=S.split(".").slice(0,-1).join("."),x=`${$}_cache`,D=$,M=`${D}_text_document`,A=`${u}-${o}-ck2mc-${n}`,J=`${u}-${o}-dp-${n}`,F=`${u}-${o}-train-${n}`,q=Ra(),fe=q.jobs[0];fe.jobSpec.image=i,fe.name=A,fe.jobSpec.command=eo("job1_convert_checkpoint"),fe.jobSpec.envs.push({name:"MODEL_BOS_PATH",value:d},{name:"MODEL_NAME",value:o},{name:"TP",value:s},{name:"PP",value:a},{name:"LOAD",value:b},{name:"SAVE",value:T});const N=`
-MODEL_BOS_PATH="${d}"
-MODEL_NAME="${o}"
+MODEL_BOS_PATH=${d}
+MODEL_NAME=${o}
 TP=${s}
 PP=${a}
-LOAD="${b}"
-SAVE="${T}"
+LOAD=${b}
+SAVE=${T}
     `,I=q.jobs[1];I.jobSpec.image=i,I.name=J;const k=`job2_${u}_data_preprocess`,K=o.startsWith("qwen")?"qwen":o.split("-")[0];I.jobSpec.command=eo(k),u==="sft"?I.jobSpec.envs.push({name:"DATASET_BOS_PATH",value:O},{name:"TOKENIZER_PATH",value:h},{name:"INPUT_DATA",value:S},{name:"OUTPUT_PATH",value:D},{name:"CHAT_TEMPLATE",value:K}):I.jobSpec.envs.push({name:"DATASET_BOS_PATH",value:O},{name:"TOKENIZER_PATH",value:h},{name:"INPUT_DATA",value:S},{name:"OUTPUT_PREFIX",value:D},{name:"JSON_KEYS",value:l});const X=q.jobs[2];X.jobSpec.image=i,X.name=F,u==="sft"?X.jobSpec.envs.push({name:"CUDA_DEVICE_MAX_CONNECTIONS",value:"1"},{name:"DATA_PATH",value:S},{name:"DATA_CACHE_PATH",value:x},{name:"TOKENIZER_PATH",value:h},{name:"CHECKPOINT_PATH",value:T}):X.jobSpec.envs.push({name:"CUDA_DEVICE_MAX_CONNECTIONS",value:"1"},{name:"DATA_PATH",value:M},{name:"TOKENIZER_PATH",value:h},{name:"CHECKPOINT_PATH",value:T});let oe=`/workspace/AIAK-Training-LLM/examples/${o.split("-")[0]}/pretrain/pretrain_${o.replace(/-/g,"_")}.sh`;u==="sft"&&(oe=`/workspace/AIAK-Training-LLM/examples/${o.split("-")[0]}/finetuning/sft_${o.replace(/-/g,"_")}.sh`),X.jobSpec.command=`bash ${oe}`,X.jobSpec.replicas=parseInt(c,10),q.jobs[0]=fe,q.jobs[1]=I,q.jobs[2]=X;const me=`
 #!/bin/bash
 
