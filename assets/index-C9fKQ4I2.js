@@ -140,23 +140,22 @@ PYTHONPATH=\${MEGATRON_PATH}:\${AIAK_TRAINING_PATH}:\${PYTHONPATH}     python \$
 # 挂载路径: ${f}
 # 实例数量: ${c}
 
-export MODEL_BOS_PATH="${d}"
-export MODEL_NAME="${o}"
-export TP=${s}
-export PP=${a}
-export LOAD="${b}"
-export SAVE="${T}"
-export TOKENIZER_PATH="${h}"
-export DATASET_BOS_PATH="${O}"
-export INPUT_DATA="${S}"
-export OUTPUT_PREFIX="${D}"
-export OUTPUT_PATH="${D}"
-export DATA_PATH="${M}"
-export DATA_CACHE_PATH="${x}"
-export JSON_KEYS="${l}"
-export CHAT_TEMPLATE="${k}"
-export CHECKPOINT_PATH="${T}"
-export CUDA_DEVICE_MAX_CONNECTIONS=1
+MODEL_BOS_PATH=${d}
+MODEL_NAME=${o}
+TP=${s}
+PP=${a}
+LOAD=${b}
+SAVE=${T}
+TOKENIZER_PATH=${h}
+DATASET_BOS_PATH=${O}
+INPUT_DATA=${S}
+OUTPUT_PREFIX=${D}
+OUTPUT_PATH=${D}
+DATA_PATH=${M}
+DATA_CACHE_PATH=${x}
+JSON_KEYS=${l}
+CHAT_TEMPLATE=${k}
+CHECKPOINT_PATH=${T}
 
 ${fe.jobSpec.command.replace("#!/bin/bash","")}
 ${N.jobSpec.command.replace("#!/bin/bash","")}
