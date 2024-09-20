@@ -59,7 +59,6 @@ echo "The converted checkpoint is saved in: \n \${SAVE}."
 
 const job2_pretrain_data_preprocess = `
 #!/bin/bash
-
 echo "INPUT_DATA: \${INPUT_DATA}"
 echo "OUTPUT_PREFIX: \${OUTPUT_PREFIX}"
 echo "DATASET_BOS_PATH: \${DATASET_BOS_PATH}"
@@ -104,7 +103,6 @@ echo "Data preprocess done."
 
 const job2_sft_data_preprocess = `
 #!/bin/bash
-
 # 检查INPUT_DATA是否存在，不存在则下载
 if [ ! -d "\${INPUT_DATA}" ]; then
     # 下载bcecmd程序
@@ -489,6 +487,168 @@ function readChainInfo(): any {
 }
 
 // 生成 AIAK 参数
+export function generateAiakAllInOneParameter(aiakJobConfig: any): string {
+
+    const aiakJobInfo: any = aiakJobConfig;
+
+    const VERSION = aiakJobInfo['VERSION'];
+    const DATASET_NAME = aiakJobInfo['DATASET_NAME'];
+    const MODEL_NAME = aiakJobInfo['MODEL_NAME'];
+    let TP = aiakJobInfo['TP'];
+    let PP = aiakJobInfo['PP'];
+    const JSON_KEYS = aiakJobInfo['JSON_KEYS'] || '';
+    const IMAGE = aiakJobInfo['IMAGE'];
+    const TRAINING_PHASE = aiakJobInfo['TRAINING_PHASE'];
+    const REPLICAS = aiakJobInfo['REPLICAS'];
+    const MOUNT_PATH = aiakJobInfo['MOUNT_PATH'];
+    const MODEL_URL = aiakJobInfo['MODEL_URL'] || '';
+    const DATASET_URL = aiakJobInfo['DATASET_URL'] || '';
+
+    const MODEL_BOS_PATH = MODEL_URL || models[MODEL_NAME][0];
+    TP = aiakJobInfo['TP'] || models[MODEL_NAME][1];
+    PP = aiakJobInfo['PP'] || models[MODEL_NAME][2];
+
+    const savePath = MODEL_BOS_PATH.split('/').slice(2).join('/');
+    const LOAD = `${MOUNT_PATH}/models/${MODEL_NAME}/hf/${savePath}`;
+    const TOKENIZER_PATH = LOAD;
+    const CHECKPOINT_PATH = `${MOUNT_PATH}/models/${MODEL_NAME}/mcore/${savePath}/tp${TP}_pp${PP}`;
+    const DATASET_BOS_PATH = DATASET_URL || datasets[DATASET_NAME];
+    const inputDataSavePath = DATASET_BOS_PATH.split('/').slice(2).join('/');
+    const INPUT_DATA = `${MOUNT_PATH}/datasets/${inputDataSavePath}`;
+    const savePathInput = INPUT_DATA.split('.').slice(0, -1).join('.');
+    const DATA_CACHE_PATH = `${savePathInput}_cache`;
+    const OUTPUT_PREFIX = savePathInput;
+    const DATA_PATH = `${OUTPUT_PREFIX}_text_document`;
+
+    const CK_JOB_NAME = `${TRAINING_PHASE}-${MODEL_NAME}-ck2mc-${VERSION}`;
+    const DP_JOB_NAME = `${TRAINING_PHASE}-${MODEL_NAME}-dp-${VERSION}`;
+    const TRAIN_JOB_NAME = `${TRAINING_PHASE}-${MODEL_NAME}-train-${VERSION}`;
+
+    const chainInfo = readChainInfo();
+
+    // 更新 ck_job
+    const ckJob = chainInfo.jobs[0];
+    ckJob.jobSpec.image = IMAGE;
+    ckJob.name = CK_JOB_NAME;
+    ckJob.jobSpec.command = getCommand('job1_convert_checkpoint');
+    ckJob.jobSpec.envs.push(
+        { 'name': 'MODEL_BOS_PATH', 'value': MODEL_BOS_PATH },
+        { 'name': 'MODEL_NAME', 'value': MODEL_NAME },
+        { 'name': 'TP', 'value': TP },
+        { 'name': 'PP', 'value': PP },
+        { 'name': 'LOAD', 'value': LOAD },
+        { 'name': 'SAVE', 'value': CHECKPOINT_PATH }
+    );
+
+    // 更新 dp_job
+    const dpJob = chainInfo.jobs[1];
+    dpJob.jobSpec.image = IMAGE;
+    dpJob.name = DP_JOB_NAME;
+
+    const shPath = `job2_${TRAINING_PHASE}_data_preprocess`;
+    const CHAT_TEMPLATE = MODEL_NAME.startsWith('qwen') ? 'qwen' : MODEL_NAME.split('-')[0];
+    dpJob.jobSpec.command = getCommand(shPath);
+
+    if (TRAINING_PHASE === 'sft') {
+        dpJob.jobSpec.envs.push(
+            { 'name': 'DATASET_BOS_PATH', 'value': DATASET_BOS_PATH },
+            { 'name': 'TOKENIZER_PATH', 'value': TOKENIZER_PATH },
+            { 'name': 'INPUT_DATA', 'value': INPUT_DATA },
+            { 'name': 'OUTPUT_PATH', 'value': OUTPUT_PREFIX },
+            { 'name': 'CHAT_TEMPLATE', 'value': CHAT_TEMPLATE }
+        );
+    } else {
+        dpJob.jobSpec.envs.push(
+            { 'name': 'DATASET_BOS_PATH', 'value': DATASET_BOS_PATH },
+            { 'name': 'TOKENIZER_PATH', 'value': TOKENIZER_PATH },
+            { 'name': 'INPUT_DATA', 'value': INPUT_DATA },
+            { 'name': 'OUTPUT_PREFIX', 'value': OUTPUT_PREFIX },
+            { 'name': 'JSON_KEYS', 'value': JSON_KEYS }
+        );
+    }
+
+    // 更新 train_job
+    const trainJob = chainInfo.jobs[2];
+    trainJob.jobSpec.image = IMAGE;
+    trainJob.name = TRAIN_JOB_NAME;
+
+    if (TRAINING_PHASE === 'sft') {
+        trainJob.jobSpec.envs.push(
+            { 'name': 'CUDA_DEVICE_MAX_CONNECTIONS', 'value': '1' },
+            { 'name': 'DATA_PATH', 'value': INPUT_DATA },
+            { 'name': 'DATA_CACHE_PATH', 'value': DATA_CACHE_PATH },
+            { 'name': 'TOKENIZER_PATH', 'value': TOKENIZER_PATH },
+            { 'name': 'CHECKPOINT_PATH', 'value': CHECKPOINT_PATH }
+        );
+    } else {
+        trainJob.jobSpec.envs.push(
+            { "name": "CUDA_DEVICE_MAX_CONNECTIONS", "value": "1" },
+            { 'name': 'DATA_PATH', 'value': DATA_PATH },
+            { 'name': 'TOKENIZER_PATH', 'value': TOKENIZER_PATH },
+            { 'name': 'CHECKPOINT_PATH', 'value': CHECKPOINT_PATH }
+        );
+    }
+
+    let SH_PATH = `/workspace/AIAK-Training-LLM/examples/${MODEL_NAME.split('-')[0]}/pretrain/pretrain_${MODEL_NAME.replace(/-/g, '_')}.sh`;
+    if (TRAINING_PHASE === 'sft') {
+        SH_PATH = `/workspace/AIAK-Training-LLM/examples/${MODEL_NAME.split('-')[0]}/finetuning/sft_${MODEL_NAME.replace(/-/g, '_')}.sh`;
+    }
+
+    trainJob.jobSpec.command = `bash ${SH_PATH}`;
+    trainJob.jobSpec.replicas = parseInt(REPLICAS, 10);
+
+    // 更新 chain_info
+    chainInfo.jobs[0] = ckJob;
+    chainInfo.jobs[1] = dpJob;
+    chainInfo.jobs[2] = trainJob;
+
+    // 生成单个任务的 Shell 脚本
+    const oneJobCommand = `
+#!/bin/bash
+
+# 任务名称: ${TRAINING_PHASE}-${MODEL_NAME}-ck2mc-dp-train-${VERSION}
+# 镜像: ${IMAGE}
+# 环境变量: CUDA_DEVICE_MAX_CONNECTIONS=1
+# 挂载路径: ${MOUNT_PATH}
+# 实例数量: ${REPLICAS}
+
+export MODEL_BOS_PATH="${MODEL_BOS_PATH}"
+export MODEL_NAME="${MODEL_NAME}"
+export TP=${TP}
+export PP=${PP}
+export LOAD="${LOAD}"
+export SAVE="${CHECKPOINT_PATH}"
+export TOKENIZER_PATH="${TOKENIZER_PATH}"
+export DATASET_BOS_PATH="${DATASET_BOS_PATH}"
+export INPUT_DATA="${INPUT_DATA}"
+export OUTPUT_PREFIX="${OUTPUT_PREFIX}"
+export OUTPUT_PATH="${OUTPUT_PREFIX}"
+export DATA_PATH="${DATA_PATH}"
+export DATA_CACHE_PATH="${DATA_CACHE_PATH}"
+export JSON_KEYS="${JSON_KEYS}"
+export CHAT_TEMPLATE="${CHAT_TEMPLATE}"
+export CHECKPOINT_PATH="${CHECKPOINT_PATH}"
+export CUDA_DEVICE_MAX_CONNECTIONS=1
+
+${ckJob.jobSpec.command.replace('#!/bin/bash', '')}
+${dpJob.jobSpec.command.replace('#!/bin/bash', '')}
+${trainJob.jobSpec.command}
+`.trim();
+
+    console.log(chainInfo)
+    console.log(oneJobCommand)
+
+
+    console.log('=============================\n');
+    console.log('任务配置信息：', JSON.stringify(aiakJobInfo, null, 4));
+    console.log('任务配置文件已生成：', 'chainJobConfigFile');
+    console.log('任务执行命令：', 'oneJobCommandConfigFile');
+    console.log('启动任务：', 'runCommand');
+    console.log('\n=============================');
+
+    return oneJobCommand
+}
+
 export function generateAiakParameter(aiakJobConfig: any): string {
 
     const aiakJobInfo: any = aiakJobConfig;
@@ -637,8 +797,8 @@ ${dpJob.jobSpec.command.replace('#!/bin/bash', '')}
 ${trainJob.jobSpec.command}
 `.trim();
 
-console.log(chainInfo)
-console.log(oneJobCommand)
+    console.log(chainInfo)
+    console.log(oneJobCommand)
 
 
     console.log('=============================\n');
@@ -703,6 +863,15 @@ export function generateConvertCheckpoint(aiakJobConfig: any): string {
         { 'name': 'LOAD', 'value': LOAD },
         { 'name': 'SAVE', 'value': CHECKPOINT_PATH }
     );
+
+    const ck_envs = `
+MODEL_BOS_PATH="${MODEL_BOS_PATH}"
+MODEL_NAME="${MODEL_NAME}"
+TP=${TP}
+PP=${PP}
+LOAD="${LOAD}"
+SAVE="${CHECKPOINT_PATH}"
+    `
 
     // 更新 dp_job
     const dpJob = chainInfo.jobs[1];
@@ -775,28 +944,13 @@ export function generateConvertCheckpoint(aiakJobConfig: any): string {
 # 挂载路径: ${MOUNT_PATH}
 # 实例数量: 1
 
-export MODEL_BOS_PATH="${MODEL_BOS_PATH}"
-export MODEL_NAME="${MODEL_NAME}"
-export TP=${TP}
-export PP=${PP}
-export LOAD="${LOAD}"
-export SAVE="${CHECKPOINT_PATH}"
-export TOKENIZER_PATH="${TOKENIZER_PATH}"
-export DATASET_BOS_PATH="${DATASET_BOS_PATH}"
-export INPUT_DATA="${INPUT_DATA}"
-export OUTPUT_PREFIX="${OUTPUT_PREFIX}"
-export OUTPUT_PATH="${OUTPUT_PREFIX}"
-export DATA_PATH="${DATA_PATH}"
-export DATA_CACHE_PATH="${DATA_CACHE_PATH}"
-export JSON_KEYS="${JSON_KEYS}"
-export CHAT_TEMPLATE="${CHAT_TEMPLATE}"
-export CHECKPOINT_PATH="${CHECKPOINT_PATH}"
+${ck_envs}
 
 ${ckJob.jobSpec.command.replace('#!/bin/bash', '')}
 `.trim();
 
-console.log(chainInfo)
-console.log(oneJobCommand)
+    console.log(chainInfo)
+    console.log(oneJobCommand)
 
 
     console.log('=============================\n');
@@ -871,6 +1025,7 @@ export function generatePreprocessData(aiakJobConfig: any): string {
     const CHAT_TEMPLATE = MODEL_NAME.startsWith('qwen') ? 'qwen' : MODEL_NAME.split('-')[0];
     dpJob.jobSpec.command = getCommand(shPath);
 
+    let dp_envs = '';
     if (TRAINING_PHASE === 'sft') {
         dpJob.jobSpec.envs.push(
             { 'name': 'DATASET_BOS_PATH', 'value': DATASET_BOS_PATH },
@@ -879,6 +1034,14 @@ export function generatePreprocessData(aiakJobConfig: any): string {
             { 'name': 'OUTPUT_PATH', 'value': OUTPUT_PREFIX },
             { 'name': 'CHAT_TEMPLATE', 'value': CHAT_TEMPLATE }
         );
+        dp_envs = `
+DATASET_BOS_PATH=${DATASET_BOS_PATH}
+TOKENIZER_PATH=${TOKENIZER_PATH}
+INPUT_DATA=${INPUT_DATA}
+OUTPUT_PATH=${OUTPUT_PREFIX}
+CHAT_TEMPLATE=${CHAT_TEMPLATE}
+        `
+
     } else {
         dpJob.jobSpec.envs.push(
             { 'name': 'DATASET_BOS_PATH', 'value': DATASET_BOS_PATH },
@@ -887,6 +1050,13 @@ export function generatePreprocessData(aiakJobConfig: any): string {
             { 'name': 'OUTPUT_PREFIX', 'value': OUTPUT_PREFIX },
             { 'name': 'JSON_KEYS', 'value': JSON_KEYS }
         );
+        dp_envs = `
+DATASET_BOS_PATH=${DATASET_BOS_PATH}
+TOKENIZER_PATH=${TOKENIZER_PATH}
+INPUT_DATA=${INPUT_DATA}
+OUTPUT_PREFIX=${OUTPUT_PREFIX}
+JSON_KEYS=${JSON_KEYS}
+        `
     }
 
     // 更新 train_job
@@ -933,27 +1103,13 @@ export function generatePreprocessData(aiakJobConfig: any): string {
 # 挂载路径: ${MOUNT_PATH}
 # 实例数量: 1
 
-export MODEL_BOS_PATH="${MODEL_BOS_PATH}"
-export MODEL_NAME="${MODEL_NAME}"
-export TP=${TP}
-export PP=${PP}
-export LOAD="${LOAD}"
-export SAVE="${CHECKPOINT_PATH}"
-export TOKENIZER_PATH="${TOKENIZER_PATH}"
-export DATASET_BOS_PATH="${DATASET_BOS_PATH}"
-export INPUT_DATA="${INPUT_DATA}"
-export OUTPUT_PREFIX="${OUTPUT_PREFIX}"
-export OUTPUT_PATH="${OUTPUT_PREFIX}"
-export DATA_PATH="${DATA_PATH}"
-export DATA_CACHE_PATH="${DATA_CACHE_PATH}"
-export JSON_KEYS="${JSON_KEYS}"
-export CHAT_TEMPLATE="${CHAT_TEMPLATE}"
-export CHECKPOINT_PATH="${CHECKPOINT_PATH}"
+${dp_envs}
+
 ${dpJob.jobSpec.command.replace('#!/bin/bash', '')}
 `.trim();
 
-console.log(chainInfo)
-console.log(oneJobCommand)
+    console.log(chainInfo)
+    console.log(oneJobCommand)
 
 
     console.log('=============================\n');
@@ -975,7 +1131,6 @@ export function generateTraining(aiakJobConfig: any): string {
     const MODEL_NAME = aiakJobInfo['MODEL_NAME'];
     let TP = aiakJobInfo['TP'];
     let PP = aiakJobInfo['PP'];
-    const JSON_KEYS = aiakJobInfo['JSON_KEYS'] || '';
     const IMAGE = aiakJobInfo['IMAGE'];
     const TRAINING_PHASE = aiakJobInfo['TRAINING_PHASE'];
     const REPLICAS = aiakJobInfo['REPLICAS'];
@@ -998,88 +1153,31 @@ export function generateTraining(aiakJobConfig: any): string {
     const DATA_CACHE_PATH = `${savePathInput}_cache`;
     const OUTPUT_PREFIX = savePathInput;
     const DATA_PATH = `${OUTPUT_PREFIX}_text_document`;
-
-    const CK_JOB_NAME = `${TRAINING_PHASE}-${MODEL_NAME}-ck2mc-${VERSION}`;
-    const DP_JOB_NAME = `${TRAINING_PHASE}-${MODEL_NAME}-dp-${VERSION}`;
     const TRAIN_JOB_NAME = `${TRAINING_PHASE}-${MODEL_NAME}-train-${VERSION}`;
 
     const chainInfo = readChainInfo();
-
-    // 更新 ck_job
-    const ckJob = chainInfo.jobs[0];
-    ckJob.jobSpec.image = IMAGE;
-    ckJob.name = CK_JOB_NAME;
-    ckJob.jobSpec.command = getCommand('job1_convert_checkpoint');
-    ckJob.jobSpec.envs.push(
-        { 'name': 'MODEL_BOS_PATH', 'value': MODEL_BOS_PATH },
-        { 'name': 'MODEL_NAME', 'value': MODEL_NAME },
-        { 'name': 'TP', 'value': TP },
-        { 'name': 'PP', 'value': PP },
-        { 'name': 'LOAD', 'value': LOAD },
-        { 'name': 'SAVE', 'value': CHECKPOINT_PATH }
-    );
-
-    // 更新 dp_job
-    const dpJob = chainInfo.jobs[1];
-    dpJob.jobSpec.image = IMAGE;
-    dpJob.name = DP_JOB_NAME;
-
-    const shPath = `job2_${TRAINING_PHASE}_data_preprocess`;
-    const CHAT_TEMPLATE = MODEL_NAME.startsWith('qwen') ? 'qwen' : MODEL_NAME.split('-')[0];
-    dpJob.jobSpec.command = getCommand(shPath);
-
-    if (TRAINING_PHASE === 'sft') {
-        dpJob.jobSpec.envs.push(
-            { 'name': 'DATASET_BOS_PATH', 'value': DATASET_BOS_PATH },
-            { 'name': 'TOKENIZER_PATH', 'value': TOKENIZER_PATH },
-            { 'name': 'INPUT_DATA', 'value': INPUT_DATA },
-            { 'name': 'OUTPUT_PATH', 'value': OUTPUT_PREFIX },
-            { 'name': 'CHAT_TEMPLATE', 'value': CHAT_TEMPLATE }
-        );
-    } else {
-        dpJob.jobSpec.envs.push(
-            { 'name': 'DATASET_BOS_PATH', 'value': DATASET_BOS_PATH },
-            { 'name': 'TOKENIZER_PATH', 'value': TOKENIZER_PATH },
-            { 'name': 'INPUT_DATA', 'value': INPUT_DATA },
-            { 'name': 'OUTPUT_PREFIX', 'value': OUTPUT_PREFIX },
-            { 'name': 'JSON_KEYS', 'value': JSON_KEYS }
-        );
-    }
 
     // 更新 train_job
     const trainJob = chainInfo.jobs[2];
     trainJob.jobSpec.image = IMAGE;
     trainJob.name = TRAIN_JOB_NAME;
 
+    let train_envs = ''
+
     if (TRAINING_PHASE === 'sft') {
-        trainJob.jobSpec.envs.push(
-            { 'name': 'CUDA_DEVICE_MAX_CONNECTIONS', 'value': '1' },
-            { 'name': 'DATA_PATH', 'value': INPUT_DATA },
-            { 'name': 'DATA_CACHE_PATH', 'value': DATA_CACHE_PATH },
-            { 'name': 'TOKENIZER_PATH', 'value': TOKENIZER_PATH },
-            { 'name': 'CHECKPOINT_PATH', 'value': CHECKPOINT_PATH }
-        );
+        train_envs = `
+DATA_PATH=${INPUT_DATA}
+DATA_CACHE_PATH=${DATA_CACHE_PATH}
+TOKENIZER_PATH=${TOKENIZER_PATH}
+CHECKPOINT_PATH=${CHECKPOINT_PATH}
+       `;
     } else {
-        trainJob.jobSpec.envs.push(
-            { "name": "CUDA_DEVICE_MAX_CONNECTIONS", "value": "1" },
-            { 'name': 'DATA_PATH', 'value': DATA_PATH },
-            { 'name': 'TOKENIZER_PATH', 'value': TOKENIZER_PATH },
-            { 'name': 'CHECKPOINT_PATH', 'value': CHECKPOINT_PATH }
-        );
+        train_envs = `
+DATA_PATH=${DATA_PATH}
+TOKENIZER_PATH=${TOKENIZER_PATH}
+CHECKPOINT_PATH=${CHECKPOINT_PATH}
+        `;
     }
-
-    let SH_PATH = `/workspace/AIAK-Training-LLM/examples/${MODEL_NAME.split('-')[0]}/pretrain/pretrain_${MODEL_NAME.replace(/-/g, '_')}.sh`;
-    if (TRAINING_PHASE === 'sft') {
-        SH_PATH = `/workspace/AIAK-Training-LLM/examples/${MODEL_NAME.split('-')[0]}/finetuning/sft_${MODEL_NAME.replace(/-/g, '_')}.sh`;
-    }
-
-    trainJob.jobSpec.command = `bash ${SH_PATH}`;
-    trainJob.jobSpec.replicas = parseInt(REPLICAS, 10);
-
-    // 更新 chain_info
-    chainInfo.jobs[0] = ckJob;
-    chainInfo.jobs[1] = dpJob;
-    chainInfo.jobs[2] = trainJob;
 
     // 生成单个任务的 Shell 脚本
     const oneJobCommand = `
@@ -1091,28 +1189,13 @@ export function generateTraining(aiakJobConfig: any): string {
 # 挂载路径: ${MOUNT_PATH}
 # 实例数量: ${REPLICAS}
 
-export MODEL_BOS_PATH="${MODEL_BOS_PATH}"
-export MODEL_NAME="${MODEL_NAME}"
-export TP=${TP}
-export PP=${PP}
-export LOAD="${LOAD}"
-export SAVE="${CHECKPOINT_PATH}"
-export TOKENIZER_PATH="${TOKENIZER_PATH}"
-export DATASET_BOS_PATH="${DATASET_BOS_PATH}"
-export INPUT_DATA="${INPUT_DATA}"
-export OUTPUT_PREFIX="${OUTPUT_PREFIX}"
-export OUTPUT_PATH="${OUTPUT_PREFIX}"
-export DATA_PATH="${DATA_PATH}"
-export DATA_CACHE_PATH="${DATA_CACHE_PATH}"
-export JSON_KEYS="${JSON_KEYS}"
-export CHAT_TEMPLATE="${CHAT_TEMPLATE}"
-export CHECKPOINT_PATH="${CHECKPOINT_PATH}"
-export CUDA_DEVICE_MAX_CONNECTIONS=1
+${train_envs}
+
 ${trainJob.jobSpec.command}
 `.trim();
 
-console.log(chainInfo)
-console.log(oneJobCommand)
+    console.log(chainInfo)
+    console.log(oneJobCommand)
 
 
     console.log('=============================\n');
