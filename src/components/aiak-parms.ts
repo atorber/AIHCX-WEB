@@ -1160,6 +1160,13 @@ export function generateTraining(aiakJobConfig: any): string {
     trainJob.jobSpec.image = IMAGE;
     trainJob.name = TRAIN_JOB_NAME;
 
+    let SH_PATH = `/workspace/AIAK-Training-LLM/examples/${MODEL_NAME.split('-')[0]}/pretrain/pretrain_${MODEL_NAME.replace(/-/g, '_')}.sh`;
+    if (TRAINING_PHASE === 'sft') {
+        SH_PATH = `/workspace/AIAK-Training-LLM/examples/${MODEL_NAME.split('-')[0]}/finetuning/sft_${MODEL_NAME.replace(/-/g, '_')}.sh`;
+    }
+
+    trainJob.jobSpec.command = `bash ${SH_PATH}`;
+
     let train_envs = ''
 
     if (TRAINING_PHASE === 'sft') {
