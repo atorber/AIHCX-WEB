@@ -863,12 +863,12 @@ export function generateConvertCheckpoint(aiakJobConfig: any): string {
     );
 
     const ck_envs = `
-MODEL_BOS_PATH="${MODEL_BOS_PATH}"
-MODEL_NAME="${MODEL_NAME}"
+MODEL_BOS_PATH=${MODEL_BOS_PATH}
+MODEL_NAME=${MODEL_NAME}
 TP=${TP}
 PP=${PP}
-LOAD="${LOAD}"
-SAVE="${CHECKPOINT_PATH}"
+LOAD=${LOAD}
+SAVE=${CHECKPOINT_PATH}
     `
 
     // 更新 dp_job
