@@ -1,6 +1,6 @@
 <template>
   <div
-    style="padding: 20px; max-width: 1200px; margin: 0 auto; text-align: left"
+    style="padding: 0px 20px; max-width: 1200px; margin: 0 auto; text-align: left"
   >
     <h1 color="$ep-color-primary">{{ msg }}</h1>
 

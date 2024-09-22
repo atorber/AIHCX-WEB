@@ -62,10 +62,10 @@ import { ref } from "vue";
 const currentKey = ref('')
 const isCollapse = ref(true);
 const handleOpen = (key: string, keyPath: string[]) => {
-  console.log('handleOpen', key, keyPath);
+  // console.log('handleOpen', key, keyPath);
   currentKey.value = key
 };
 const handleClose = (key: string, keyPath: string[]) => {
-  console.log('handleClose', key, keyPath);
+  // console.log('handleClose', key, keyPath);
 };
 </script>
