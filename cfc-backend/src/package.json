@@ -1,0 +1,16 @@
+{
+  "name": "cfc-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "zip": "zip -r code.zip *"
+  },
+  "author": "atorber",
+  "license": "ISC",
+  "dependencies": {
+    "@baiducloud/sdk": "^1.0.0-rc.31",
+    "request-promise": "^4.2.6"
+  }
+}
