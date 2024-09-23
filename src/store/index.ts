@@ -4,6 +4,7 @@ import { InjectionKey } from 'vue';
 import axios from 'axios';
 import { State, Job, ResourcePool, k8sRecord, SystemPod } from './types.js';
 import { MutationTypes, ActionTypes } from './mutation-types.js';
+import { getAccessToken, getAkSk } from '../utils/auth.js'
 
 // 定义 Mutations 接口
 export interface Mutations {
@@ -62,9 +63,7 @@ const mutations: Mutations = {
 const actions: Actions = {
     async [ActionTypes.FETCH_JOBS]({ commit }, resourcePoolId: string) {
         try {
-            const ak = localStorage.getItem("ak") || '';
-            const sk = localStorage.getItem("sk") || '';
-            const region = localStorage.getItem("region") || "bj";
+            const { ak, sk, region } = getAkSk();
             const response = await axios.get(
                 `https://6d6q5xfg0drsm.cfc-execute.bj.baidubce.com/api/v1/aijobs`,
                 {
@@ -86,9 +85,7 @@ const actions: Actions = {
 
     async [ActionTypes.FETCH_RESOURCEPOOLS]({ commit }) {
         try {
-            const ak = localStorage.getItem("ak") || '';
-            const sk = localStorage.getItem("sk") || '';
-            const region = localStorage.getItem("region") || "bj";
+            const { ak, sk, region } = getAkSk();
             const response = await axios.get(
                 `https://6d6q5xfg0drsm.cfc-execute.bj.baidubce.com/api/v1/resourcepools`,
                 {

@@ -21,6 +21,21 @@ export function getAccessToken() {
 }
 
 /**
+ * 获取登录授权 Token
+ *
+ * @returns token
+ */
+export function getAkSk() {
+  const token = storage.get(AccessToken)
+  if (token) {
+    const [ak, sk, region] = token.split("|");
+    return { ak, sk, region };
+  }
+  return { ak: '', sk: '', region: '' };
+}
+
+
+/**
  * 设置登录授权 Token
  *
  * @returns token

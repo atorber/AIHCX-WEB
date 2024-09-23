@@ -1,9 +1,20 @@
 <template>
   <div
-    style="padding: 0px 20px; max-width: 1200px; margin: 0 auto; text-align: left"
+    style="
+      padding: 0px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      text-align: left;
+    "
   >
     <h1 color="$ep-color-primary">{{ msg }}</h1>
     <el-form :model="form" label-width="auto" style="max-width: 600px">
+      <el-form-item label="Access Key">
+        <el-input v-model="form.ak" />
+      </el-form-item>
+      <el-form-item label="Secret Key">
+        <el-input type="password" show-password v-model="form.sk" />
+      </el-form-item>
       <el-form-item label="区域">
         <el-select v-model="form.region" placeholder="please select your zone">
           <el-option label="华北-北京" value="bj" />
@@ -13,12 +24,6 @@
           <el-option label="华东-苏州" value="su" />
           <el-option label="华中-武汉" value="fwh" />
         </el-select>
-      </el-form-item>
-      <el-form-item label="Access Key">
-        <el-input v-model="form.ak" />
-      </el-form-item>
-      <el-form-item label="Secret Key">
-        <el-input v-model="form.sk" />
       </el-form-item>
       <!-- <el-form-item label="Activity time">
         <el-col :span="11">
@@ -79,14 +84,20 @@
 <script lang="ts" setup>
 import { reactive } from "vue";
 import { ElMessage } from "element-plus";
+import {
+  delAccessToken,
+  // getAccessToken,
+  setAccessToken,
+  getAkSk,
+} from "../utils/auth";
 
 const msg = "系统设置";
 // do not use same name with ref
 const form = reactive({
   name: "",
-  ak: localStorage.getItem("ak") || "",
-  sk: localStorage.getItem("sk") || "",
-  region: localStorage.getItem("region") || "bj",
+  ak: "",
+  sk: "",
+  region: "bj",
   date1: "",
   date2: "",
   delivery: false,
@@ -95,6 +106,11 @@ const form = reactive({
   desc: "",
 });
 
+const { ak, sk, region } = getAkSk();
+form.ak = ak;
+form.sk = sk;
+form.region = region;
+
 const onSubmit = () => {
   console.log("submit!", form.ak, form.sk, form.region);
   // 保存到localStorage
@@ -102,9 +118,7 @@ const onSubmit = () => {
     ElMessage.warning("ak, sk, region is required");
     return;
   } else {
-    localStorage.setItem("ak", form.ak);
-    localStorage.setItem("sk", form.sk);
-    localStorage.setItem("region", form.region);
+    setAccessToken(`${form.ak}|${form.sk}|${form.region}`);
     ElMessage.success("保存成功");
   }
 };
@@ -113,9 +127,7 @@ const onReset = () => {
   form.ak = "";
   form.sk = "";
   form.region = "bj";
-  localStorage.removeItem("ak");
-  localStorage.removeItem("sk");
-  localStorage.removeItem("region");
+  delAccessToken();
   ElMessage.success("清除成功");
 };
 </script>

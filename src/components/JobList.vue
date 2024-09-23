@@ -119,6 +119,7 @@ import { Refresh } from "@element-plus/icons-vue";
 import { useStore } from "../store"; // 确保从 vuex 导入 useStore
 import { ActionTypes } from "../store/mutation-types";
 import { ResourcePool, Job } from "../store/types";
+import { getAkSk } from "../utils/auth";
 
 const store = useStore();
 
@@ -170,9 +171,7 @@ fetchResourcePools();
 
 // 统一获取 API Key 和 Region
 const getAPIConfig = () => {
-  const ak = localStorage.getItem("ak") || "";
-  const sk = localStorage.getItem("sk") || "";
-  const region = localStorage.getItem("region") || "bj";
+  const { ak, sk, region } = getAkSk();
   if (!ak || !sk || !region) {
     ElMessage.warning("在系统设置中配置API Key");
     return null;
