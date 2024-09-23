@@ -46,4 +46,7 @@ declare module 'vue' {
     Settings: typeof import('./components/Settings.vue')['default']
     Training: typeof import('./components/Training.vue')['default']
   }
+  export interface ComponentCustomProperties {
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
+  }
 }
