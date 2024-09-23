@@ -178,9 +178,9 @@ ${dpJob_command.replace('#!/bin/bash', '')}
 ${trainJob_command}
 `.trim();
 
-    console.log('=============================\n');
-    console.log('任务执行命令：', oneJobCommand);
-    console.log('\n=============================');
+    // console.log('=============================\n');
+    // console.log('任务执行命令：', oneJobCommand);
+    // console.log('\n=============================');
 
     return oneJobCommand
 }
@@ -214,9 +214,9 @@ ${ck_envs}
 ${command.replace('#!/bin/bash', '')}
 `.trim();
 
-    console.log('=============================\n');
-    console.log('任务执行命令：', oneJobCommand);
-    console.log('\n=============================');
+    // console.log('=============================\n');
+    // console.log('任务执行命令：', oneJobCommand);
+    // console.log('\n=============================');
 
     return oneJobCommand
 }
@@ -263,9 +263,9 @@ ${dp_envs}
 ${command.replace('#!/bin/bash', '')}
 `.trim();
 
-    console.log('=============================\n');
-    console.log('任务执行命令：', oneJobCommand);
-    console.log('\n=============================');
+    // console.log('=============================\n');
+    // console.log('任务执行命令：', oneJobCommand);
+    // console.log('\n=============================');
 
     return oneJobCommand
 }
@@ -314,9 +314,9 @@ ${train_envs}
 bash ${SH_PATH}
 `.trim();
 
-    console.log('=============================\n');
-    console.log('任务执行命令：', oneJobCommand);
-    console.log('\n=============================');
+    // console.log('=============================\n');
+    // console.log('任务执行命令：', oneJobCommand);
+    // console.log('\n=============================');
 
     return oneJobCommand
 }
