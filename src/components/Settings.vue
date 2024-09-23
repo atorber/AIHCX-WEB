@@ -109,7 +109,7 @@ const form = reactive({
 const { ak, sk, region } = getAkSk();
 form.ak = ak;
 form.sk = sk;
-form.region = region;
+form.region = region || 'bj';
 
 const onSubmit = () => {
   console.log("submit!", form.ak, form.sk, form.region);
