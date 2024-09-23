@@ -36,34 +36,52 @@ exports.handler = async (event, context, callback) => {
   //   "body": "请求体",
   //   "isBase64Encoded": "请求体是否为Base64编码，这里固定为false，暂不支持二进制格式"
   // }
-
+  // console.debug("请求参数：", event);
   const queryStringParameters = event.queryStringParameters;
-  const ak = event.headers.ak || queryStringParameters.ak;
-  const sk = event.headers.sk || queryStringParameters.sk;
-  const host = event.headers.host || queryStringParameters.host;
+  const ak = event.headers.Ak || queryStringParameters.ak;
+  const sk = event.headers.Sk || queryStringParameters.sk;
+  const host = event.headers.Apihost || queryStringParameters.host;
 
   const path = event.path;
-  let method = "GET";
   const uri = `https://${host}${path}`;
+  let method = event.httpMethod;
   const query = {};
   let body = {};
   let headers = {};
 
-  switch (path) {
-    case AIHC_APIS.getJobs: {
+  // 处理预检请求（OPTIONS 请求）
+  if (method === "OPTIONS") {
+    console.debug("进入OPTIONS");
+    const resp = JSON.stringify({
+      isBase64Encoded: false,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers":
+          "Content-Type, Authorization, ak, sk, apihost",
+      },
+      statusCode: 200,
+      body: "",
+    });
+    callback(null, resp);
+    return;
+  }
+
+  try {
+    if (path === AIHC_APIS.getJobs && method === "GET") {
+      console.debug("进入getJobs");
       const { resourcePoolId } = queryStringParameters;
       query.resourcePoolId = resourcePoolId;
       headers.Host = host;
       const signature = getSignature(ak, sk, method, path, query, headers);
       headers.Authorization = signature;
-      break;
-    }
-    case AIHC_APIS.getResourcepools:
+    } else if (path === AIHC_APIS.getResourcepools && method === "GET") {
+      console.debug("进入getResourcepools");
       headers.Host = host;
       const signature = getSignature(ak, sk, method, path, query, headers);
       headers.Authorization = signature;
-      break;
-    case AIHC_APIS.createJob: {
+    } else if (path === AIHC_APIS.createJob && method === "POST") {
+      console.debug("进入createJob");
       const { resourcePoolId } = queryStringParameters;
       query.resourcePoolId = resourcePoolId;
       method = "POST";
@@ -72,23 +90,22 @@ exports.handler = async (event, context, callback) => {
       headers["Content-Type"] = "application/json";
       const signature = getSignature(ak, sk, method, path, query, headers);
       headers.Authorization = signature;
-      break;
-    }
-    default:
+    } else {
+      console.debug("未找到匹配的路径");
       callback(
         null,
         JSON.stringify({
           isBase64Encoded: false,
           headers: {
             "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
           },
           statusCode: 200,
           body: "未找到匹配的路径",
         })
       );
-  }
+    }
 
-  try {
     const opt = {
       method,
       uri,
@@ -103,6 +120,7 @@ exports.handler = async (event, context, callback) => {
       isBase64Encoded: false,
       headers: {
         "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       },
       statusCode: 200,
       body: JSON.stringify(res),
@@ -115,9 +133,10 @@ exports.handler = async (event, context, callback) => {
       isBase64Encoded: false,
       headers: {
         "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       },
       statusCode: 200,
-      body: err,
+      body: JSON.stringify(err),
     });
     callback(null, resp);
   }
