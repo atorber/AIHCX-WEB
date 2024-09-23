@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { delAccessToken, getAccessToken } from './auth.js'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import type { Action } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
 
 // 创建 axios 实例
 const request = axios.create({
