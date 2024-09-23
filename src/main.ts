@@ -1,5 +1,6 @@
-import { createApp } from "vue";
+import { createApp, Plugin } from "vue";
 import App from "./App.vue";
+import { store, key } from './store/index.js'
 
 // import "~/styles/element/index.scss";
 
@@ -17,4 +18,5 @@ import "element-plus/theme-chalk/src/message.scss";
 
 const app = createApp(App);
 // app.use(ElementPlus);
+app.use(store as unknown as Plugin, key);
 app.mount("#app");
