@@ -5,6 +5,7 @@ import axios from 'axios';
 import { State, Job, ResourcePool, k8sRecord, SystemPod } from './types.js';
 import { MutationTypes, ActionTypes } from './mutation-types.js';
 import { getAccessToken, getAkSk } from '../utils/auth.js'
+import { ElMessage } from "element-plus";
 
 // 定义 Mutations 接口
 export interface Mutations {
@@ -63,44 +64,58 @@ const mutations: Mutations = {
 const actions: Actions = {
     async [ActionTypes.FETCH_JOBS]({ commit }, resourcePoolId: string) {
         try {
-            const { ak, sk, region } = getAkSk();
-            const response = await axios.get(
-                `https://6d6q5xfg0drsm.cfc-execute.bj.baidubce.com/api/v1/aijobs`,
-                {
-                    params: {
-                        resourcePoolId,
-                    },
-                    headers: {
-                        ak,
-                        sk,
-                        apihost: `aihc.${region}.baidubce.com`,
+            const token = getAccessToken()
+            let jobs: Job[] = [];
+            if (!token) {
+                console.error("token is not set");
+                ElMessage.warning("在系统设置中配置API Key");
+            } else {
+                const response = await axios.get(
+                    `https://6d6q5xfg0drsm.cfc-execute.bj.baidubce.com/api/v1/aijobs`,
+                    {
+                        params: {
+                            resourcePoolId,
+                        },
+                        headers: {
+                            Authorization: `Bearer ${getAccessToken()}`,
+                        }
                     }
-                }
-            );
-            commit(MutationTypes.UPDATE_JOB_LIST, response.data.result.jobs);
+                );
+                jobs = response.data.result.jobs
+            }
+            commit(MutationTypes.UPDATE_JOB_LIST, jobs);
         } catch (error) {
             console.error("Error fetching jobs:", error);
+            ElMessage.error("获取任务列表失败");
         }
     },
 
     async [ActionTypes.FETCH_RESOURCEPOOLS]({ commit }) {
         try {
-            const { ak, sk, region } = getAkSk();
-            const response = await axios.get(
-                `https://6d6q5xfg0drsm.cfc-execute.bj.baidubce.com/api/v1/resourcepools`,
-                {
-                    params: {
-                    },
-                    headers: {
-                        ak,
-                        sk,
-                        apihost: `aihc.${region}.baidubce.com`,
+            const token = getAccessToken()
+            let resourcePools: ResourcePool[] = [];
+
+            if (!token) {
+                console.info("token is not set");
+                ElMessage.warning("在系统设置中配置API Key");
+
+            } else {
+                const response = await axios.get(
+                    `https://6d6q5xfg0drsm.cfc-execute.bj.baidubce.com/api/v1/resourcepools`,
+                    {
+                        params: {
+                        },
+                        headers: {
+                            Authorization: `Bearer ${getAccessToken()}`,
+                        }
                     }
-                }
-            );
-            commit(MutationTypes.UPDATE_RESOURCEPOOLS, response.data.result.resourcePools);
+                );
+                resourcePools = response.data.result.resourcePools
+            }
+            commit(MutationTypes.UPDATE_RESOURCEPOOLS, resourcePools);
         } catch (error) {
             console.error("Error fetching resource pools:", error);
+            ElMessage.error("获取资源池失败");
         }
     },
 };

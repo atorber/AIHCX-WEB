@@ -113,13 +113,11 @@
 
 <script lang="ts" setup>
 import { ref, computed } from "vue";
-import axios from "axios";
 import { ElMessage } from "element-plus";
 import { Refresh } from "@element-plus/icons-vue";
 import { useStore } from "../store"; // 确保从 vuex 导入 useStore
 import { ActionTypes } from "../store/mutation-types";
 import { ResourcePool, Job } from "../store/types";
-import { getAkSk } from "../utils/auth";
 
 const store = useStore();
 
@@ -137,18 +135,22 @@ const resourcepoolList = computed<ResourcePool[]>(
 
 // 获取资源池列表的 Action
 const fetchResourcePools = async () => {
-  try {
-    isLoading.value = true;
-    await store.dispatch(ActionTypes.FETCH_RESOURCEPOOLS);
-    if (resourcepoolList.value.length > 0) {
-      resourcePoolId.value = resourcepoolList.value[0].metadata.id;
-      refreshJobs();
+  if (resourcepoolList.value.length > 0) {
+    resourcePoolId.value = resourcepoolList.value[0].metadata.id;
+  } else {
+    try {
+      isLoading.value = true;
+      await store.dispatch(ActionTypes.FETCH_RESOURCEPOOLS);
+      if (resourcepoolList.value.length > 0) {
+        resourcePoolId.value = resourcepoolList.value[0].metadata.id;
+        refreshJobs();
+      }
+    } catch (error) {
+      console.error("Error fetching resource pools:", error);
+      ElMessage.error("获取资源池失败");
+    } finally {
+      isLoading.value = false;
     }
-  } catch (error) {
-    console.error("Error fetching resource pools:", error);
-    ElMessage.error("获取资源池失败");
-  } finally {
-    isLoading.value = false;
   }
 };
 
@@ -168,74 +170,6 @@ const refreshJobs = async () => {
 };
 
 fetchResourcePools();
-
-// 统一获取 API Key 和 Region
-const getAPIConfig = () => {
-  const { ak, sk, region } = getAkSk();
-  if (!ak || !sk || !region) {
-    ElMessage.warning("在系统设置中配置API Key");
-    return null;
-  }
-  return { ak, sk, region };
-};
-
-const copyJob = (id: string) => {
-  const apiConfig = getAPIConfig();
-  if (!apiConfig) return;
-  const { ak, sk, region } = apiConfig;
-  const body = {
-    queue: "default",
-    priority: "normal",
-    jobFramework: "PyTorchJob",
-    name: "test-api-llama2-7b-4",
-    jobSpec: {
-      command: "sleep 3d",
-      image:
-        "registry.baidubce.com/aihc-aiak/aiak-megatron:ubuntu20.04-cu11.8-torch1.14.0-py38_v1.2.7.12_release",
-      replicas: 1,
-      resources: [
-        {
-          name: "baidu.com/a800_80g_cgpu",
-          quantity: 8,
-        },
-      ],
-      enableRDMA: true,
-      envs: [
-        {
-          name: "CUDA_DEVICE_MAX_CONNECTIONS",
-          value: "1",
-        },
-      ],
-    },
-    datasources: [
-      {
-        type: "pfs",
-        name: "pfs-oYQuh4",
-        sourcePath: "/",
-        mountPath: "/mnt/cluster",
-      },
-    ],
-  };
-  try {
-    axios.post(
-      `https://6d6q5xfg0drsm.cfc-execute.bj.baidubce.com/api/v1/aijobs`,
-      body,
-      {
-        params: {
-          resourcePoolId: id,
-        },
-        headers: {
-          ak,
-          sk,
-          apihost: `aihc.${region}.baidubce.com`,
-        },
-      }
-    );
-  } catch (error) {
-    console.error("Error copying job:", error);
-    ElMessage.error("复制任务失败");
-  }
-};
 </script>
 
 <style>

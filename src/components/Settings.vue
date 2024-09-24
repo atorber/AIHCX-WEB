@@ -10,10 +10,10 @@
     <h1 color="$ep-color-primary">{{ msg }}</h1>
     <el-form :model="form" label-width="auto" style="max-width: 600px">
       <el-form-item label="Access Key">
-        <el-input v-model="form.ak" />
+        <el-input v-model="form.ak" placeholder="输入百度云Access Key" />
       </el-form-item>
       <el-form-item label="Secret Key">
-        <el-input type="password" show-password v-model="form.sk" />
+        <el-input type="password" placeholder="输入百度云Secret Key" show-password v-model="form.sk" />
       </el-form-item>
       <el-form-item label="区域">
         <el-select v-model="form.region" placeholder="please select your zone">

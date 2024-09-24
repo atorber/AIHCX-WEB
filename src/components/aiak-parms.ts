@@ -270,7 +270,15 @@ ${command.replace('#!/bin/bash', '')}
     return oneJobCommand
 }
 
-export function generateTraining(aiakJobConfig: any): string {
+export interface AiakTrainingJob {
+    name: string,
+    command: string,
+    image: string,
+    replicas: string,
+    mountPath: string
+}
+
+export function generateTraining(aiakJobConfig: any): AiakTrainingJob {
     const envs = generateParameter(aiakJobConfig)
 
     let SH_PATH = `/workspace/AIAK-Training-LLM/examples/${envs.MODEL_NAME.split('-')[0]}/pretrain/pretrain_${envs.MODEL_NAME.replace(/-/g, '_')}.sh`;
@@ -298,7 +306,7 @@ export CUDA_DEVICE_MAX_CONNECTIONS=1
     }
 
     // 生成单个任务的 Shell 脚本
-    const oneJobCommand = `
+    const command = `
 #!/bin/bash
 
 # ===========使用以下信息在百舸控制台创建任务==========
@@ -315,10 +323,16 @@ bash ${SH_PATH}
 `.trim();
 
     // console.log('=============================\n');
-    // console.log('任务执行命令：', oneJobCommand);
+    // console.log('任务执行命令：', command);
     // console.log('\n=============================');
 
-    return oneJobCommand
+    return {
+        name: envs.TRAIN_JOB_NAME,
+        command,
+        image: envs.IMAGE,
+        replicas: envs.REPLICAS,
+        mountPath: envs.MOUNT_PATH
+    }
 }
 
 // 生成 AIAK 参数，备份

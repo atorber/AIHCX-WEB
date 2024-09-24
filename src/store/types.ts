@@ -20,6 +20,9 @@ export interface Job {
   
   export interface ResourcePool {
     metadata: ResourcePoolMetadata;
+    spec: {
+      associatedPfsId:string;
+    }
     // 添加其他必要的字段
   }
   
