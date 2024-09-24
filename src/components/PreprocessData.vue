@@ -90,30 +90,6 @@
 
       <el-row :gutter="20">
         <el-col :span="8">
-          <el-form-item label="TP" prop="tp">
-            <el-input-number
-              v-model="formModel.tp"
-              :min="1"
-              placeholder="请输入 TP 值，必须为正整数"
-              style="width: 100%"
-            ></el-input-number>
-          </el-form-item>
-        </el-col>
-
-        <el-col :span="8">
-          <el-form-item label="PP" prop="pp">
-            <el-input-number
-              v-model="formModel.pp"
-              :min="1"
-              placeholder="请输入 PP 值，必须为正整数"
-              style="width: 100%"
-            ></el-input-number>
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-row :gutter="20">
-        <el-col :span="8">
           <el-form-item label="数据集 URL" prop="datasetUrl">
             <el-input
               v-model="formModel.datasetUrl"
