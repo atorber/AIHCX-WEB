@@ -38,9 +38,16 @@ exports.handler = async (event, context, callback) => {
   // }
   // console.debug("请求参数：", event);
   const queryStringParameters = event.queryStringParameters;
+  const authorization = event.headers.Authorization;
+  if (authorization) {
+    const auth = authorization.replace("Bearer ", "").split("|");
+    event.headers.Ak = auth[0];
+    event.headers.Sk = auth[1];
+    event.headers.Region = auth[2];
+  }
   const ak = event.headers.Ak || queryStringParameters.ak;
   const sk = event.headers.Sk || queryStringParameters.sk;
-  const host = event.headers.Apihost || queryStringParameters.host;
+  const host = `aihc.${event.headers.Region}.baidubce.com` || queryStringParameters.host;
 
   const path = event.path;
   const uri = `https://${host}${path}`;
@@ -58,7 +65,7 @@ exports.handler = async (event, context, callback) => {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Access-Control-Allow-Headers":
-          "Content-Type, Authorization, ak, sk, apihost",
+          "Content-Type, Authorization, ak, sk, region, Authorization",
       },
       statusCode: 200,
       body: "",
