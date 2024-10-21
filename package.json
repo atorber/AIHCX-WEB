@@ -1,7 +1,7 @@
 {
   "name": "aihcx-web",
   "private": true,
-  "version": "1.0.3",
+  "version": "1.2.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -12,9 +12,11 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
     "@vueuse/core": "^10.11.1",
+    "axios": "^1.7.7",
     "dompurify": "^3.1.6",
     "element-plus": "^2.6.2",
-    "vue": "^3.4.21"
+    "vue": "^3.4.21",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
     "@iconify-json/ep": "^1.1.15",
