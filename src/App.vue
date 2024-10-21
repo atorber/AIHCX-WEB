@@ -3,13 +3,8 @@
     <BaseHeader />
     <div class="flex main-container">
       <!-- <BaseSide /> -->
-      <el-menu
-        default-active="5"
-        class="el-menu-vertical-demo"
-        @open="handleOpen"
-        @close="handleClose"
-        @select="handSelect"
-      >
+      <el-menu default-active="5" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
+        @select="handSelect">
         <el-menu-item index="5">
           <el-icon>
             <setting />
@@ -27,6 +22,12 @@
             <setting />
           </el-icon>
           <template #title>AIAK训练任务</template>
+        </el-menu-item>
+        <el-menu-item index="10">
+          <el-icon>
+            <setting />
+          </el-icon>
+          <template #title>自定义训练任务</template>
         </el-menu-item>
         <el-menu-item index="2">
           <el-icon><icon-menu /></el-icon>
@@ -53,13 +54,17 @@
       </el-menu>
       <div w="full" py="4">
         <Home msg="AIHCX" v-if="currentKey == '2'" />
-        <ConvertCheckpoint msg="AIHCX" v-if="currentKey == '5'" />
-        <PreprocessData msg="AIHCX" v-if="currentKey == '6'" />
-        <Training msg="AIHCX" v-if="currentKey == '7'" />
-        <JobList msg="AIHCX" v-if="currentKey == '8'" />
-        <Settings msg="AIHCX" v-if="currentKey == '9'" />
-        <!-- <Logos my="4" /> -->
-        <!-- <HelloWorld msg="Hello Vue 3 + Element Plus + Vite" /> -->
+        <ConvertCheckpoint msg="AIHCX" v-else-if="currentKey == '5'" />
+        <PreprocessData msg="AIHCX" v-else-if="currentKey == '6'" />
+        <Training msg="AIHCX" v-else-if="currentKey == '7'" />
+        <JobList msg="AIHCX" v-else-if="currentKey == '8'" />
+        <Settings msg="AIHCX" v-else-if="currentKey == '9'" />
+        <TrainingCustom msg="AIHCX" v-else-if="currentKey == '10'" />
+        <div v-else>
+          <Logos my="4" />
+          <h1>Comeing soon...</h1>
+        </div>
+        <!-- <HelloWorld v-else msg="Hello Vue 3 + Element Plus + Vite" /> -->
       </div>
     </div>
   </el-config-provider>
