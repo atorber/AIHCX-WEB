@@ -68,7 +68,7 @@ export function generateParameter(aiakJobConfig: any): {
     const MODEL_NAME = aiakJobInfo['MODEL_NAME'];
     let TP = aiakJobInfo['TP'];
     let PP = aiakJobInfo['PP'];
-    const JSON_KEYS = aiakJobInfo['JSON_KEYS'] || '';
+    const JSON_KEYS = aiakJobInfo['JSON_KEYS'] || 'text';
     const IMAGE = aiakJobInfo['IMAGE'];
     const TRAINING_PHASE = aiakJobInfo['TRAINING_PHASE'];
     const REPLICAS = aiakJobInfo['REPLICAS'] || models[MODEL_NAME][3];

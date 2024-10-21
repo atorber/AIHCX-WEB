@@ -36,28 +36,7 @@
       </el-row>
       <el-row :gutter="20">
         <el-col :span="8">
-          <el-form-item label="数据集名称" prop="datasetName">
-            <el-select v-model="formModel.basicInfo.datasetName" placeholder="请选择数据集名称">
-              <el-option v-for="dataset in datasetOptions" :key="dataset" :label="dataset" :value="dataset"></el-option>
-            </el-select>
-          </el-form-item>
-        </el-col>
-
-        <el-col :span="8">
-          <el-form-item required label="镜像" prop="image">
-            <el-input v-model="formModel.basicInfo.image" placeholder="请输入镜像地址"></el-input>
-          </el-form-item>
-        </el-col>
-
-        <el-col :span="8">
-          <el-form-item required label="挂载路径" prop="mountPath">
-            <el-input v-model="formModel.basicInfo.mountPath" placeholder="请输入挂载路径"></el-input>
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-row :gutter="20">
-        <el-col :span="8">
-          <el-form-item label="副本数" prop="replicas">
+          <el-form-item label="训练机数" prop="replicas">
             <el-input-number v-model="formModel.basicInfo.replicas" :min="1" placeholder="请输入训练机数"
               style="width: 100%"></el-input-number>
           </el-form-item>
@@ -65,35 +44,28 @@
 
         <el-col :span="8">
           <el-form-item label="TP" prop="tp">
-            <el-input-number v-model="formModel.basicInfo.tp" :min="1" placeholder="请输入 TP 值，必须为正整数"
-              style="width: 100%"></el-input-number>
+            <el-input-number v-model="formModel.distributedParams.tensorModelParallelSize" :min="1"
+              placeholder="请输入 TP 值，必须为正整数" style="width: 100%"></el-input-number>
           </el-form-item>
         </el-col>
 
         <el-col :span="8">
           <el-form-item label="PP" prop="pp">
-            <el-input-number v-model="formModel.basicInfo.pp" :min="1" placeholder="请输入 PP 值，必须为正整数"
-              style="width: 100%"></el-input-number>
+            <el-input-number v-model="formModel.distributedParams.pipelineModelParallelSize" :min="1"
+              placeholder="请输入 PP 值，必须为正整数" style="width: 100%"></el-input-number>
           </el-form-item>
         </el-col>
       </el-row>
-
       <el-row :gutter="20">
-        <el-col :span="8">
-          <el-form-item label="模型 URL" prop="modelUrl">
-            <el-input v-model="formModel.basicInfo.modelUrl" placeholder="请输入模型 URL，以bos:/开头"></el-input>
-          </el-form-item>
-        </el-col>
 
         <el-col :span="8">
-          <el-form-item label="数据集 URL" prop="datasetUrl">
-            <el-input v-model="formModel.basicInfo.datasetUrl" placeholder="请输入数据集 URL，以bos:/开头"></el-input>
+          <el-form-item required label="权重路径" prop="mountPath">
+            <el-input v-model="formModel.checkpointConfig.load" placeholder="请选择权重路径"></el-input>
           </el-form-item>
         </el-col>
-
-        <el-col v-if="formModel.basicInfo.trainingPhase === 'pretrain'" :span="8">
-          <el-form-item required label="JSON Keys" prop="jsonKeys">
-            <el-input v-model="formModel.basicInfo.jsonKeys" placeholder="请输入 JSON Keys"></el-input>
+        <el-col :span="8">
+          <el-form-item required label="TOKENIZER" prop="mountPath">
+            <el-input v-model="formModel.dataParams.hfTokenizerPath" placeholder="请选择TOKENIZER路径"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -432,8 +404,8 @@
 
             <el-col :span="8">
               <el-form-item label="min-lr" prop="minLr">
-                <el-input-number v-model="formModel.optimizerConfig.minLr" :min="0" :step="0.0001" placeholder="请输入最小学习率"
-                  style="width: 100%"></el-input-number>
+                <el-input-number v-model="formModel.optimizerConfig.minLr" :min="0" :step="0.0001"
+                  placeholder="请输入最小学习率" style="width: 100%"></el-input-number>
               </el-form-item>
             </el-col>
 
@@ -1234,18 +1206,8 @@ const formModel = reactive({
   basicInfo: {
     modelName: "llama2-7b",
     replicas: 1,
-    version: timeStr(),
+    version: timeStr() + '.sh',
     trainingPhase: "sft",
-    tp: undefined as number | undefined,
-    pp: undefined as number | undefined,
-    image:
-      "registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.1.5_release",
-    mountPath: "/workspace/pfs",
-    modelUrl: "",
-    datasetUrl: "",
-    datasetName: "alpaca_zh-llama3-train",
-    jsonKeys: "text",
-    split: '969,30,1'
   },
 
   // 1）数据参数
@@ -1484,13 +1446,7 @@ const datasetOptions = computed(() => {
 watch(
   () => formModel.basicInfo.trainingPhase,
   (newPhase) => {
-    if (newPhase === "pretrain") {
-      formModel.basicInfo.datasetName = pretrainDatasets[0];
-    } else if (newPhase === "sft") {
-      formModel.basicInfo.datasetName = sftDatasets[0];
-    } else {
-      formModel.basicInfo.datasetName = "";
-    }
+    console.log("newPhase", newPhase);
   }
 );
 
@@ -1532,7 +1488,7 @@ let job_info: AiakTrainingJob = {} as AiakTrainingJob;
 // 提交表单
 const handleSubmit = () => {
   console.log("submit!");
-  console.log(formModel);
+  console.log(JSON.stringify(formModel));
   formRef.value.validate((valid: boolean) => {
     if (valid) {
       const aiakJobConfig = {
@@ -1540,14 +1496,6 @@ const handleSubmit = () => {
         REPLICAS: formModel.basicInfo.replicas,
         VERSION: formModel.basicInfo.version,
         TRAINING_PHASE: formModel.basicInfo.trainingPhase,
-        TP: formModel.basicInfo.tp,
-        PP: formModel.basicInfo.pp,
-        DATASET_NAME: formModel.basicInfo.datasetName,
-        IMAGE: formModel.basicInfo.image,
-        MOUNT_PATH: formModel.basicInfo.mountPath,
-        MODEL_URL: formModel.basicInfo.modelUrl,
-        DATASET_URL: formModel.basicInfo.datasetUrl,
-        JSON_KEYS: formModel.basicInfo.jsonKeys,
       };
 
       try {
@@ -1586,7 +1534,7 @@ const handleReset = () => {
   if (formRef.value) {
     formRef.value.resetFields();
     generatedParams.value = ""; // 可选：清除生成的参数展示
-    formModel.basicInfo.version = timeStr(); // 重置版本号
+    formModel.basicInfo.version = timeStr() + '.sh'; // 重置版本号
     ElMessage.success("表单已重置");
   }
 };
