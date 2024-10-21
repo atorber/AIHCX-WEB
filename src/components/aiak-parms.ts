@@ -455,7 +455,7 @@ export function generateAiakAllInOneParameter(aiakJobConfig: any): string {
     const oneJobCommand = `
 #!/bin/bash
 
-# 任务名称: ${TRAINING_PHASE}-${MODEL_NAME}-ck2mc-dp-train-${VERSION}
+# 任务名称: ${MODEL_NAME}-ck2mc-dp-train-${VERSION}
 # 镜像: ${IMAGE}
 # 环境变量: CUDA_DEVICE_MAX_CONNECTIONS=1
 # 挂载路径: ${MOUNT_PATH}
