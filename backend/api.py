@@ -5,6 +5,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 
@@ -50,8 +51,24 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# 添加CORSMiddleware
+origins = [
+    "http://localhost",
+    "http://localhost:8000",
+    "http://localhost:3000",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # 挂载静态文件目录
-app.mount("/dist", StaticFiles(directory="dist"), name="dist")
+app.mount("/dist", StaticFiles(directory="dist/assets"), name="dist")
 
 # 定义RunParameters模型
 
