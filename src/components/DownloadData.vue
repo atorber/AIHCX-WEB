@@ -3,11 +3,11 @@
     <h1 color="$ep-color-primary">{{ msg }}</h1>
 
     <!-- 表单开始 -->
-    <el-form ref="formRef" :model="formModel" @submit.prevent="handleSubmit" label-width="120px"
+    <el-form ref="formRef" :model="formModel" :rules="rules" @submit.prevent="handleSubmit" label-width="120px"
       label-position="left">
       <el-row :gutter="20">
         <el-col :span="24">
-          <el-form-item label="来源" prop="trainingPhase">
+          <el-form-item label="来源" prop="source">
             <el-radio-group v-model="formModel.source" aria-label="label position">
               <el-radio-button value="custom">自定义</el-radio-button>
               <el-radio-button value="publicCkpt">公共权重</el-radio-button>
@@ -18,30 +18,44 @@
       </el-row>
       <el-row :gutter="20">
         <!-- 第一列 -->
-        <el-col v-if="source === 'publicCkpt'" :span="8">
-          <el-form-item label="模型" prop="modelName">
+        <el-col v-if="formModel.source === 'publicCkpt'" :span="8">
+          <el-form-item label="模型格式" prop="name">
+            <el-select v-model="formModel.ckptFormat" placeholder="请选择模型格式">
+              <el-option v-for="ckptFormat in ckptFormats" :key="ckptFormat" :label="ckptFormat" :value="ckptFormat"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col v-if="formModel.source === 'publicCkpt'" :span="8">
+          <el-form-item label="模型" prop="name">
             <el-select v-model="formModel.name" placeholder="请选择模型名称">
               <el-option v-for="model in modelOptions" :key="model" :label="model" :value="model"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col v-if="source === 'publicDataset'" :span="8">
-          <el-form-item label="数据集" prop="modelName">
-            <el-select v-model="formModel.name" placeholder="请选择模型名称">
+        <el-col v-if="formModel.source === 'publicDataset'" :span="8">
+          <el-form-item label="数据格式" prop="name">
+            <el-select v-model="formModel.datasetFormat" placeholder="请选择数据格式">
+              <el-option v-for="datasetFormat in datasetFormats" :key="datasetFormat" :label="datasetFormat" :value="datasetFormat"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col v-if="formModel.source === 'publicDataset'" :span="8">
+          <el-form-item label="数据集" prop="name">
+            <el-select v-model="formModel.name" placeholder="请选择数据集名称">
               <el-option v-for="model in modelOptions" :key="model" :label="model" :value="model"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="8">
-          <el-form-item required label="下载地址" prop="datasetUrl">
-            <el-input :disabled="source !== 'custom'" v-model="formModel.downloadUrl" placeholder="请输入URL，以bos:/开头"></el-input>
+          <el-form-item required label="下载地址" prop="downloadUrl">
+            <el-input :disabled="formModel.source !== 'custom'" v-model="formModel.downloadUrl" placeholder="请输入URL，以bos:/开头"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
 
       <el-row :gutter="20">
         <el-col :span="8">
-          <el-form-item required label="保存路径" prop="mountPath">
+          <el-form-item required label="保存路径" prop="savePath">
             <el-input v-model="formModel.savePath" placeholder="请选择保存路径"></el-input>
           </el-form-item>
         </el-col>
@@ -86,6 +100,8 @@ interface DownloadData {
   name: string;
   downloadUrl: string;
   savePath: string;
+  ckptFormat: string;
+  datasetFormat: string;
 }
 
 const source = ref('custom')
@@ -93,8 +109,10 @@ const source = ref('custom')
 const formModel:DownloadData = reactive({
   source: "custom",
   name: "llama2-70b",
-  downloadUrl: "",
+  downloadUrl: "bos://",
   savePath: "/workspace/pfs",
+  ckptFormat: "HF",
+  datasetFormat: "原始数据",
 });
 
 const msg = ref("数据集&权重下载");
@@ -132,13 +150,19 @@ const modelOptions = [
 const pretrainDatasets = ["pile_llama_test", "WuDaoCorpus2.0_base_sample"];
 const sftDatasets = ["alpaca_zh-llama3-train", "alpaca_zh-llama3-valid"];
 
+// 权重格式选项
+const ckptFormats = ["HF", "MCore"];
+
+// 数据集格式选项
+const datasetFormats = ["原始数据", "预处理数据"];
+
 // 监听 trainingPhase 变化，重置 datasetName
 watch(
   () => formModel.source,
   (newPhase) => {
-    if (newPhase === "dataset") {
+    if (newPhase === "publicCkpt") {
       formModel.name = pretrainDatasets[0];
-    } else if (newPhase === "model") {
+    } else if (newPhase === "publicDataset") {
       formModel.name = sftDatasets[0];
     } else {
       formModel.name = "";
@@ -148,25 +172,9 @@ watch(
 
 // 定义表单验证规则
 const rules: FormRules = {
-  modelName: [{ required: true, message: "请选择模型名称", trigger: "blur" }],
-  replicas: [
-    { required: true, message: "请输入训练机数", trigger: "blur" },
-    { type: "number", min: 1, message: "副本数必须为正整数", trigger: "blur" },
-  ],
-  version: [
-    { required: true, message: "请输入版本", trigger: "blur" },
-    {
-      pattern: /^[A-Za-z0-9\-]+$/,
-      message: "版本只能包含数字、字母和中划线",
-      trigger: "blur",
-    },
-  ],
-  trainingPhase: [
-    { required: true, message: "请选择训练阶段", trigger: "blur" },
-  ],
-  image: [{ required: true, message: "请输入镜像地址", trigger: "blur" }],
-  mountPath: [{ required: true, message: "请输入挂载路径", trigger: "blur" }],
-  // 根据需要为其他字段添加更多规则
+  source:[{ required: true, message: "请选择数据来源", trigger: "blur" }],
+  name: [{ required: true, message: "请输下载地址", trigger: "blur" }],
+  downloadUrl: [{ required: true, message: "请输入保存路径", trigger: "blur" }],
 };
 
 // 引用表单实例
@@ -187,6 +195,7 @@ const handleSubmit = () => {
         console.error(error);
       }
     } else {
+      console.log("error submit!!", formRef);
       ElMessage.error("有必填项未填写");
       return false;
     }
