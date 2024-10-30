@@ -1,6 +1,7 @@
 import { createApp, Plugin } from "vue";
 import App from "./App.vue";
 import { store, key } from './store/index.js'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 // import "~/styles/element/index.scss";
 
@@ -17,6 +18,9 @@ import "uno.css";
 import "element-plus/theme-chalk/src/message.scss";
 
 const app = createApp(App);
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+    app.component(key, component)
+  }
 // app.use(ElementPlus);
 app.use(store as unknown as Plugin, key);
 app.mount("#app");

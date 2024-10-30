@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { getScript } from './traing'
+import { isNumber } from 'element-plus/es/utils';
 
 /**
  * 将 PascalCase 或 camelCase 转换为 kebab-case
@@ -29,16 +30,6 @@ export function kebabToCamel(str: string): string {
         // 拼接成一个整体
         .join('');
 }
-
-// 示例使用
-// const pascalCase = "TrainDataPath";
-// const kebabCase = camelToKebab(pascalCase);
-// console.log(kebabCase); // 输出: train-data-path
-
-// const convertedPascal = kebabToCamel(kebabCase);
-// console.log(convertedPascal); // 输出: TrainDataPath
-
-// scriptConverter.ts
 
 export interface TrainingParameters {
     basicInfo: {
@@ -587,6 +578,12 @@ export function parseShellScriptToJSON(shellScript?: string): TrainingParameters
             if (paramsRaw[k]) {
                 console.log(key, k, paramsRaw[k]);
                 value[k] = paramsRaw[k];
+
+                // if (typeof value[k] === 'number') {
+                //     value[k] = Number(paramsRaw[k]);
+                // } else {
+                //     value[k] = paramsRaw[k];
+                // }
             }
         }
     }

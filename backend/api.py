@@ -2,7 +2,7 @@
 # flake8: noqa
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, APIRouter
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,13 +15,13 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 import json
+import os
 
 logging.basicConfig(level=logging.INFO)
 
 # 配置日志
 logger = logging.getLogger("api")
 logger.setLevel(logging.INFO)
-
 
 # 创建格式化器
 formatter = logging.Formatter(
@@ -53,7 +53,10 @@ app = FastAPI(
 
 # 添加CORSMiddleware
 origins = [
+    "*",
     "http://localhost",
+    "http://127.0.0.1",
+    "http://127.0.0.1:8000",
     "http://localhost:8000",
     "http://localhost:3000",
     "http://localhost:8080",
@@ -67,10 +70,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 挂载静态文件目录
-app.mount("/dist", StaticFiles(directory="dist/assets"), name="dist")
-
-# 定义RunParameters模型
+# 定义 RunParameters 模型
 
 
 class RunParameters(BaseModel):
@@ -158,6 +158,9 @@ tasks_lock = Lock()
 # 线程池执行器
 executor = ThreadPoolExecutor(max_workers=4)
 
+# 创建 API 路由器
+api_router = APIRouter(prefix="/api", tags=["API"])
+
 
 def generate_strategies_task(task_id: str, params: RunParameters):
     logger.info(f"任务 {task_id} 开始执行")
@@ -187,7 +190,20 @@ def generate_strategies_task(task_id: str, params: RunParameters):
         args.moe_router_topk = params.moeRouterTopk if params.moeRouterTopk is not None else 2
 
         # 调用 main.py 生成策略
-        
+        # 这里需要实现实际的调用逻辑，例如使用 subprocess 运行脚本
+        # 示例：
+        # import subprocess
+        # command = f"python main.py --model-name {args.model_name} --num-gpus {args.num_gpus} ..."
+        # subprocess.run(command, shell=True, check=True)
+
+        # 模拟任务执行
+        import time
+        time.sleep(5)  # 模拟长时间运行的任务
+
+        # 假设任务成功，更新任务状态
+        with tasks_lock:
+            tasks[task_id]['status'] = 'completed'
+            tasks[task_id]['result'] = {"message": "策略生成成功"}
 
     except Exception as e:
         logger.error(f"发生未知错误: {e}")
@@ -196,7 +212,7 @@ def generate_strategies_task(task_id: str, params: RunParameters):
             tasks[task_id]['error'] = str(e)
 
 
-@app.post("/run", summary="生成策略并估计吞吐量")
+@api_router.post("/run", summary="生成策略并估计吞吐量")
 def run_main(params: RunParameters):
     print(params)
     logger.info(f"接收到请求: {params}")
@@ -223,7 +239,27 @@ def run_main(params: RunParameters):
     return {"task_id": task_id}
 
 
-@app.get("/status/{task_id}", summary="查询任务状态")
+@api_router.get("/status", summary="查询任务列表")
+def get_status_list():
+    """
+    查询所有任务的状态和结果。
+    """
+    with tasks_lock:
+        res = {
+            task_id: {
+                "status": task['status'],
+                "result": task['result'],
+                "error": task['error']
+            }
+            for task_id, task in tasks.items()
+        }
+
+    logger.info(f"请求返回结果: {json.dumps(res)}")
+
+    return res
+
+
+@api_router.get("/status/{task_id}", summary="查询任务状态")
 def get_status(task_id: str):
     """
     查询指定任务ID的状态和结果。
@@ -238,7 +274,8 @@ def get_status(task_id: str):
         "task_id": task_id,
         "status": task['status'],
         "result": task['result'],
-        "error": task['error']
+        "error": task['error'],
+        "message": "ok"
     }
 
     logger.info(f"任务 {task_id} 状态: {task['status']}")
@@ -247,10 +284,70 @@ def get_status(task_id: str):
     return res
 
 
+@api_router.get("/scripts", summary="获取任务脚本列表")
+def get_scripts():
+    """
+    获取任务脚本列表。
+    """
+    return {
+        "list": [
+            {
+                "name": "llama2-70b",
+                "description": "Llama2-70b模型"
+            }
+        ],
+        "message": "ok"
+    }
+
+
+@api_router.get("/scripts/{script_name}", summary="获取任务脚本")
+def get_script(script_name: str):
+    return {
+        "name": script_name,
+        "description": "Llama2-70b模型",
+        "content": "python main.py --model-name llama2-70b --num-gpus 256 --nproc-per-node 8 --gpu-infos a800 --global-batch-size 1024 --sequence-length 4096 --top 5 --cpu-gflops 3072 --mem-bandwidth 300 --idcs '' --inter-idc-bandwidth '' --mode fast --strategy-file '' --num-experts 0 --moe-router-topk 2",
+        "message": "ok"
+    }
+
+
+@api_router.post("/scripts", summary="保存任务脚本为文件")
+def save_script(script_name: str, content: str):
+    os.makedirs("scripts", exist_ok=True)
+    with open(f"scripts/{script_name}.sh", "w") as f:
+        f.write(content)
+    return {"message": "ok", "file": f"scripts/{script_name}.sh"}
+
+
+@api_router.get("/files", summary="获取指定路径下的目录和文件")
+def get_files(path: str):
+    print(path)
+    """
+    获取指定路径下的目录和文件。
+    """
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="路径不存在")
+
+    if os.path.isdir(path):
+        items = os.listdir(path)
+        return {
+            "data": {
+                "list": [{"name": item, "type": "dir" if os.path.isdir(f"{path}/{item}") else "file"} for item in items],
+                "message": "ok"
+            }
+        }
+    else:
+        return {"name": path, "type": "file"}
+
+
 @app.get("/", summary="API 主页")
 def read_root():
-    return RedirectResponse(url="/dist/index.html")
+    return RedirectResponse(url="/index.html")
 
+
+# 将 API 路由器包含到主应用中
+app.include_router(api_router)
+# 挂载静态文件目录
+app.mount("/", StaticFiles(directory="dist", html=True), name="static")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

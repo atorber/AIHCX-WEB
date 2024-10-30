@@ -23,14 +23,10 @@
           </el-icon>
           <template #title>AIAK训练任务</template>
         </el-menu-item>
-        <el-menu-item index="10">
+        <el-menu-item index="2">
           <el-icon>
             <setting />
           </el-icon>
-          <template #title>自定义训练任务</template>
-        </el-menu-item>
-        <el-menu-item index="2">
-          <el-icon><icon-menu /></el-icon>
           <template #title>All-in-one任务</template>
         </el-menu-item>
         <el-menu-item disabled index="4">
@@ -51,6 +47,31 @@
           </el-icon>
           <template #title>系统设置</template>
         </el-menu-item>
+        <el-sub-menu index="0">
+          <template #title>
+            <el-icon>
+              <message />
+            </el-icon>自定义训练
+          </template>
+          <el-menu-item index="11">
+            <template #title>下载数据</template>
+          </el-menu-item>
+          <el-menu-item index="15">
+            <template #title>上传文件</template>
+          </el-menu-item>
+          <el-menu-item index="12">
+            <template #title>权重转换与切分</template>
+          </el-menu-item>
+          <el-menu-item index="13">
+            <template #title>数据预处理</template>
+          </el-menu-item>
+          <el-menu-item index="14">
+            <template #title>数据导出</template>
+          </el-menu-item>
+          <el-menu-item index="10">
+            <template #title>训练参数</template>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
       <div w="full" py="4">
         <Home msg="AIHCX" v-if="currentKey == '2'" />
@@ -60,6 +81,11 @@
         <JobList msg="AIHCX" v-else-if="currentKey == '8'" />
         <Settings msg="AIHCX" v-else-if="currentKey == '9'" />
         <TrainingCustom msg="AIHCX" v-else-if="currentKey == '10'" />
+        <DownloadData msg="AIHCX" v-else-if="currentKey == '11'" />
+        <ConvertCheckpointCustom msg="AIHCX" v-else-if="currentKey == '12'" />
+        <PreprocessDataCustom msg="AIHCX" v-else-if="currentKey == '13'" />
+        <UploadData msg="AIHCX" v-else-if="currentKey == '15'" />
+        <ExportData msg="AIHCX" v-else-if="currentKey == '14'" />
         <div v-else>
           <Logos my="4" />
           <h1>Comeing soon...</h1>

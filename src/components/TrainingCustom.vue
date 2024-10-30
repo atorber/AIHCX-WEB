@@ -63,7 +63,11 @@
           <el-row :gutter="20">
             <el-col :span="8">
               <el-form-item label="load" prop="load">
-                <el-input v-model="formModel.checkpointConfig.load" placeholder="请输入加载模型的文件夹路径"></el-input>
+                <!-- <el-input v-model="formModel.checkpointConfig.load" placeholder="请输入加载模型的文件夹路径"></el-input> -->
+                <el-cascader @change="loadSet" :clearable=true :props="props" style="width: 100%;"
+                  v-model="formModel.checkpointConfig.load" placeholder="请选择加载模型的文件夹路径"></el-cascader>
+                <el-text v-if="formModel.checkpointConfig.load" class="mx-1" size="small">{{
+                  formModel.checkpointConfig.load }}</el-text>
               </el-form-item>
             </el-col>
 
@@ -85,7 +89,11 @@
           <el-row :gutter="20">
             <el-col :span="8">
               <el-form-item label="save" prop="save">
-                <el-input v-model="formModel.checkpointConfig.save" placeholder="请输入保存模型的文件夹路径"></el-input>
+                <!-- <el-input v-model="formModel.checkpointConfig.save" placeholder="请输入保存模型的文件夹路径"></el-input> -->
+                <el-cascader @change="loadSet" :clearable=true :props="props" style="width: 100%;"
+                  v-model="formModel.checkpointConfig.save" placeholder="请选择保存模型的文件夹路径"></el-cascader>
+                <el-text v-if="formModel.checkpointConfig.save" class="mx-1" size="small">{{
+                  formModel.checkpointConfig.save }}</el-text>
               </el-form-item>
             </el-col>
 
@@ -1130,26 +1138,11 @@
       <el-row :gutter="20">
         <el-col :span="24">
           <el-form-item>
-            <el-button type="primary" @click="handleSubmit">生成执行命令</el-button>
-            <el-button @click="handleReset">重置</el-button>
-            <div>
-              <el-select v-if="generatedParams" v-model="resourcePoolId" placeholder="请选择资源池" style="width: 240px"
-                @change="getResourcePoolInfo">
-                <el-option v-for="item in resourcepoolList" :key="item.metadata.id" :label="item.metadata.name"
-                  :value="item.metadata.id">
-                  <span style="float: left">{{ item.metadata.name }}</span>
-                  <span style="
-                      float: right;
-                      color: var(--el-text-color-secondary);
-                      font-size: 13px;
-                    ">
-                    {{ item.metadata.id }}
-                  </span>
-                </el-option>
-              </el-select>
-
-              <el-button v-if="generatedParams" type="primary" @click="createJob">提交任务</el-button>
-            </div>
+            <el-button type="primary" @click="handleSubmit">预览执行命令</el-button>
+            <el-button disabled @click="handleReset">重置</el-button>
+            <el-button disabled type="primary" @click="handleReset">保存为脚本</el-button>
+            <el-button disabled @click="handleReset">导入</el-button>
+            <el-button disabled @click="handleReset">历史记录</el-button>
           </el-form-item>
         </el-col>
       </el-row>
@@ -1169,7 +1162,7 @@
 
 <script setup lang="ts">
 import { reactive, computed, watch, ref } from "vue";
-import { ElMessage, FormRules, CollapseModelValue } from "element-plus";
+import { ElMessage, FormRules, CollapseModelValue, CascaderProps } from "element-plus";
 import {
   generateTraining,
   timeStr,
@@ -1184,10 +1177,27 @@ import {
   generateShellScriptFromJSON,
   TrainingParameters,
   parseShellScriptToJSON,
-  getTemplate,
-
 } from '../utils/tool'
-import { get } from "http";
+import { getNodes } from "../utils/util";
+
+const props: CascaderProps = {
+  checkStrictly: true,
+  lazy: true,
+  lazyLoad(node, resolve) {
+    console.log('node', node)
+    const curPath = node.label? `/${node.pathLabels.join('/')}`:'/'
+    getNodes(curPath).then((nodes) => {
+      resolve(nodes)
+    }).catch((err) => {
+      console.error(err)
+    })
+  },
+}
+
+const loadSet = (val: any) => {
+  console.log(val.join('/'))
+  // formModel.checkpointConfig.load = val.join('/')
+}
 
 const activeNames = ref([''])
 const handleChange = (val: CollapseModelValue) => {
@@ -1207,11 +1217,11 @@ const resourcePoolInfo = ref({} as ResourcePool);
 
 // 解析 Shell 脚本
 const parms = parseShellScriptToJSON();
-console.log(parms);
+console.info(parms);
 
 // 定义响应式的表单模型
 let formModel: TrainingParameters = reactive(parms)
-const msg = ref("AIAK自定义训练参数编辑器");
+const msg = ref("训练参数编辑器");
 
 // 定义生成的参数
 const generatedParams = ref("");
@@ -1281,19 +1291,9 @@ const rules: FormRules = {
     { required: false, message: "请输入训练机数", trigger: "blur" },
     { type: "number", min: 1, message: "副本数必须为正整数", trigger: "blur" },
   ],
-  version: [
-    { required: true, message: "请输入版本", trigger: "blur" },
-    {
-      pattern: /^[A-Za-z0-9\-]+$/,
-      message: "版本只能包含数字、字母和中划线",
-      trigger: "blur",
-    },
-  ],
   trainingPhase: [
     { required: true, message: "请选择训练阶段", trigger: "blur" },
   ],
-  image: [{ required: true, message: "请输入镜像地址", trigger: "blur" }],
-  mountPath: [{ required: true, message: "请输入挂载路径", trigger: "blur" }],
   // 根据需要为其他字段添加更多规则
 };
 
@@ -1310,8 +1310,10 @@ const handleSubmit = () => {
   // 生成 Shell 脚本
   const script = generateShellScriptFromJSON(formModel);
   console.log(script);
+  generatedParams.value = script; // 格式化显示
 
   formRef.value.validate((valid: boolean) => {
+    console.log("valid", valid);
     if (valid) {
       const aiakJobConfig = {
         MODEL_NAME: formModel.basicInfo["model-name"],
@@ -1323,7 +1325,6 @@ const handleSubmit = () => {
       try {
         job_info = generateTraining(aiakJobConfig);
         console.log(job_info);
-        generatedParams.value = job_info.command; // 格式化显示
         ElMessage.success("已生成成功");
       } catch (error) {
         ElMessage.error("生成参数时出错，请检查输入");
