@@ -16,6 +16,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 import json
 import os
+import time
 
 logging.basicConfig(level=logging.INFO)
 
@@ -317,7 +318,7 @@ def save_script(script_name: str, content: str):
         f.write(content)
     return {"message": "ok", "file": f"scripts/{script_name}.sh"}
 
-
+# 查询指定路径下的目录和文件
 @api_router.get("/files", summary="获取指定路径下的目录和文件")
 def get_files(path: str):
     print(path)
@@ -338,6 +339,84 @@ def get_files(path: str):
     else:
         return {"name": path, "type": "file"}
 
+# 下载文件到指定路径
+@api_router.post("/files/download", summary="下载文件到指定路径")
+def download_file(path: str, content: str):
+    """
+    下载文件到指定路径。
+    """
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        f.write(content)
+    return {"message": "ok", "file": path}
+
+# 上传文件到指定路径
+@api_router.post("/files/upload", summary="上传文件到指定路径")
+def upload_file(path: str, file: bytes):
+    """
+    上传文件到指定路径。
+    """
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "wb") as f:
+        f.write(file)
+    return {"message": "ok", "file": path}
+
+# 提交权重转换与切分任务
+@api_router.post("/models/convert", summary="权重转换与切分")
+def convert_weights():
+    """
+    权重转换与切分任务。
+    """
+    # 调用 main.py 进行权重转换与切分
+    # 这里需要实现实际的调用逻辑，例如使用 subprocess 运行脚本
+    # 示例：
+    # import subprocess
+    # command = f"python main.py --convert-weights"
+    # subprocess.run(command, shell=True, check=True)
+
+    return {"message": "ok"}
+
+# 提交数据预处理任务
+@api_router.post("/datas/preprocess", summary="数据预处理")
+def preprocess_data():
+    """
+    数据预处理任务。
+    """
+    # 调用 main.py 进行数据预处理
+    # 这里需要实现实际的调用逻辑，例如使用 subprocess 运行脚本
+    # 示例：
+    # import subprocess
+    # command = f"python main.py --preprocess-data"
+    # subprocess.run(command, shell=True, check=True)
+
+    return {"message": "ok"}
+
+# 提交数据导出任务
+@api_router.post("/files/export", summary="数据导出")
+def export_data():
+    """
+    数据导出任务。
+    """
+    # 调用 main.py 进行数据导出
+    # 这里需要实现实际的调用逻辑，例如使用 subprocess 运行脚本
+    # 示例：
+    # import subprocess
+    # command = f"python main.py --export-data"
+    # subprocess.run(command, shell=True, check=True)
+
+    return {"message": "ok"}
+
+# 保存训练参数
+@api_router.post("/files/save", summary="保存训练参数")
+def save_training_params(params: dict):
+    """
+    保存训练参数。
+    """
+    # 保存训练参数到文件
+    with open("training_params.json", "w") as f:
+        json.dump(params, f)
+
+    return {"message": "ok"}
 
 @app.get("/", summary="API 主页")
 def read_root():
