@@ -3,12 +3,12 @@
     <h1 color="$ep-color-primary">{{ msg }}</h1>
 
     <!-- 表单开始 -->
-    <el-form ref="formRef" :model="formModel" :rules="rules" @submit.prevent="handleSubmit" label-width="120px"
+    <el-form ref="formRef" :model="formModel" @submit.prevent="handleSubmit" label-width="120px"
       label-position="left">
       <el-row :gutter="20">
         <el-col :span="24">
           <el-form-item label="来源" prop="trainingPhase">
-            <el-radio-group v-model="source" aria-label="label position">
+            <el-radio-group v-model="formModel.source" aria-label="label position">
               <el-radio-button value="custom">自定义</el-radio-button>
               <el-radio-button value="publicCkpt">公共权重</el-radio-button>
               <el-radio-button value="publicDataset">公共数据集</el-radio-button>
@@ -20,21 +20,21 @@
         <!-- 第一列 -->
         <el-col v-if="source === 'publicCkpt'" :span="8">
           <el-form-item label="模型" prop="modelName">
-            <el-select v-model="formModel.modelName" placeholder="请选择模型名称">
+            <el-select v-model="formModel.name" placeholder="请选择模型名称">
               <el-option v-for="model in modelOptions" :key="model" :label="model" :value="model"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
         <el-col v-if="source === 'publicDataset'" :span="8">
           <el-form-item label="数据集" prop="modelName">
-            <el-select v-model="formModel.modelName" placeholder="请选择模型名称">
+            <el-select v-model="formModel.name" placeholder="请选择模型名称">
               <el-option v-for="model in modelOptions" :key="model" :label="model" :value="model"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item required label="下载地址" prop="datasetUrl">
-            <el-input :disabled="source !== 'custom'" v-model="formModel.datasetUrl" placeholder="请输入URL，以bos:/开头"></el-input>
+            <el-input :disabled="source !== 'custom'" v-model="formModel.downloadUrl" placeholder="请输入URL，以bos:/开头"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -42,7 +42,7 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item required label="保存路径" prop="mountPath">
-            <el-input v-model="formModel.mountPath" placeholder="请选择保存路径"></el-input>
+            <el-input v-model="formModel.savePath" placeholder="请选择保存路径"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -81,23 +81,20 @@ import { reactive, computed, watch, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import { generatePreprocessData, timeStr } from "./aiak-parms";
 
+interface DownloadData {
+  source: string;
+  name: string;
+  downloadUrl: string;
+  savePath: string;
+}
+
 const source = ref('custom')
-const dataType = ref('ckpt')
 // 定义响应式的表单模型
-const formModel = reactive({
-  modelName: "llama2-70b",
-  replicas: undefined as number | undefined,
-  version: timeStr(),
-  trainingPhase: "sft",
-  tp: undefined as number | undefined,
-  pp: undefined as number | undefined,
-  datasetName: "alpaca_zh-llama3-train",
-  image:
-    "registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.1.5_release",
-  mountPath: "/workspace/pfs",
-  modelUrl: "",
-  datasetUrl: "",
-  jsonKeys: "text",
+const formModel:DownloadData = reactive({
+  source: "custom",
+  name: "llama2-70b",
+  downloadUrl: "",
+  savePath: "/workspace/pfs",
 });
 
 const msg = ref("数据集&权重下载");
@@ -135,27 +132,16 @@ const modelOptions = [
 const pretrainDatasets = ["pile_llama_test", "WuDaoCorpus2.0_base_sample"];
 const sftDatasets = ["alpaca_zh-llama3-train", "alpaca_zh-llama3-valid"];
 
-// 计算当前数据集选项
-const datasetOptions = computed(() => {
-  if (formModel.trainingPhase === "pretrain") {
-    return pretrainDatasets;
-  } else if (formModel.trainingPhase === "sft") {
-    return sftDatasets;
-  } else {
-    return [];
-  }
-});
-
 // 监听 trainingPhase 变化，重置 datasetName
 watch(
-  () => formModel.trainingPhase,
+  () => formModel.source,
   (newPhase) => {
-    if (newPhase === "pretrain") {
-      formModel.datasetName = pretrainDatasets[0];
-    } else if (newPhase === "sft") {
-      formModel.datasetName = sftDatasets[0];
+    if (newPhase === "dataset") {
+      formModel.name = pretrainDatasets[0];
+    } else if (newPhase === "model") {
+      formModel.name = sftDatasets[0];
     } else {
-      formModel.datasetName = "";
+      formModel.name = "";
     }
   }
 );
@@ -190,25 +176,11 @@ const formRef = ref();
 const handleSubmit = () => {
   formRef.value.validate((valid: boolean) => {
     if (valid) {
-      const aiakJobConfig = {
-        MODEL_NAME: formModel.modelName,
-        REPLICAS: formModel.replicas,
-        VERSION: formModel.version,
-        TRAINING_PHASE: formModel.trainingPhase,
-        TP: formModel.tp,
-        PP: formModel.pp,
-        DATASET_NAME: formModel.datasetName,
-        IMAGE: formModel.image,
-        MOUNT_PATH: formModel.mountPath,
-        MODEL_URL: formModel.modelUrl,
-        DATASET_URL: formModel.datasetUrl,
-        JSON_KEYS: formModel.jsonKeys,
-      };
+      const aiakJobConfig = formModel;
 
       try {
-        const job_sh = generatePreprocessData(aiakJobConfig);
-        console.log(job_sh);
-        generatedParams.value = job_sh; // 格式化显示
+        generatedParams.value = JSON.stringify(aiakJobConfig, null, 2);
+
         ElMessage.success("已生成成功");
       } catch (error) {
         ElMessage.error("生成参数时出错，请检查输入");
@@ -241,7 +213,6 @@ const handleReset = () => {
   if (formRef.value) {
     formRef.value.resetFields();
     generatedParams.value = ""; // 可选：清除生成的参数展示
-    formModel.version = timeStr(); // 重置版本号
     ElMessage.success("表单已重置");
   }
 };

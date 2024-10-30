@@ -9,7 +9,7 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item required label="源路径" prop="mountPath">
-            <el-input v-model="formModel.mountPath" placeholder="请选择源路径"></el-input>
+            <el-input v-model="formModel.sourcePath" placeholder="请选择源路径"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -18,14 +18,14 @@
         <!-- 第一列 -->
         <el-col :span="8">
           <el-form-item label="存储桶" prop="modelName">
-            <el-select v-model="formModel.modelName" placeholder="请选择模型名称">
+            <el-select v-model="formModel.bucket" placeholder="请选择模型名称">
               <el-option v-for="model in modelOptions" :key="model" :label="model" :value="model"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item required label="存储路径" prop="datasetUrl">
-            <el-input :disabled="source !== 'custom'" v-model="formModel.datasetUrl" placeholder="请输入存储路径"></el-input>
+            <el-input v-model="formModel.storagePath" placeholder="请输入存储路径"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -64,23 +64,17 @@ import { reactive, computed, watch, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import { generatePreprocessData, timeStr } from "./aiak-parms";
 
-const source = ref('custom')
-const dataType = ref('ckpt')
+interface StorageOptions {
+  sourcePath: string;
+  bucket: string;
+  storagePath: string;
+}
+
 // 定义响应式的表单模型
-const formModel = reactive({
-  modelName: "llama2-70b",
-  replicas: undefined as number | undefined,
-  version: timeStr(),
-  trainingPhase: "sft",
-  tp: undefined as number | undefined,
-  pp: undefined as number | undefined,
-  datasetName: "alpaca_zh-llama3-train",
-  image:
-    "registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.1.5_release",
-  mountPath: "/workspace/pfs",
-  modelUrl: "",
-  datasetUrl: "",
-  jsonKeys: "text",
+const formModel: StorageOptions = reactive({
+  sourcePath: "/pfs/data",
+  bucket: "",
+  storagePath: "",
 });
 
 const msg = ref("数据集&权重下载");
@@ -118,31 +112,6 @@ const modelOptions = [
 const pretrainDatasets = ["pile_llama_test", "WuDaoCorpus2.0_base_sample"];
 const sftDatasets = ["alpaca_zh-llama3-train", "alpaca_zh-llama3-valid"];
 
-// 计算当前数据集选项
-const datasetOptions = computed(() => {
-  if (formModel.trainingPhase === "pretrain") {
-    return pretrainDatasets;
-  } else if (formModel.trainingPhase === "sft") {
-    return sftDatasets;
-  } else {
-    return [];
-  }
-});
-
-// 监听 trainingPhase 变化，重置 datasetName
-watch(
-  () => formModel.trainingPhase,
-  (newPhase) => {
-    if (newPhase === "pretrain") {
-      formModel.datasetName = pretrainDatasets[0];
-    } else if (newPhase === "sft") {
-      formModel.datasetName = sftDatasets[0];
-    } else {
-      formModel.datasetName = "";
-    }
-  }
-);
-
 // 定义表单验证规则
 const rules: FormRules = {
   modelName: [{ required: true, message: "请选择模型名称", trigger: "blur" }],
@@ -173,25 +142,10 @@ const formRef = ref();
 const handleSubmit = () => {
   formRef.value.validate((valid: boolean) => {
     if (valid) {
-      const aiakJobConfig = {
-        MODEL_NAME: formModel.modelName,
-        REPLICAS: formModel.replicas,
-        VERSION: formModel.version,
-        TRAINING_PHASE: formModel.trainingPhase,
-        TP: formModel.tp,
-        PP: formModel.pp,
-        DATASET_NAME: formModel.datasetName,
-        IMAGE: formModel.image,
-        MOUNT_PATH: formModel.mountPath,
-        MODEL_URL: formModel.modelUrl,
-        DATASET_URL: formModel.datasetUrl,
-        JSON_KEYS: formModel.jsonKeys,
-      };
+      const aiakJobConfig = formModel;
 
       try {
-        const job_sh = generatePreprocessData(aiakJobConfig);
-        console.log(job_sh);
-        generatedParams.value = job_sh; // 格式化显示
+        generatedParams.value = JSON.stringify(aiakJobConfig, null, 2);
         ElMessage.success("已生成成功");
       } catch (error) {
         ElMessage.error("生成参数时出错，请检查输入");
@@ -224,7 +178,6 @@ const handleReset = () => {
   if (formRef.value) {
     formRef.value.resetFields();
     generatedParams.value = ""; // 可选：清除生成的参数展示
-    formModel.version = timeStr(); // 重置版本号
     ElMessage.success("表单已重置");
   }
 };

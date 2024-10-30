@@ -9,7 +9,7 @@
         <!-- 第一列 -->
         <el-col :span="12">
           <el-form-item label="类型" prop="trainingPhase">
-            <el-radio-group v-model="ccType" aria-label="label position">
+            <el-radio-group v-model="formModel.convertType" aria-label="label position">
               <el-radio-button value="hf2mc">hf-mcore</el-radio-button>
               <el-radio-button value="mc2hf">mcore-hf</el-radio-button>
             </el-radio-group>
@@ -46,12 +46,12 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item required label="源路径" prop="mountPath">
-            <el-input v-model="formModel.mountPath" placeholder="请输入源路径"></el-input>
+            <el-input v-model="formModel.sourcePath" placeholder="请输入源路径"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item required label="保存路径" prop="mountPath">
-            <el-input v-model="formModel.mountPath" placeholder="请输入保存路径"></el-input>
+            <el-input v-model="formModel.savePath" placeholder="请输入保存路径"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -90,22 +90,23 @@ import { reactive, computed, watch, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import { generateConvertCheckpoint, timeStr } from "./aiak-parms";
 
-const ccType = ref("hf2mc");
+interface ConvertOptions {
+  convertType: string;
+  modelName: string;
+  tp: number;
+  pp: number;
+  sourcePath: string;
+  savePath: string;
+}
+
 // 定义响应式的表单模型
-const formModel = reactive({
-  modelName: "llama2-70b",
-  replicas: undefined as number | undefined,
-  version: timeStr(),
-  trainingPhase: "sft",
-  tp: undefined as number | undefined,
-  pp: undefined as number | undefined,
-  datasetName: "alpaca_zh-llama3-train",
-  image:
-    "registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.1.5_release",
-  mountPath: "/workspace/pfs",
-  modelUrl: "",
-  datasetUrl: "",
-  jsonKeys: "text",
+const formModel: ConvertOptions = reactive({
+  convertType: '"hf2mc"',
+  modelName: "",
+  tp: 1,
+  pp: 1,
+  sourcePath: "",
+  savePath: "",
 });
 
 const msg = ref("权重转换与切分");
@@ -143,31 +144,6 @@ const modelOptions = [
 const pretrainDatasets = ["pile_llama_test", "WuDaoCorpus2.0_base_sample"];
 const sftDatasets = ["alpaca_zh-llama3-train", "alpaca_zh-llama3-valid"];
 
-// 计算当前数据集选项
-const datasetOptions = computed(() => {
-  if (formModel.trainingPhase === "pretrain") {
-    return pretrainDatasets;
-  } else if (formModel.trainingPhase === "sft") {
-    return sftDatasets;
-  } else {
-    return [];
-  }
-});
-
-// 监听 trainingPhase 变化，重置 datasetName
-watch(
-  () => formModel.trainingPhase,
-  (newPhase) => {
-    if (newPhase === "pretrain") {
-      formModel.datasetName = pretrainDatasets[0];
-    } else if (newPhase === "sft") {
-      formModel.datasetName = sftDatasets[0];
-    } else {
-      formModel.datasetName = "";
-    }
-  }
-);
-
 // 定义表单验证规则
 const rules: FormRules = {
   modelName: [{ required: true, message: "请选择模型名称", trigger: "blur" }],
@@ -198,25 +174,10 @@ const formRef = ref();
 const handleSubmit = () => {
   formRef.value.validate((valid: boolean) => {
     if (valid) {
-      const aiakJobConfig = {
-        MODEL_NAME: formModel.modelName,
-        REPLICAS: formModel.replicas,
-        VERSION: formModel.version,
-        TRAINING_PHASE: formModel.trainingPhase,
-        TP: formModel.tp,
-        PP: formModel.pp,
-        DATASET_NAME: formModel.datasetName,
-        IMAGE: formModel.image,
-        MOUNT_PATH: formModel.mountPath,
-        MODEL_URL: formModel.modelUrl,
-        DATASET_URL: formModel.datasetUrl,
-        JSON_KEYS: formModel.jsonKeys,
-      };
+      const aiakJobConfig = formModel;
 
       try {
-        const job_sh = generateConvertCheckpoint(aiakJobConfig);
-        console.log(job_sh);
-        generatedParams.value = job_sh; // 格式化显示
+        generatedParams.value = JSON.stringify(aiakJobConfig, null, 2);
         ElMessage.success("已生成成功");
       } catch (error) {
         ElMessage.error("生成参数时出错，请检查输入");
@@ -249,7 +210,6 @@ const handleReset = () => {
   if (formRef.value) {
     formRef.value.resetFields();
     generatedParams.value = ""; // 可选：清除生成的参数展示
-    formModel.version = timeStr(); // 重置版本号
     ElMessage.success("表单已重置");
   }
 };

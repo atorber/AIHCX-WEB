@@ -36,12 +36,12 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item required label="源路径" prop="mountPath">
-            <el-input v-model="formModel.mountPath" placeholder="请输入源路径"></el-input>
+            <el-input v-model="formModel.sourcePath" placeholder="请输入源路径"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item required label="保存路径" prop="datasetUrl">
-            <el-input v-model="formModel.datasetUrl" placeholder="请输入数据集 URL，以bos:/开头"></el-input>
+            <el-input v-model="formModel.savePath" placeholder="请输入数据集 URL，以bos:/开头"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -80,21 +80,22 @@ import { reactive, computed, watch, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import { generatePreprocessData, timeStr } from "./aiak-parms";
 
+interface TrainingOptions {
+  modelName: string;
+  trainingPhase: string;
+  sourcePath: string;
+  savePath: string;
+  jsonKeys: string;
+}
+
 // 定义响应式的表单模型
-const formModel = reactive({
-  modelName: "llama2-70b",
-  replicas: undefined as number | undefined,
-  version: timeStr(),
+const formModel: TrainingOptions = reactive({
+  modelName: "llama2-7b",
   trainingPhase: "sft",
-  tp: undefined as number | undefined,
-  pp: undefined as number | undefined,
-  datasetName: "alpaca_zh-llama3-train",
-  image:
-    "registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.1.5_release",
-  mountPath: "/workspace/pfs",
-  modelUrl: "",
+  sourcePath: "",
+  savePath: "",
   datasetUrl: "",
-  jsonKeys: "text",
+  jsonKeys: "",
 });
 
 const msg = ref("数据预处理");
@@ -132,31 +133,6 @@ const modelOptions = [
 const pretrainDatasets = ["pile_llama_test", "WuDaoCorpus2.0_base_sample"];
 const sftDatasets = ["alpaca_zh-llama3-train", "alpaca_zh-llama3-valid"];
 
-// 计算当前数据集选项
-const datasetOptions = computed(() => {
-  if (formModel.trainingPhase === "pretrain") {
-    return pretrainDatasets;
-  } else if (formModel.trainingPhase === "sft") {
-    return sftDatasets;
-  } else {
-    return [];
-  }
-});
-
-// 监听 trainingPhase 变化，重置 datasetName
-watch(
-  () => formModel.trainingPhase,
-  (newPhase) => {
-    if (newPhase === "pretrain") {
-      formModel.datasetName = pretrainDatasets[0];
-    } else if (newPhase === "sft") {
-      formModel.datasetName = sftDatasets[0];
-    } else {
-      formModel.datasetName = "";
-    }
-  }
-);
-
 // 定义表单验证规则
 const rules: FormRules = {
   modelName: [{ required: true, message: "请选择模型名称", trigger: "blur" }],
@@ -187,25 +163,11 @@ const formRef = ref();
 const handleSubmit = () => {
   formRef.value.validate((valid: boolean) => {
     if (valid) {
-      const aiakJobConfig = {
-        MODEL_NAME: formModel.modelName,
-        REPLICAS: formModel.replicas,
-        VERSION: formModel.version,
-        TRAINING_PHASE: formModel.trainingPhase,
-        TP: formModel.tp,
-        PP: formModel.pp,
-        DATASET_NAME: formModel.datasetName,
-        IMAGE: formModel.image,
-        MOUNT_PATH: formModel.mountPath,
-        MODEL_URL: formModel.modelUrl,
-        DATASET_URL: formModel.datasetUrl,
-        JSON_KEYS: formModel.jsonKeys,
-      };
+      const aiakJobConfig = formModel;
 
       try {
-        const job_sh = generatePreprocessData(aiakJobConfig);
-        console.log(job_sh);
-        generatedParams.value = job_sh; // 格式化显示
+        generatedParams.value = JSON.stringify(aiakJobConfig, null, 2);
+
         ElMessage.success("已生成成功");
       } catch (error) {
         ElMessage.error("生成参数时出错，请检查输入");
@@ -238,7 +200,6 @@ const handleReset = () => {
   if (formRef.value) {
     formRef.value.resetFields();
     generatedParams.value = ""; // 可选：清除生成的参数展示
-    formModel.version = timeStr(); // 重置版本号
     ElMessage.success("表单已重置");
   }
 };
