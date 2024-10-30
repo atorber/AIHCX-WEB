@@ -1,29 +1,38 @@
 <template>
   <div style="padding: 0px 20px; max-width: 1200px; margin: 0 auto; text-align: left">
-    <h1 color="$ep-color-primary">{{ msg }}</h1>
+    <h1 color="$ep-color-primary">数据上传</h1>
 
     <!-- 表单开始 -->
     <el-form ref="formRef" :model="formModel" :rules="rules" @submit.prevent="handleSubmit" label-width="120px"
       label-position="left">
       <el-row :gutter="20">
         <el-col :span="8">
-          <el-form-item required label="文件" prop="datasetUrl">
-            <el-upload class="upload-demo" action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-              multiple :limit="3">
-              <el-button type="primary">选择文件</el-button>
-              <template #tip>
-                <div class="el-upload__tip">
-                  建议文件大小小于 10M
-                </div>
-              </template>
-            </el-upload>
+          <el-form-item required label="文件" prop="data">
+            <el-upload
+    ref="uploadRef"
+    class="upload-demo"
+    action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+    :auto-upload="false"
+    :limit="1"
+    @on-change="handleChange"
+  >
+    <template #trigger>
+      <el-button type="primary">选择文件</el-button>
+    </template>
+
+    <template #tip>
+      <div class="el-upload__tip">
+        选择要上传的文件，建议小于10M
+      </div>
+    </template>
+  </el-upload>
           </el-form-item>
         </el-col>
       </el-row>
 
       <el-row :gutter="20">
         <el-col :span="8">
-          <el-form-item required label="保存路径" prop="mountPath">
+          <el-form-item required label="保存路径" prop="savePath">
             <el-input v-model="formModel.savePath" placeholder="请选择保存路径"></el-input>
           </el-form-item>
         </el-col>
@@ -62,87 +71,49 @@
 import { reactive, computed, watch, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import { generatePreprocessData, timeStr } from "./aiak-parms";
+import type { UploadInstance } from 'element-plus'
+
+const uploadRef = ref<UploadInstance>()
 
 interface UploadData {
-  data: File[];
+  data: string;
   savePath: string;
 }
 
-const source = ref('custom')
-const dataType = ref('ckpt')
 // 定义响应式的表单模型
-const formModel = reactive({
-  data: [],
+const formModel:UploadData = reactive({
+  data: '',
   savePath: "/workspace/pfs",
 });
-
-const msg = ref("数据上传");
 
 // 定义生成的参数
 const generatedParams = ref("");
 
-// 定义模型选项
-const modelOptions = [
-  "llama2-7b",
-  "llama2-13b",
-  "llama2-70b",
-  "llama3-8b",
-  "llama3-70b",
-  "qwen2-0.5b",
-  "qwen2-1.5b",
-  "qwen2-7b",
-  "qwen2-72b",
-  "baichuan2-7b",
-  "baichuan2-13b",
-  "qwen-1.8b",
-  "qwen-7b",
-  "qwen-14b",
-  "qwen-72b",
-  "qwen1.5-0.5b",
-  "qwen1.5-1.8b",
-  "qwen1.5-4b",
-  "qwen1.5-7b",
-  "qwen1.5-14b",
-  "qwen1.5-32b",
-  "qwen1.5-72b",
-];
-
-// 定义数据集选项
-const pretrainDatasets = ["pile_llama_test", "WuDaoCorpus2.0_base_sample"];
-const sftDatasets = ["alpaca_zh-llama3-train", "alpaca_zh-llama3-valid"];
-
 // 定义表单验证规则
 const rules: FormRules = {
-  modelName: [{ required: true, message: "请选择模型名称", trigger: "blur" }],
-  replicas: [
-    { required: true, message: "请输入训练机数", trigger: "blur" },
-    { type: "number", min: 1, message: "副本数必须为正整数", trigger: "blur" },
-  ],
-  version: [
-    { required: true, message: "请输入版本", trigger: "blur" },
-    {
-      pattern: /^[A-Za-z0-9\-]+$/,
-      message: "版本只能包含数字、字母和中划线",
-      trigger: "blur",
-    },
-  ],
-  trainingPhase: [
-    { required: true, message: "请选择训练阶段", trigger: "blur" },
-  ],
-  image: [{ required: true, message: "请输入镜像地址", trigger: "blur" }],
-  mountPath: [{ required: true, message: "请输入挂载路径", trigger: "blur" }],
-  // 根据需要为其他字段添加更多规则
+  datasetUrl: [{ required: true, message: "请选择文件", trigger: "change" }],
+  savePath: [{ required: true, message: "请选择保存路径", trigger: "blur" }],
 };
+
+const handleChange = (file: File) => {
+  console.info('file', file)
+  formModel.data = file.name
+}
 
 // 引用表单实例
 const formRef = ref();
 
 // 提交表单
 const handleSubmit = () => {
+  uploadRef.value?.submit()
+  if (!formModel.data) {
+    ElMessage.warning("请选择文件");
+    return false;
+  }
   formRef.value.validate((valid: boolean) => {
     if (valid) {
       const aiakJobConfig = formModel;
-
+      uploadRef.value!.submit()
       try {
         generatedParams.value = JSON.stringify(aiakJobConfig, null, 2);
         ElMessage.success("已生成成功");
