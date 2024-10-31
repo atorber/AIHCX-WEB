@@ -2,7 +2,7 @@
 import { post, get } from '../utils/request'
 
 export const getFiles = (data: { path: string }) => {
-    return get('http://127.0.0.1:8000/api/files', data)
+    return get('/api/files', data)
 }
 // 登录服务接口
 export const ServeLogin = (data: any) => {

@@ -8,7 +8,7 @@
 
       <el-row :gutter="20">
         <el-col :span="8">
-          <el-form-item required label="源路径" prop="mountPath">
+          <el-form-item required label="源路径" prop="sourcePath">
             <el-input v-model="formModel.sourcePath" placeholder="请选择源路径"></el-input>
           </el-form-item>
         </el-col>
@@ -17,14 +17,14 @@
       <el-row :gutter="20">
         <!-- 第一列 -->
         <el-col :span="8">
-          <el-form-item label="存储桶" prop="modelName">
+          <el-form-item label="存储桶" prop="bucket">
             <el-select v-model="formModel.bucket" placeholder="请选择模型名称">
               <el-option v-for="model in modelOptions" :key="model" :label="model" :value="model"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="8">
-          <el-form-item required label="存储路径" prop="datasetUrl">
+          <el-form-item required label="存储路径" prop="storagePath">
             <el-input v-model="formModel.storagePath" placeholder="请输入存储路径"></el-input>
           </el-form-item>
         </el-col>
@@ -114,25 +114,9 @@ const sftDatasets = ["alpaca_zh-llama3-train", "alpaca_zh-llama3-valid"];
 
 // 定义表单验证规则
 const rules: FormRules = {
-  modelName: [{ required: true, message: "请选择模型名称", trigger: "blur" }],
-  replicas: [
-    { required: true, message: "请输入训练机数", trigger: "blur" },
-    { type: "number", min: 1, message: "副本数必须为正整数", trigger: "blur" },
-  ],
-  version: [
-    { required: true, message: "请输入版本", trigger: "blur" },
-    {
-      pattern: /^[A-Za-z0-9\-]+$/,
-      message: "版本只能包含数字、字母和中划线",
-      trigger: "blur",
-    },
-  ],
-  trainingPhase: [
-    { required: true, message: "请选择训练阶段", trigger: "blur" },
-  ],
-  image: [{ required: true, message: "请输入镜像地址", trigger: "blur" }],
-  mountPath: [{ required: true, message: "请输入挂载路径", trigger: "blur" }],
-  // 根据需要为其他字段添加更多规则
+  sourcePath: [{ required: true, message: "请选择源路径", trigger: "blur" }],
+  bucket: [{ required: true, message: "请选择模型名称", trigger: "blur" }],
+  storagePath: [{ required: true, message: "请输入存储路径", trigger: "blur" }],
 };
 
 // 引用表单实例

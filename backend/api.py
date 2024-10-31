@@ -437,6 +437,8 @@ async def download_file(path: str, content: str):
 
 @api_router.post("/files/upload", summary="上传文件到指定路径")
 async def upload_file(path: str, file: UploadFile = File(...)):
+    print("path", path)
+    print("file", file)
     normalized_path = os.path.abspath(path)
     base_dir = os.path.abspath("files")
 
@@ -449,6 +451,14 @@ async def upload_file(path: str, file: UploadFile = File(...)):
         content = await file.read()
         f.write(content)
     return {"message": "ok", "file": str(target_path)}
+
+# 文件上传
+@api_router.post("/upload", summary="上传文件到指定路径")
+async def upload_file(file: UploadFile = File(...)):
+    logger.info(f"接收到文件: {file.filename}")
+    content = await file.read()
+    logger.info(f"文件内容: {content}")
+    return {"message": "ok", "file": content}
 
 @api_router.post("/models/convert", summary="权重转换与切分")
 async def convert_weights(background_tasks: BackgroundTasks):

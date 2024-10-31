@@ -11,10 +11,12 @@
             <el-upload
     ref="uploadRef"
     class="upload-demo"
-    action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+    action="/api/upload"
     :auto-upload="false"
     :limit="1"
-    @on-change="handleChange"
+    :before-upload="beforeAvatarUpload"
+    :on-error="onError"
+    :on-success="onSuccess"
   >
     <template #trigger>
       <el-button type="primary">选择文件</el-button>
@@ -72,6 +74,7 @@ import { reactive, computed, watch, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import { generatePreprocessData, timeStr } from "./aiak-parms";
 import type { UploadInstance } from 'element-plus'
+import type { UploadProps } from 'element-plus'
 
 const uploadRef = ref<UploadInstance>()
 
@@ -95,9 +98,22 @@ const rules: FormRules = {
   savePath: [{ required: true, message: "请选择保存路径", trigger: "blur" }],
 };
 
-const handleChange = (file: File) => {
-  console.info('file', file)
-  formModel.data = file.name
+const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
+  console.info('rawFile', rawFile)
+  formModel.data = rawFile.name
+  return true
+}
+
+const onError = (err: any, file: any, fileList: any) => {
+  console.error('upload err', err)
+  console.error('upload file', file)
+  console.error('upload fileList', fileList)
+}
+
+const onSuccess = (res: any, file: any, fileList: any) => {
+  console.info('upload res', res)
+  console.info('upload file', file)
+  console.info('upload fileList', fileList)
 }
 
 // 引用表单实例
