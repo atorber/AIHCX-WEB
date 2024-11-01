@@ -13,3 +13,4 @@ pnpm-lock.yaml
 
 *.log
 core
+backend/dist/uploads/*
