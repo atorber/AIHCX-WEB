@@ -5,53 +5,9 @@
       <!-- <BaseSide /> -->
       <el-menu default-active="5" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
         @select="handSelect">
-        <el-menu-item index="5">
-          <el-icon>
-            <setting />
-          </el-icon>
-          <template #title>权重转换与切分</template>
-        </el-menu-item>
-        <el-menu-item index="6">
-          <el-icon>
-            <setting />
-          </el-icon>
-          <template #title>数据预处理</template>
-        </el-menu-item>
-        <el-menu-item index="7">
-          <el-icon>
-            <setting />
-          </el-icon>
-          <template #title>AIAK训练任务</template>
-        </el-menu-item>
-        <el-menu-item index="2">
-          <el-icon>
-            <setting />
-          </el-icon>
-          <template #title>All-in-one任务</template>
-        </el-menu-item>
-        <el-menu-item disabled index="4">
-          <el-icon>
-            <setting />
-          </el-icon>
-          <template #title>并行策略搜索</template>
-        </el-menu-item>
-        <el-menu-item index="8">
-          <el-icon>
-            <setting />
-          </el-icon>
-          <template #title>任务列表</template>
-        </el-menu-item>
-        <el-menu-item index="9">
-          <el-icon>
-            <setting />
-          </el-icon>
-          <template #title>系统设置</template>
-        </el-menu-item>
-        <el-sub-menu index="0">
+        <el-sub-menu index="0-0">
           <template #title>
-            <el-icon>
-              <message />
-            </el-icon>自定义训练
+            <el-icon><ElementPlus /></el-icon>自定义训练
           </template>
           <el-menu-item index="11">
             <template #title>下载数据</template>
@@ -69,9 +25,36 @@
             <template #title>数据导出</template>
           </el-menu-item>
           <el-menu-item index="10">
-            <template #title>训练参数</template>
+            <template #title>训练参数编辑器</template>
           </el-menu-item>
         </el-sub-menu>
+        <el-sub-menu index="0-1">
+          <template #title>
+            <el-icon><SwitchFilled /></el-icon>启动命令生成
+          </template>
+          <el-menu-item index="5">
+          <template #title>权重转换与切分</template>
+        </el-menu-item>
+        <el-menu-item index="6">
+          <template #title>数据预处理</template>
+        </el-menu-item>
+        <el-menu-item index="7">
+          <template #title>训练任务</template>
+        </el-menu-item>
+        <el-menu-item index="2">
+          <template #title>单机任务</template>
+        </el-menu-item>
+        </el-sub-menu>
+        <el-menu-item index="8">
+          <el-icon><List /></el-icon>
+          <template #title>任务列表</template>
+        </el-menu-item>
+        <el-menu-item index="9">
+          <el-icon>
+            <setting />
+          </el-icon>
+          <template #title>系统设置</template>
+        </el-menu-item>
       </el-menu>
       <div w="full" py="4">
         <Home msg="AIHCX" v-if="currentKey == '2'" />
