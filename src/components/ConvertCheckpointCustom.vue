@@ -45,13 +45,24 @@
 
       <el-row :gutter="20">
         <el-col :span="8">
-          <el-form-item required label="源路径" prop="sourcePath">
-            <el-input v-model="formModel.sourcePath" placeholder="请输入源路径"></el-input>
+          <el-form-item required label="原始权重路径" prop="sourcePath">
+            <el-input clearable v-model="formModel.sourcePath" placeholder="请输入原始权重路径">
+              <template #append>
+                <PathSelector @selection-confirmed="setSourcePath" />
+              </template>
+            </el-input>
           </el-form-item>
         </el-col>
+      </el-row>
+
+      <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item required label="保存路径" prop="savePath">
-            <el-input v-model="formModel.savePath" placeholder="请输入保存路径"></el-input>
+            <el-input clearable v-model="formModel.savePath" placeholder="请输入保存路径">
+              <template #append>
+                <PathSelector @selection-confirmed="setSavePath" />
+              </template>
+            </el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -86,9 +97,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, watch, ref } from "vue";
+import { reactive, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
-import { generateConvertCheckpoint, timeStr } from "./aiak-parms";
 
 interface ConvertOptions {
   convertType: string;
@@ -105,7 +115,7 @@ const formModel: ConvertOptions = reactive({
   modelName: "llama2-7b",
   tp: 1,
   pp: 1,
-  sourcePath: "/models/llama2-7b",
+  sourcePath: "",
   savePath: "",
 });
 
@@ -145,9 +155,17 @@ const rules: FormRules = {
   modelName: [{ required: true, message: "请选择模型名称", trigger: "blur" }],
   tp: [{ required: true, message: "请输入 TP 值", trigger: "blur" }],
   pp: [{ required: true, message: "请输入 PP 值", trigger: "blur" }],
-  sourcePath: [{ required: true, message: "请输入源路径", trigger: "blur" }],
+  sourcePath: [{ required: true, message: "请输入原始权重路径", trigger: "blur" }],
   savePath: [{ required: true, message: "请输入保存路径", trigger: "blur" }],
   convertType: [{ required: true, message: "请选择类型", trigger: "blur" }],
+};
+
+const setSourcePath = (path:string) => {
+  formModel.sourcePath = path;
+};
+
+const setSavePath = (path: string) => {
+  formModel.savePath = path;
 };
 
 // 引用表单实例

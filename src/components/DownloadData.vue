@@ -21,7 +21,8 @@
         <el-col v-if="formModel.source === 'publicCkpt'" :span="8">
           <el-form-item label="模型格式" prop="name">
             <el-select v-model="formModel.ckptFormat" placeholder="请选择模型格式">
-              <el-option v-for="ckptFormat in ckptFormats" :key="ckptFormat" :label="ckptFormat" :value="ckptFormat"></el-option>
+              <el-option v-for="ckptFormat in ckptFormats" :key="ckptFormat" :label="ckptFormat"
+                :value="ckptFormat"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
@@ -35,7 +36,8 @@
         <el-col v-if="formModel.source === 'publicDataset'" :span="8">
           <el-form-item label="数据格式" prop="name">
             <el-select v-model="formModel.datasetFormat" placeholder="请选择数据格式">
-              <el-option v-for="datasetFormat in datasetFormats" :key="datasetFormat" :label="datasetFormat" :value="datasetFormat"></el-option>
+              <el-option v-for="datasetFormat in datasetFormats" :key="datasetFormat" :label="datasetFormat"
+                :value="datasetFormat"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
@@ -48,7 +50,8 @@
         </el-col>
         <el-col :span="8">
           <el-form-item required label="下载地址" prop="downloadUrl">
-            <el-input :disabled="formModel.source !== 'custom'" v-model="formModel.downloadUrl" placeholder="请输入URL，以bos:/开头"></el-input>
+            <el-input clearable :disabled="formModel.source !== 'custom'" v-model="formModel.downloadUrl"
+              placeholder="请输入URL，以bos:/开头"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -56,7 +59,11 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item required label="保存路径" prop="savePath">
-            <el-input v-model="formModel.savePath" placeholder="请选择保存路径"></el-input>
+            <el-input clearable v-model="formModel.savePath" placeholder="请选择保存路径">
+              <template #append>
+                <PathSelector @selection-confirmed="setSavePath" />
+              </template>
+            </el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -91,9 +98,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, watch, ref } from "vue";
+import { reactive, watch, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
-import { generatePreprocessData, timeStr } from "./aiak-parms";
 
 interface DownloadData {
   source: string;
@@ -104,13 +110,12 @@ interface DownloadData {
   datasetFormat: string;
 }
 
-const source = ref('custom')
 // 定义响应式的表单模型
-const formModel:DownloadData = reactive({
+const formModel: DownloadData = reactive({
   source: "custom",
   name: "llama2-70b",
-  downloadUrl: "bos://",
-  savePath: "/workspace/pfs",
+  downloadUrl: "",
+  savePath: "",
   ckptFormat: "HF",
   datasetFormat: "原始数据",
 });
@@ -172,7 +177,7 @@ watch(
 
 // 定义表单验证规则
 const rules: FormRules = {
-  source:[{ required: true, message: "请选择数据来源", trigger: "blur" }],
+  source: [{ required: true, message: "请选择数据来源", trigger: "blur" }],
   name: [{ required: true, message: "请输下载地址", trigger: "blur" }],
   downloadUrl: [{ required: true, message: "请输入保存路径", trigger: "blur" }],
 };
@@ -200,6 +205,13 @@ const handleSubmit = () => {
       return false;
     }
   });
+};
+
+// 事件处理函数
+const setSavePath = (path: string) => {
+  console.log('父组件接收到选中的路径:', path);
+  // 您可以在这里执行其他逻辑，例如保存路径、发送到服务器等
+  formModel.savePath = path;
 };
 
 // 复制到剪切板

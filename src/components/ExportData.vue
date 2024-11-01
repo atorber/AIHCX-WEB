@@ -8,8 +8,25 @@
 
       <el-row :gutter="20">
         <el-col :span="8">
-          <el-form-item required label="源路径" prop="sourcePath">
-            <el-input v-model="formModel.sourcePath" placeholder="请选择源路径"></el-input>
+          <el-form-item required label="文件夹路径" prop="sourcePath">
+            <el-input clearable v-model="formModel.sourcePath" placeholder="请选择文件夹路径">
+              <template #append>
+                <PathSelector @selection-confirmed="setSourcePath" />
+              </template>
+            </el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="20">
+        <el-col :span="8">
+          <el-form-item required label="ak" prop="ak">
+            <el-input clearable v-model="formModel.ak" placeholder="请输入ak"></el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item required label="sk" prop="sk">
+            <el-input clearable v-model="formModel.sk" placeholder="请输入sk"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -25,7 +42,7 @@
         </el-col>
         <el-col :span="8">
           <el-form-item required label="存储路径" prop="storagePath">
-            <el-input v-model="formModel.storagePath" placeholder="请输入存储路径"></el-input>
+            <el-input clearable v-model="formModel.storagePath" placeholder="请输入存储路径"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -39,7 +56,7 @@
       <el-row>
         <el-col :span="24" class="text-center">
           <el-form-item>
-            <el-button type="primary" @click="handleSubmit">立即下载</el-button>
+            <el-button type="primary" @click="handleSubmit">立即导出</el-button>
             <el-button disabled @click="handleReset">历史记录</el-button>
           </el-form-item>
         </el-col>
@@ -60,21 +77,24 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, watch, ref } from "vue";
+import { reactive, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
-import { generatePreprocessData, timeStr } from "./aiak-parms";
 
 interface StorageOptions {
   sourcePath: string;
   bucket: string;
   storagePath: string;
+  ak: string;
+  sk: string;
 }
 
 // 定义响应式的表单模型
 const formModel: StorageOptions = reactive({
-  sourcePath: "/pfs/data",
+  sourcePath: "",
   bucket: "",
   storagePath: "",
+  ak: "",
+  sk: "",
 });
 
 const msg = ref("数据集&权重下载");
@@ -108,15 +128,17 @@ const modelOptions = [
   "qwen1.5-72b",
 ];
 
-// 定义数据集选项
-const pretrainDatasets = ["pile_llama_test", "WuDaoCorpus2.0_base_sample"];
-const sftDatasets = ["alpaca_zh-llama3-train", "alpaca_zh-llama3-valid"];
+const setSourcePath = (path: string) => {
+  formModel.sourcePath = path;
+};
 
 // 定义表单验证规则
 const rules: FormRules = {
-  sourcePath: [{ required: true, message: "请选择源路径", trigger: "blur" }],
+  sourcePath: [{ required: true, message: "请选择文件夹路径", trigger: "blur" }],
   bucket: [{ required: true, message: "请选择模型名称", trigger: "blur" }],
   storagePath: [{ required: true, message: "请输入存储路径", trigger: "blur" }],
+  ak: [{ required: true, message: "请输入ak", trigger: "blur" }],
+  sk: [{ required: true, message: "请输入sk", trigger: "blur" }],
 };
 
 // 引用表单实例

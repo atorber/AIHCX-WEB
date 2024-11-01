@@ -1,7 +1,7 @@
 
-import { getFiles } from '../api/aiak'
+import { getFilesOrDirs } from '../api/aiak'
 
-export const getNodes = async (rootPath?: string) => {
+export const getDirs = async (rootPath?: string) => {
   rootPath = rootPath || '/'
     const res: {
       data: {
@@ -10,7 +10,7 @@ export const getNodes = async (rootPath?: string) => {
           type: string;
         }[]
       }
-    } = await getFiles({ path: rootPath })
+    } = await getFilesOrDirs({ path: rootPath })
     console.log('res', res)
     const { list } = res.data
     const nodes = list.filter((item)=>{
@@ -22,3 +22,23 @@ export const getNodes = async (rootPath?: string) => {
     }))
     return nodes
   }
+
+  export const getFiles = async (rootPath?: string) => {
+    rootPath = rootPath || '/'
+      const res: {
+        data: {
+          list: {
+            name: string;
+            type: string;
+          }[]
+        }
+      } = await getFilesOrDirs({ path: rootPath })
+      console.log('res', res)
+      const { list } = res.data
+      const nodes = list.map((item) => ({
+        value: item.name,
+        label: item.name,
+        leaf: item.type === 'file',
+      }))
+      return nodes
+    }

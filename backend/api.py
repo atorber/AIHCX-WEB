@@ -61,7 +61,13 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=[
+        "*",
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        ],
     allow_headers=["*"],
 )
 
@@ -399,7 +405,7 @@ async def save_script(script_name: str, content: str):
 @api_router.get("/files", summary="获取指定路径下的目录和文件")
 async def get_files(path: str):
     normalized_path = os.path.abspath(path)
-    base_dir = os.path.abspath("files")  # 限制访问在 'files' 目录下
+    base_dir = os.path.abspath("/")  # 限制访问在 'files' 目录下
 
     if not normalized_path.startswith(base_dir):
         raise HTTPException(status_code=403, detail="禁止访问该路径")
@@ -457,8 +463,16 @@ async def upload_file(path: str, file: UploadFile = File(...)):
 async def upload_file(file: UploadFile = File(...)):
     logger.info(f"接收到文件: {file.filename}")
     content = await file.read()
-    logger.info(f"文件内容: {content}")
-    return {"message": "ok", "file": content}
+    # logger.info(f"文件内容: {content}")
+    # 保存文件
+    file_path = Path("dist/uploads") / file.filename
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    with file_path.open("wb") as f:
+        f.write(content)
+        # 输出file_path的绝对路径
+        logger.info(f"文件保存到: {file_path.resolve()}")
+
+    return {"message": "ok", "file": file_path.resolve()}
 
 @api_router.post("/models/convert", summary="权重转换与切分")
 async def convert_weights(background_tasks: BackgroundTasks):
@@ -607,7 +621,7 @@ async def read_root():
     return RedirectResponse(url="/index.html")
 
 # 将 API 路由器包含到主应用中
-app.include_router(api_router, prefix="/api")
+app.include_router(api_router, prefix="")
 
 # 挂载静态文件目录
 app.mount("/", StaticFiles(directory="dist", html=True), name="static")

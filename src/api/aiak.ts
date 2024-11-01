@@ -1,8 +1,8 @@
 // 授权相关接口
 import { post, get } from '../utils/request'
 
-export const getFiles = (data: { path: string }) => {
-    return get('/api/files', data)
+export const getFilesOrDirs = (data: { path: string }) => {
+    return get('http://127.0.0.1:8000/api/files', data)
 }
 // 登录服务接口
 export const ServeLogin = (data: any) => {

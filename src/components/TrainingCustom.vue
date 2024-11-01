@@ -63,11 +63,12 @@
           <el-row :gutter="20">
             <el-col :span="8">
               <el-form-item label="load" prop="load">
-                <!-- <el-input v-model="formModel.checkpointConfig.load" placeholder="请输入加载模型的文件夹路径"></el-input> -->
-                <el-cascader @change="loadSet" :clearable=true :props="props" style="width: 100%;"
-                  v-model="formModel.checkpointConfig.load" placeholder="请选择加载模型的文件夹路径"></el-cascader>
-                <el-text v-if="formModel.checkpointConfig.load" class="mx-1" size="small">{{
-                  formModel.checkpointConfig.load }}</el-text>
+                <el-input v-model="formModel.checkpointConfig.load" placeholder="请输入加载模型的文件夹路径">
+                  <template #append>
+                    <PathSelector title="选择" @selection-confirmed="setCheckpointConfigLoad" />
+                  </template>
+                </el-input>
+
               </el-form-item>
             </el-col>
 
@@ -89,11 +90,11 @@
           <el-row :gutter="20">
             <el-col :span="8">
               <el-form-item label="save" prop="save">
-                <!-- <el-input v-model="formModel.checkpointConfig.save" placeholder="请输入保存模型的文件夹路径"></el-input> -->
-                <el-cascader @change="loadSet" :clearable=true :props="props" style="width: 100%;"
-                  v-model="formModel.checkpointConfig.save" placeholder="请选择保存模型的文件夹路径"></el-cascader>
-                <el-text v-if="formModel.checkpointConfig.save" class="mx-1" size="small">{{
-                  formModel.checkpointConfig.save }}</el-text>
+                <el-input v-model="formModel.checkpointConfig.save" placeholder="请输入保存模型的文件夹路径">
+                  <template #append>
+                    <PathSelector title="选择" @selection-confirmed="setCheckpointConfigSave" />
+                  </template>
+                </el-input>
               </el-form-item>
             </el-col>
 
@@ -132,8 +133,12 @@
         <el-collapse-item title="数据参数" name="1">
           <el-row :gutter="20" v-if="formModel.basicInfo['data-model'] == 'proportional-split'">
             <el-col :span="8">
-              <el-form-item required label="data-path" prop="dataPath">
-                <el-input v-model="formModel.dataParams['data-path']" placeholder="请输入预训练数据集文件路径"></el-input>
+              <el-form-item label="data-path" prop="dataPath">
+                <el-input v-model="formModel.dataParams['data-path']" placeholder="请输入预训练数据集文件路径">
+                  <template #append>
+                    <PathSelector title="选择" @selection-confirmed="setDataParamsDataPath" />
+                  </template>
+                </el-input>
               </el-form-item>
             </el-col>
             <el-col :span="8">
@@ -147,17 +152,29 @@
           <el-row :gutter="20" v-if="formModel.basicInfo['data-model'] == 'pre-split'">
             <el-col :span="8">
               <el-form-item label="train-data-path" prop="trainDataPath">
-                <el-input v-model="formModel.dataParams['train-data-path']" placeholder="请输入训练集路径"></el-input>
+                <el-input v-model="formModel.dataParams['train-data-path']" placeholder="请输入训练集路径">
+                  <template #append>
+                    <PathSelector title="选择" @selection-confirmed="setDataParamsTrainDataPath" />
+                  </template>
+                </el-input>
               </el-form-item>
             </el-col>
             <el-col :span="8">
               <el-form-item label="valid-data-path" prop="validDataPath">
-                <el-input v-model="formModel.dataParams['valid-data-path']" placeholder="请输入验证集路径"></el-input>
+                <el-input v-model="formModel.dataParams['valid-data-path']" placeholder="请输入验证集路径">
+                  <template #append>
+                    <PathSelector title="选择" @selection-confirmed="setDataParamsValidDataPath" />
+                  </template>
+                </el-input>
               </el-form-item>
             </el-col>
             <el-col :span="8">
               <el-form-item label="test-data-path" prop="testDataPath">
-                <el-input v-model="formModel.dataParams['test-data-path']" placeholder="请输入测试集路径"></el-input>
+                <el-input v-model="formModel.dataParams['test-data-path']" placeholder="请输入测试集路径">
+                  <template #append>
+                    <PathSelector title="选择" @selection-confirmed="setDataParamsTestDataPath" />
+                  </template>
+                </el-input>
               </el-form-item>
             </el-col>
           </el-row>
@@ -165,7 +182,11 @@
           <el-row :gutter="20">
             <el-col :span="8">
               <el-form-item label="data-cache-path" prop="dataCachePath">
-                <el-input v-model="formModel.dataParams['data-cache-path']" placeholder="请输入缓存存储路径"></el-input>
+                <el-input v-model="formModel.dataParams['data-cache-path']" placeholder="请输入缓存存储路径">
+                  <template #append>
+                    <PathSelector title="选择" @selection-confirmed="setDataParamsDataCachePath" />
+                  </template>
+                </el-input>
               </el-form-item>
             </el-col>
             <el-col :span="24">
@@ -1046,7 +1067,11 @@
             <el-col :span="8">
               <el-form-item label="tensorboard-dir" prop="tensorboardDir">
                 <el-input v-model="formModel.otherTrainingParams['tensorboard-dir']"
-                  placeholder="请输入 tensorboard 文件写入路径"></el-input>
+                  placeholder="请输入 tensorboard 文件写入路径">
+                  <template #append>
+                    <PathSelector title="选择" @selection-confirmed="setOtherTrainingParamsTensorboardDir" />
+                  </template>
+                </el-input>
               </el-form-item>
             </el-col>
 
@@ -1165,7 +1190,6 @@ import { reactive, computed, watch, ref } from "vue";
 import { ElMessage, FormRules, CollapseModelValue, CascaderProps } from "element-plus";
 import {
   generateTraining,
-  timeStr,
   getReplicas,
   AiakTrainingJob,
 } from "./aiak-parms";
@@ -1178,26 +1202,6 @@ import {
   TrainingParameters,
   parseShellScriptToJSON,
 } from '../utils/tool'
-import { getNodes } from "../utils/util";
-
-const props: CascaderProps = {
-  checkStrictly: true,
-  lazy: true,
-  lazyLoad(node, resolve) {
-    console.log('node', node)
-    const curPath = node.label? `/${node.pathLabels.join('/')}`:'/'
-    getNodes(curPath).then((nodes) => {
-      resolve(nodes)
-    }).catch((err) => {
-      console.error(err)
-    })
-  },
-}
-
-const loadSet = (val: any) => {
-  console.log(val.join('/'))
-  // formModel.checkpointConfig.load = val.join('/')
-}
 
 const activeNames = ref([''])
 const handleChange = (val: CollapseModelValue) => {
@@ -1254,20 +1258,37 @@ const modelOptions = [
   "mixtral-8x22b",
 ];
 
-// 定义数据集选项
-const pretrainDatasets = ["pile_llama_test", "WuDaoCorpus2.0_base_sample"];
-const sftDatasets = ["alpaca_zh-llama3-train", "alpaca_zh-llama3-valid"];
+const setCheckpointConfigLoad = (path: string) => {
+  formModel.checkpointConfig.load = path;
+}
 
-// 计算当前数据集选项
-const datasetOptions = computed(() => {
-  if (formModel.initialization['training-phase'] === "pretrain") {
-    return pretrainDatasets;
-  } else if (formModel.initialization['training-phase'] === "sft") {
-    return sftDatasets;
-  } else {
-    return [];
-  }
-});
+const setCheckpointConfigSave = (path: string) => {
+  formModel.checkpointConfig.save = path;
+}
+
+const setOtherTrainingParamsTensorboardDir = (path: string) => {
+  formModel.otherTrainingParams['tensorboard-dir'] = path;
+}
+
+const setDataParamsDataCachePath = (path: string) => {
+  formModel.dataParams['data-cache-path'] = path;
+}
+
+const setDataParamsDataPath = (path: string) => {
+  formModel.dataParams['data-path'] = path;
+}
+
+const setDataParamsTrainDataPath = (path: string) => {
+  formModel.dataParams['train-data-path'] = path;
+}
+
+const setDataParamsValidDataPath = (path: string) => {
+  formModel.dataParams['valid-data-path'] = path;
+}
+
+const setDataParamsTestDataPath = (path: string) => {
+  formModel.dataParams['test-data-path'] = path;
+}
 
 // 监听 trainingPhase 变化，重置 datasetName
 watch(
@@ -1360,69 +1381,6 @@ const handleReset = () => {
     generatedParams.value = ""; // 可选：清除生成的参数展示
     // formModel.basicInfo.version = timeStr() + '.sh'; // 重置版本号
     ElMessage.success("表单已重置");
-  }
-};
-
-const createJob = async () => {
-  const token = getAccessToken();
-  if (!token) {
-    ElMessage.error("在系统设置中配置API Key");
-    return;
-  }
-  const body = {
-    queue: "default",
-    priority: "normal",
-    jobFramework: "PyTorchJob",
-    name: job_info.name,
-    jobSpec: {
-      command: job_info.command,
-      image: job_info.image,
-      replicas: Number(job_info.replicas),
-      resources: [
-        {
-          name: "baidu.com/a800_80g_cgpu",
-          quantity: 8,
-        },
-      ],
-      enableRDMA: true,
-      envs: [
-        {
-          name: "CUDA_DEVICE_MAX_CONNECTIONS",
-          value: "1",
-        },
-      ],
-    },
-    datasources: [
-      {
-        type: "pfs",
-        name: resourcePoolInfo.value.spec.associatedPfsId,
-        sourcePath: "/",
-        mountPath: job_info.mountPath,
-      },
-    ],
-  };
-  try {
-    const res = await axios.post(
-      `https://6d6q5xfg0drsm.cfc-execute.bj.baidubce.com/api/v1/aijobs`,
-      body,
-      {
-        params: {
-          resourcePoolId: resourcePoolInfo.value.metadata.id,
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    console.log(res.data);
-    if (res.data.result && res.data.result.jobId) {
-      ElMessage.success("创建任务成功");
-    } else {
-      ElMessage.error("创建任务失败");
-    }
-  } catch (error) {
-    console.error("Error copying job:", error);
-    ElMessage.error("创建任务失败");
   }
 };
 

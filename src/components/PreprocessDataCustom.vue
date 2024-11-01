@@ -35,13 +35,23 @@
 
       <el-row :gutter="20">
         <el-col :span="8">
-          <el-form-item required label="源路径" prop="sourcePath">
-            <el-input v-model="formModel.sourcePath" placeholder="请输入源路径"></el-input>
+          <el-form-item required label="原始数据路径" prop="sourcePath">
+            <el-input clearable v-model="formModel.sourcePath" placeholder="请输入原始数据路径">
+              <template #append>
+                <PathSelector @selection-confirmed="setSourcePath" />
+              </template>
+            </el-input>
           </el-form-item>
         </el-col>
+      </el-row>
+      <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item required label="保存路径" prop="savePath">
-            <el-input v-model="formModel.savePath" placeholder="请输入数据集 URL，以bos:/开头"></el-input>
+            <el-input clearable v-model="formModel.savePath" placeholder="请输入数据集保存路径">
+              <template #append>
+                <PathSelector @selection-confirmed="setSavePath" />
+              </template>
+            </el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -133,10 +143,18 @@ const modelOptions = [
 const pretrainDatasets = ["pile_llama_test", "WuDaoCorpus2.0_base_sample"];
 const sftDatasets = ["alpaca_zh-llama3-train", "alpaca_zh-llama3-valid"];
 
+const setSourcePath = (path: string) => {
+  formModel.sourcePath = path;
+};
+
+const setSavePath = (path: string) => {
+  formModel.savePath = path;
+};
+
 // 定义表单验证规则
 const rules: FormRules = {
   modelName: [{ required: true, message: "请选择模型名称", trigger: "blur" }],
-  sourcePath: [{ required: true, message: "请输入源路径", trigger: "blur" }],
+  sourcePath: [{ required: true, message: "请输入原始数据路径", trigger: "blur" }],
   savePath: [{ required: true, message: "请输入保存路径", trigger: "blur" }],
   jsonKeys: [{ required: true, message: "请输入 JSON Keys", trigger: "blur" }],
   trainingPhase: [{ required: true, message: "请选择训练阶段", trigger: "blur" }],

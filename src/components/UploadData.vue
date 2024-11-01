@@ -11,8 +11,7 @@
             <el-upload
     ref="uploadRef"
     class="upload-demo"
-    action="/api/upload"
-    :auto-upload="false"
+    action="http://127.0.0.1:8000/api/upload"
     :limit="1"
     :before-upload="beforeAvatarUpload"
     :on-error="onError"
@@ -35,7 +34,11 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item required label="保存路径" prop="savePath">
-            <el-input v-model="formModel.savePath" placeholder="请选择保存路径"></el-input>
+            <el-input clearable v-model="formModel.savePath" placeholder="请选择保存路径">
+              <template #append>
+                <PathSelector @selection-confirmed="setSavePath" />
+              </template>
+            </el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -70,11 +73,9 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, watch, ref } from "vue";
+import { reactive, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
-import { generatePreprocessData, timeStr } from "./aiak-parms";
-import type { UploadInstance } from 'element-plus'
-import type { UploadProps } from 'element-plus'
+import type { UploadInstance, UploadProps } from 'element-plus'
 
 const uploadRef = ref<UploadInstance>()
 
@@ -86,7 +87,7 @@ interface UploadData {
 // 定义响应式的表单模型
 const formModel:UploadData = reactive({
   data: '',
-  savePath: "/workspace/pfs",
+  savePath: "",
 });
 
 // 定义生成的参数
@@ -104,6 +105,10 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
   return true
 }
 
+const setSavePath = (path: string) => {
+  formModel.savePath = path
+}
+
 const onError = (err: any, file: any, fileList: any) => {
   console.error('upload err', err)
   console.error('upload file', file)
@@ -114,6 +119,7 @@ const onSuccess = (res: any, file: any, fileList: any) => {
   console.info('upload res', res)
   console.info('upload file', file)
   console.info('upload fileList', fileList)
+  formModel.data = res.file
 }
 
 // 引用表单实例
@@ -121,7 +127,6 @@ const formRef = ref();
 
 // 提交表单
 const handleSubmit = () => {
-  uploadRef.value?.submit()
   if (!formModel.data) {
     ElMessage.warning("请选择文件");
     return false;
@@ -133,6 +138,7 @@ const handleSubmit = () => {
       try {
         generatedParams.value = JSON.stringify(aiakJobConfig, null, 2);
         ElMessage.success("已生成成功");
+        uploadRef.value!.clearFiles()
       } catch (error) {
         ElMessage.error("生成参数时出错，请检查输入");
         console.error(error);
