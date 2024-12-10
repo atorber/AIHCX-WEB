@@ -5,7 +5,7 @@
       <!-- <BaseSide /> -->
       <el-menu default-active="5" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
         @select="handSelect">
-        <el-sub-menu index="0-0">
+        <!-- <el-sub-menu index="0-0">
           <template #title>
             <el-icon><ElementPlus /></el-icon>自定义训练
           </template>
@@ -27,7 +27,7 @@
           <el-menu-item index="10">
             <template #title>训练参数编辑器</template>
           </el-menu-item>
-        </el-sub-menu>
+        </el-sub-menu> -->
         <el-sub-menu index="0-1">
           <template #title>
             <el-icon><SwitchFilled /></el-icon>启动命令生成
