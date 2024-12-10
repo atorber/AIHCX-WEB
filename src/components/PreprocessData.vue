@@ -115,7 +115,7 @@
           - 版本：必填，本次训练的备注标识，通过版本可以区分训练任务<br />
           - 训练阶段：必选，支持选择pretrain和sft<br />
           - 数据集名称：可选，使用预置的测试数据集<br />
-          - 镜像：必填，AIAK镜像地址，支持2.1.1.5以上<br />
+          - 镜像：必填，AIAK镜像地址，支持2.1.5.1以上<br />
           - 挂载路径：必填，挂载的PFS路径<br />
           -
           数据集URL：选填，数据集的BOS存储地址，填写时会使用填写的地址覆盖默认测试数据集地址<br />
@@ -170,7 +170,7 @@ const formModel = reactive({
   pp: undefined as number | undefined,
   datasetName: "alpaca_zh-llama3-train",
   image:
-    "registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.1.5_release",
+    "registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.5.1_release",
   mountPath: "/workspace/pfs",
   modelUrl: "",
   datasetUrl: "",
@@ -206,6 +206,13 @@ const modelOptions = [
   "qwen1.5-14b",
   "qwen1.5-32b",
   "qwen1.5-72b",
+  "qwen2.5-0.5b",
+  "qwen2.5-1.5b",
+  "qwen2.5-3b",
+  "qwen2.5-7b",
+  "qwen2.5-14b",
+  "qwen2.5-32b",
+  "qwen2.5-72b",
 ];
 
 // 定义数据集选项

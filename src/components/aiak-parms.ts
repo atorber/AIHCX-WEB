@@ -505,7 +505,7 @@ const chain_info_temp = {
             "name": "pretrain-qwen2-72b-ck-v1",
             "jobSpec": {
                 "command": "",
-                "image": "registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.1.5_release",
+                "image": "registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.5.1_release",
                 "replicas": 1,
                 "envs": []
             },
@@ -537,7 +537,7 @@ const chain_info_temp = {
             "name": "pretrain-qwen2-72b-dp-v1",
             "jobSpec": {
                 "command": "",
-                "image": "registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.1.5_release",
+                "image": "registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.5.1_release",
                 "replicas": 1,
                 "envs": []
             },
@@ -566,7 +566,7 @@ const chain_info_temp = {
             "name": "pretrain-qwen2-72b-train-v1",
             "jobSpec": {
                 "command": "bash /workspace/AIAK-Training-LLM/examples/qwen2/pretrain/pretrain_qwen2_72b.sh",
-                "image": "registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.1.5_release",
+                "image": "registry.baidubce.com/aihc-aiak/aiak-training-llm:ubuntu22.04-cu12.3-torch2.2.0-py310-bccl1.2.7.2_v2.1.5.1_release",
                 "replicas": 4,
                 "resources": [
                     {
