@@ -337,6 +337,48 @@ export const models: { [key: string]: [string, string, string, number] } = {
         "4",
         4
     ],
+    "qwen2.5-0.5b": [
+        "bos:/cce-ai-models/huggingface.co/Qwen/Qwen2.5-0.5B",
+        "1",
+        "1",
+        4
+    ],
+    "qwen2.5-1.5b": [
+        "bos:/cce-ai-models/huggingface.co/Qwen/Qwen2.5-1.5B",
+        "1",
+        "1",
+        4
+    ],
+    "qwen2.5-3b": [
+        "bos:/cce-ai-models/huggingface.co/Qwen/Qwen2.5-3B",
+        "1",
+        "1",
+        4
+    ],
+    "qwen2.5-7b": [
+        "bos:/cce-ai-models/huggingface.co/Qwen/Qwen2.5-7B",
+        "1",
+        "1",
+        4
+    ],
+    "qwen2.5-14b": [
+        "bos:/cce-ai-models/huggingface.co/Qwen/Qwen2.5-14B",
+        "1",
+        "2",
+        2
+    ],
+    "qwen2.5-32b": [
+        "bos:/cce-ai-models/huggingface.co/Qwen/Qwen2.5-32B",
+        "4",
+        "2",
+        2
+    ],
+    "qwen2.5-72b": [
+        "bos:/cce-ai-models/huggignface.co/Qwen/Qwen2.5-72B-Instruct",
+        "8",
+        "4",
+        4
+    ],
     "STDiT-XL/2": [
         "bos:/cce-ai-models/huggingface.co/hpcai-tech/OpenSora-STDiT-v2-stage3",
         "#N/A",
