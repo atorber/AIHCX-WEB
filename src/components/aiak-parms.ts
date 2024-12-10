@@ -68,7 +68,7 @@ export function generateParameter(aiakJobConfig: any): {
     const MODEL_NAME = aiakJobInfo['MODEL_NAME'];
     let TP = aiakJobInfo['TP'];
     let PP = aiakJobInfo['PP'];
-    const JSON_KEYS = aiakJobInfo['JSON_KEYS'] || '';
+    const JSON_KEYS = aiakJobInfo['JSON_KEYS'] || 'text';
     const IMAGE = aiakJobInfo['IMAGE'];
     const TRAINING_PHASE = aiakJobInfo['TRAINING_PHASE'];
     const REPLICAS = aiakJobInfo['REPLICAS'] || models[MODEL_NAME][3];
@@ -340,14 +340,14 @@ export function generateAiakAllInOneParameter(aiakJobConfig: any): string {
 
     const aiakJobInfo: any = aiakJobConfig;
 
-    const VERSION = aiakJobInfo['VERSION'];
+    const VERSION = aiakJobInfo['VERSION']||'';
     const DATASET_NAME = aiakJobInfo['DATASET_NAME'];
-    const MODEL_NAME = aiakJobInfo['MODEL_NAME'];
+    const MODEL_NAME = aiakJobInfo['MODEL_NAME']||'qwen2-72b';
     let TP = aiakJobInfo['TP'];
     let PP = aiakJobInfo['PP'];
     const JSON_KEYS = aiakJobInfo['JSON_KEYS'] || '';
     const IMAGE = aiakJobInfo['IMAGE'];
-    const TRAINING_PHASE = aiakJobInfo['TRAINING_PHASE'];
+    const TRAINING_PHASE = aiakJobInfo['TRAINING_PHASE']||'pretrain';
     const REPLICAS = aiakJobInfo['REPLICAS'] || models[MODEL_NAME][3];
     const MOUNT_PATH = aiakJobInfo['MOUNT_PATH'];
     const MODEL_URL = aiakJobInfo['MODEL_URL'] || '';

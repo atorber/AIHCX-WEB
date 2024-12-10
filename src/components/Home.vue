@@ -9,6 +9,10 @@
   >
     <h1 color="$ep-color-primary">{{ msg }}</h1>
 
+    <div style="padding: 10px 0px;">
+      <el-alert title="单机训练命令将权重转换、数据预处理、启动训练任务集成在一个命令里，对于多机任务前两个步骤会执行多次" type="error" />
+    </div>
+
     <!-- 表单开始 -->
     <el-form
       ref="formRef"
@@ -230,7 +234,7 @@ const formModel = reactive({
   jsonKeys: "text",
 });
 
-const msg = ref("All in one 训练执行命令生成");
+const msg = ref("单机训练执行命令生成");
 
 // 定义生成的参数
 const generatedParams = ref("");

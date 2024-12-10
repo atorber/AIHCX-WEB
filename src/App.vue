@@ -3,45 +3,50 @@
     <BaseHeader />
     <div class="flex main-container">
       <!-- <BaseSide /> -->
-      <el-menu
-        default-active="5"
-        class="el-menu-vertical-demo"
-        @open="handleOpen"
-        @close="handleClose"
-        @select="handSelect"
-      >
-        <el-menu-item index="5">
-          <el-icon>
-            <setting />
-          </el-icon>
+      <el-menu default-active="5" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
+        @select="handSelect">
+        <el-sub-menu index="0-0">
+          <template #title>
+            <el-icon><ElementPlus /></el-icon>自定义训练
+          </template>
+          <el-menu-item index="11">
+            <template #title>下载数据</template>
+          </el-menu-item>
+          <el-menu-item index="15">
+            <template #title>上传文件</template>
+          </el-menu-item>
+          <el-menu-item index="12">
+            <template #title>权重转换与切分</template>
+          </el-menu-item>
+          <el-menu-item index="13">
+            <template #title>数据预处理</template>
+          </el-menu-item>
+          <el-menu-item index="14">
+            <template #title>数据导出</template>
+          </el-menu-item>
+          <el-menu-item index="10">
+            <template #title>训练参数编辑器</template>
+          </el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu index="0-1">
+          <template #title>
+            <el-icon><SwitchFilled /></el-icon>启动命令生成
+          </template>
+          <el-menu-item index="5">
           <template #title>权重转换与切分</template>
         </el-menu-item>
         <el-menu-item index="6">
-          <el-icon>
-            <setting />
-          </el-icon>
           <template #title>数据预处理</template>
         </el-menu-item>
         <el-menu-item index="7">
-          <el-icon>
-            <setting />
-          </el-icon>
-          <template #title>AIAK训练任务</template>
+          <template #title>训练任务</template>
         </el-menu-item>
         <el-menu-item index="2">
-          <el-icon><icon-menu /></el-icon>
-          <template #title>All-in-one任务</template>
+          <template #title>单机任务</template>
         </el-menu-item>
-        <el-menu-item disabled index="4">
-          <el-icon>
-            <setting />
-          </el-icon>
-          <template #title>并行策略搜索</template>
-        </el-menu-item>
+        </el-sub-menu>
         <el-menu-item index="8">
-          <el-icon>
-            <setting />
-          </el-icon>
+          <el-icon><List /></el-icon>
           <template #title>任务列表</template>
         </el-menu-item>
         <el-menu-item index="9">
@@ -53,13 +58,22 @@
       </el-menu>
       <div w="full" py="4">
         <Home msg="AIHCX" v-if="currentKey == '2'" />
-        <ConvertCheckpoint msg="AIHCX" v-if="currentKey == '5'" />
-        <PreprocessData msg="AIHCX" v-if="currentKey == '6'" />
-        <Training msg="AIHCX" v-if="currentKey == '7'" />
-        <JobList msg="AIHCX" v-if="currentKey == '8'" />
-        <Settings msg="AIHCX" v-if="currentKey == '9'" />
-        <!-- <Logos my="4" /> -->
-        <!-- <HelloWorld msg="Hello Vue 3 + Element Plus + Vite" /> -->
+        <ConvertCheckpoint msg="AIHCX" v-else-if="currentKey == '5'" />
+        <PreprocessData msg="AIHCX" v-else-if="currentKey == '6'" />
+        <Training msg="AIHCX" v-else-if="currentKey == '7'" />
+        <JobList msg="AIHCX" v-else-if="currentKey == '8'" />
+        <Settings msg="AIHCX" v-else-if="currentKey == '9'" />
+        <TrainingCustom msg="AIHCX" v-else-if="currentKey == '10'" />
+        <DownloadData msg="AIHCX" v-else-if="currentKey == '11'" />
+        <ConvertCheckpointCustom msg="AIHCX" v-else-if="currentKey == '12'" />
+        <PreprocessDataCustom msg="AIHCX" v-else-if="currentKey == '13'" />
+        <UploadData msg="AIHCX" v-else-if="currentKey == '15'" />
+        <ExportData msg="AIHCX" v-else-if="currentKey == '14'" />
+        <div v-else>
+          <Logos my="4" />
+          <h1>Comeing soon...</h1>
+        </div>
+        <!-- <HelloWorld v-else msg="Hello Vue 3 + Element Plus + Vite" /> -->
       </div>
     </div>
   </el-config-provider>

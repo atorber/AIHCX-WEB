@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Strategy Generation Dashboard</title>
+    <!-- Include Vue.js via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #333333;
+            margin-bottom: 25px;
+        }
+        form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 45%; /* Two input fields per row */
+            min-width: 250px;
+        }
+        .form-group.full-width {
+            flex: 1 1 100%; /* Single input field per row */
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555555;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #cccccc;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        #submit-btn {
+            padding: 12px 25px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            align-self: flex-start;
+            margin-top: 10px;
+        }
+        #submit-btn:hover {
+            background-color: #0056b3;
+        }
+        #submit-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #logs {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #dddddd;
+            border-radius: 5px;
+            height: 400px;
+            overflow-y: scroll;
+            white-space: pre-wrap;
+            font-family: Consolas, monospace;
+        }
+        .log-info {
+            color: #000000;
+        }
+        .log-error {
+            color: #ff0000;
+        }
+        .log-success {
+            color: #28a745;
+        }
+        .log-warning {
+            color: #ffc107;
+        }
+        @media (max-width: 768px) {
+            .form-group {
+                flex: 1 1 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container">
+        <h1>Strategy Generation Dashboard</h1>
+        <form @submit.prevent="handleSubmit">
+            <!-- 第一行: Model Name & Number of GPUs -->
+            <div class="form-group">
+                <label for="model_name">Model Name</label>
+                <input type="text" id="model_name" v-model="form.model_name" placeholder="e.g., llama2-70b" required>
+            </div>
+            <div class="form-group">
+                <label for="num_gpus">Number of GPUs</label>
+                <input type="number" id="num_gpus" v-model.number="form.num_gpus" placeholder="e.g., 256" min="1" required>
+            </div>
+            <!-- 第二行: Processes per Node & GPU Infos -->
+            <div class="form-group">
+                <label for="nproc_per_node">Processes per Node</label>
+                <input type="number" id="nproc_per_node" v-model.number="form.nproc_per_node" placeholder="e.g., 8" min="1" required>
+            </div>
+            <div class="form-group">
+                <label for="gpu_infos">GPU Infos</label>
+                <input type="text" id="gpu_infos" v-model="form.gpu_infos" placeholder="e.g., a800:256,h800:256" required>
+            </div>
+            <!-- 第三行: Global Batch Size & Sequence Length -->
+            <div class="form-group">
+                <label for="global_batch_size">Global Batch Size</label>
+                <input type="number" id="global_batch_size" v-model.number="form.global_batch_size" placeholder="e.g., 1024" min="1" required>
+            </div>
+            <div class="form-group">
+                <label for="sequence_length">Sequence Length</label>
+                <input type="number" id="sequence_length" v-model.number="form.sequence_length" placeholder="e.g., 4096" min="1" required>
+            </div>
+            <!-- 第四行: Top K & CPU GFLOPS -->
+            <div class="form-group">
+                <label for="top">Top K Strategies</label>
+                <input type="number" id="top" v-model.number="form.top" placeholder="e.g., 5" min="1" required>
+            </div>
+            <div class="form-group">
+                <label for="cpu_gflops">CPU GFLOPS</label>
+                <input type="number" id="cpu_gflops" v-model.number="form.cpu_gflops" placeholder="e.g., 3072" min="1" required>
+            </div>
+            <!-- 第五行: Memory Bandwidth & IDCs -->
+            <div class="form-group">
+                <label for="mem_bandwidth">Memory Bandwidth (GB/s)</label>
+                <input type="number" id="mem_bandwidth" v-model.number="form.mem_bandwidth" placeholder="e.g., 300" min="1" required>
+            </div>
+            <div class="form-group">
+                <label for="idcs">IDCs (comma-separated)</label>
+                <input type="text" id="idcs" v-model="form.idcs" placeholder="e.g., idc1,idc2">
+            </div>
+            <!-- 第六行: Inter IDC Bandwidth & Mode -->
+            <div class="form-group">
+                <label for="inter_idc_bandwidth">Inter IDC Bandwidth (comma-separated)</label>
+                <input type="text" id="inter_idc_bandwidth" v-model="form.inter_idc_bandwidth" placeholder="e.g., 100,100" required>
+            </div>
+            <div class="form-group">
+                <label for="mode">Mode</label>
+                <select id="mode" v-model="form.mode" required>
+                    <option value="fast">Fast</option>
+                    <option value="analytic">Analytic</option>
+                </select>
+            </div>
+            <!-- 第七行: Strategy File Path -->
+            <div class="form-group full-width">
+                <label for="strategy_file">Strategy File Path</label>
+                <input type="text" id="strategy_file" v-model="form.strategy_file" placeholder="e.g., /path/to/strategy_file.json">
+            </div>
+            <!-- 第八行: Number of Experts & MoE Router Top K -->
+            <div class="form-group">
+                <label for="num_experts">Number of Experts</label>
+                <input type="number" id="num_experts" v-model.number="form.num_experts" placeholder="e.g., 0" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="moe_router_topk">MoE Router Top K</label>
+                <input type="number" id="moe_router_topk" v-model.number="form.moe_router_topk" placeholder="e.g., 2" min="1" required>
+            </div>
+            <!-- 提交按钮 -->
+            <div class="form-group full-width">
+                <button type="submit" id="submit-btn" :disabled="isSubmitting">
+                    <span v-if="isSubmitting">Submitting...</span>
+                    <span v-else>Submit Task</span>
+                </button>
+            </div>
+        </form>
+        <h3>结果:</h3>
+        <div id="logs">
+            <!-- Log messages will appear here -->
+            <div v-for="(log, index) in logs" :key="index" :class="log.typeClass">
+                {{ log.message }}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    form: {
+                        model_name: "llama2-70b",
+                        num_gpus: 256,
+                        nproc_per_node: 8,
+                        gpu_infos: "a800:256,h800:256",
+                        global_batch_size: 1024,
+                        sequence_length: 4096,
+                        top: 5,
+                        cpu_gflops: 3072,
+                        mem_bandwidth: 300,
+                        idcs: "idc1,idc2",
+                        inter_idc_bandwidth: "100,100",
+                        mode: "fast",
+                        strategy_file: "",
+                        num_experts: 0,
+                        moe_router_topk: 2
+                    },
+                    logs: [],
+                    isSubmitting: false,
+                    pollingInterval: null
+                };
+            },
+            methods: {
+                /**
+                 * Append a log message with a specific type.
+                 * @param {string} message - The log message.
+                 * @param {string} type - The type of log ('info', 'error', 'success', 'warning').
+                 */
+                appendLog(message, type = 'info') {
+                    this.logs.push({
+                        message: message,
+                        typeClass: `log-${type}`
+                    });
+                    // Auto-scroll to the bottom
+                    this.$nextTick(() => {
+                        const logsDiv = document.getElementById('logs');
+                        logsDiv.scrollTop = logsDiv.scrollHeight;
+                    });
+                },
+                /**
+                 * Submit the task to the /run endpoint.
+                 */
+                async handleSubmit() {
+                    this.isSubmitting = true;
+                    this.logs = []; // Clear previous logs
+                    this.appendLog("Starting the task submission process...", 'info');
+
+                    try {
+                        const response = await fetch('/run', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(this.form)
+                        });
+
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(`HTTP error! Status: ${response.status}. Response: ${errorText}`);
+                        }
+
+                        const data = await response.json();
+                        const taskId = data.task_id;
+
+                        if (taskId) {
+                            this.appendLog(`Task submitted successfully. Task ID: ${taskId}`, 'success');
+                            this.pollStatus(taskId);
+                        } else {
+                            this.appendLog("Failed to retrieve Task ID from the response.", 'error');
+                        }
+                    } catch (error) {
+                        this.appendLog(`Error submitting task: ${error.message}`, 'error');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
+                /**
+                 * Poll the status of the submitted task.
+                 * @param {string} taskId - The ID of the task to poll.
+                 */
+                pollStatus(taskId) {
+                    const poll = async () => {
+                        try {
+                            const response = await fetch(`/status/${taskId}`, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            if (!response.ok) {
+                                const errorText = await response.text();
+                                throw new Error(`HTTP error! Status: ${response.status}. Response: ${errorText}`);
+                            }
+
+                            const data = await response.json();
+                            const status = data.status;
+                            const result = data.result;
+                            const error = data.error;
+
+                            this.appendLog(`Current Status: ${status}`, 'info');
+
+                            if (status === "completed") {
+                                this.appendLog("Task completed successfully. Generated strategies:", 'success');
+                                this.appendLog(JSON.stringify(result, null, 2), 'info');
+                                this.displayStrategies(result);
+                                clearInterval(this.pollingInterval);
+                            } else if (status === "failed") {
+                                this.appendLog(`Task failed. Error: ${error}`, 'error');
+                                clearInterval(this.pollingInterval);
+                            }
+                        } catch (error) {
+                            this.appendLog(`Error checking status: ${error.message}`, 'error');
+                            clearInterval(this.pollingInterval);
+                        }
+                    };
+
+                    // Immediately poll once
+                    poll();
+
+                    // Set interval to poll every 10 seconds
+                    this.pollingInterval = setInterval(poll, 10000);
+                },
+                /**
+                 * Display the generated strategies in a readable format.
+                 * @param {Array} strategies - The list of generated strategies.
+                 */
+                displayStrategies(strategies) {
+                    strategies.forEach((strategy, index) => {
+                        this.appendLog(`\nStrategy ${index + 1}:`, 'info');
+                        for (const [key, value] of Object.entries(strategy)) {
+                            this.appendLog(`  ${key}: ${value}`, 'info');
+                        }
+                    });
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
