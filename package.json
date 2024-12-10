@@ -1,7 +1,7 @@
 {
   "name": "aihcx-web",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.2.1",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -28,7 +28,7 @@
     "unplugin-vue-components": "^0.26.0",
     "vite": "^5.2.5",
     "vite-ssg": "^0.23.6",
-    "vue-tsc": "^2.0.7"
+    "vue-tsc": "^2.1.10"
   },
   "license": "MIT"
 }
