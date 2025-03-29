@@ -23,6 +23,26 @@ const getSignature = (ak, sk, method, path, query, headers) => {
   return signature;
 };
 
+// 提取请求头中的ak、sk、region
+function extractCredentials(headers) {
+  let ak = headers.ak;
+  let sk = headers.sk;
+  let region = headers.region;
+
+  if (headers.authorization) {
+    const [authAk, authSk, authRegion] = headers.authorization.replace("Bearer ", "").split("|");
+    ak = ak || authAk;
+    sk = sk || authSk;
+    region = region || authRegion;
+  }
+
+  if (!ak || !sk || !region) {
+    throw new Error('Missing required credentials (ak, sk, region)');
+  }
+
+  return { ak, sk, region };
+}
+
 exports.handler = async (event, context, callback) => {
   // event格式如下：
   // {
