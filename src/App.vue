@@ -5,7 +5,13 @@
       <!-- <BaseSide /> -->
       <el-menu default-active="5" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
         @select="handSelect">
-        <!-- <el-sub-menu index="0-0">
+        <el-menu-item index="16">
+          <el-icon>
+            <setting />
+          </el-icon>
+          <template #title>应用市场</template>
+        </el-menu-item>
+        <el-sub-menu index="0-0">
           <template #title>
             <el-icon><ElementPlus /></el-icon>自定义训练
           </template>
@@ -27,7 +33,7 @@
           <el-menu-item index="10">
             <template #title>训练参数编辑器</template>
           </el-menu-item>
-        </el-sub-menu> -->
+        </el-sub-menu>
         <el-sub-menu index="0-1">
           <template #title>
             <el-icon><SwitchFilled /></el-icon>启动命令生成
@@ -69,6 +75,7 @@
         <PreprocessDataCustom msg="AIHCX" v-else-if="currentKey == '13'" />
         <UploadData msg="AIHCX" v-else-if="currentKey == '15'" />
         <ExportData msg="AIHCX" v-else-if="currentKey == '14'" />
+        <Market msg="AIHCX" v-else-if="currentKey == '16'" />
         <div v-else>
           <Logos my="4" />
           <h1>Comeing soon...</h1>
