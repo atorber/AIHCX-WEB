@@ -69,42 +69,23 @@ router.get(RESOURCE_POOL_API, async (req: Request, res: Response) => {
  *     description: 获取所有可用资源池列表
  *     parameters:
  *       - in: header
- *         name: ak
- *         schema:
- *           type: string
- *         required: false
- *         description: 访问密钥
- *       - in: header
- *         name: sk
- *         schema:
- *           type: string
- *         required: false
- *         description: 访问密钥
- *       - in: header
- *         name: region
- *         schema:
- *           type: string
- *         required: false
- *         default: bj
- *         description: "区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: header
  *         name: authorization
  *         schema:
  *           type: string
  *         required: false
- *         description: 授权信息
+ *         description: "授权信息, 格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: header
  *         name: x-api-key
  *         schema:
  *           type: string
  *         required: false
- *         description: 自定义授权信息
+ *         description: "自定义授权信息，格式: <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: header
  *         name: token
  *         schema:
  *           type: string
  *         required: false
- *         description: 自定义授权信息
+ *         description: "自定义授权信息，格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: query
  *         name: pageNumber
  *         schema:
@@ -214,42 +195,23 @@ const DescribeResourcePools = async (req: Request, res: Response) => {
  *     description: 获取指定资源池的详情
  *     parameters:
  *       - in: header
- *         name: ak
- *         schema:
- *           type: string
- *         required: false
- *         description: 访问密钥
- *       - in: header
- *         name: sk
- *         schema:
- *           type: string
- *         required: false
- *         description: 访问密钥
- *       - in: header
- *         name: region
- *         schema:
- *           type: string
- *         required: false
- *         default: bj
- *         description: "区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: header
  *         name: authorization
  *         schema:
  *           type: string
  *         required: false
- *         description: 授权信息
+ *         description: "授权信息, 格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: header
  *         name: x-api-key
  *         schema:
  *           type: string
  *         required: false
- *         description: 自定义授权信息
+ *         description: "自定义授权信息，格式: <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: header
  *         name: token
  *         schema:
  *           type: string
  *         required: false
- *         description: 自定义授权信息
+ *         description: "自定义授权信息，格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: query
  *         name: resourcePoolId
  *         schema:
@@ -328,42 +290,23 @@ const DescribeResourcePool = async (req: Request, res: Response) => {
  *     description: 获取指定资源池中的资源队列列表
  *     parameters:
  *       - in: header
- *         name: ak
- *         schema:
- *           type: string
- *         required: false
- *         description: 访问密钥
- *       - in: header
- *         name: sk
- *         schema:
- *           type: string
- *         required: false
- *         description: 访问密钥
- *       - in: header
- *         name: region
- *         schema:
- *           type: string
- *         required: false
- *         default: bj
- *         description: "区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: header
  *         name: authorization
  *         schema:
  *           type: string
  *         required: false
- *         description: 授权信息
+ *         description: "授权信息, 格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: header
  *         name: x-api-key
  *         schema:
  *           type: string
  *         required: false
- *         description: 自定义授权信息
+ *         description: "自定义授权信息，格式: <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: header
  *         name: token
  *         schema:
  *           type: string
  *         required: false
- *         description: 自定义授权信息
+ *         description: "自定义授权信息，格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: query
  *         name: resourcePoolId
  *         schema:
@@ -443,42 +386,23 @@ const DescribeResourceQueues = async (req: Request, res: Response) => {
  *     description: 获取指定资源队列的详情
  *     parameters:
  *       - in: header
- *         name: ak
- *         schema:
- *           type: string
- *         required: false
- *         description: 访问密钥
- *       - in: header
- *         name: sk
- *         schema:
- *           type: string
- *         required: false
- *         description: 访问密钥
- *       - in: header
- *         name: region
- *         schema:
- *           type: string
- *         required: false
- *         default: bj
- *         description: "区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: header
  *         name: authorization
  *         schema:
  *           type: string
  *         required: false
- *         description: 授权信息
+ *         description: "授权信息, 格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: header
  *         name: x-api-key
  *         schema:
  *           type: string
  *         required: false
- *         description: 自定义授权信息
+ *         description: "自定义授权信息，格式: <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: header
  *         name: token
  *         schema:
  *           type: string
  *         required: false
- *         description: 自定义授权信息
+ *         description: "自定义授权信息，格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: query
  *         name: resourcePoolId
  *         schema:

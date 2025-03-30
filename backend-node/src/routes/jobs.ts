@@ -157,41 +157,23 @@ router.post(JOBS_API, async (req: Request, res: Response) => {
  *     description: 获取指定资源池中的任务列表
 *     parameters:
 *       - in: header
-*         name: ak
-*         schema:
-*           type: string
-*         required: false
-*         description: API密钥
-*       - in: header
-*         name: sk
-*         schema:
-*           type: string
-*         required: false
-*         description: API密钥
-*       - in: header
-*         name: region
-*         schema:
-*           type: string
-*         required: false
-*         description: 地域
-*       - in: header
 *         name: token
 *         schema:
 *           type: string
 *         required: false
-*         description: 自定义授权信息
+*         description: "授权信息, 格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
 *       - in: header
 *         name: authorization
 *         schema:
 *           type: string
 *         required: false
-*         description: 授权信息
+*         description: "授权信息, 格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
 *       - in: header
 *         name: x-api-key
 *         schema:
 *           type: string
 *         required: false
-*         description: 自定义授权信息
+*         description: "自定义授权信息，格式: <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
 *       - in: query
 *         name: resourcePoolId
 *         schema:
@@ -243,41 +225,23 @@ const DescribeJobs = async (req: Request, res: Response) => {
  *     description: 获取指定任务的详情
  *     parameters:
  *       - in: header
- *         name: ak
- *         schema:
- *           type: string
- *         required: true
- *         description: API密钥
- *       - in: header
- *         name: sk
- *         schema:
- *           type: string
- *         required: true
- *         description: API密钥
- *       - in: header
- *         name: region
- *         schema:
- *           type: string
- *         required: true
- *         description: 地域
- *       - in: header
  *         name: token
  *         schema:
  *           type: string
  *         required: true
- *         description: 自定义授权信息
+ *         description: "授权信息, 格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: header
  *         name: authorization
  *         schema:
  *           type: string
  *         required: true
- *         description: 授权信息
+ *         description: "授权信息, 格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: header
  *         name: x-api-key
  *         schema:
  *           type: string
  *         required: true
- *         description: 自定义授权信息
+ *         description: "自定义授权信息，格式: <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: query
  *         name: jobId
  *         schema:
