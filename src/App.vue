@@ -55,6 +55,10 @@
           <el-icon><List /></el-icon>
           <template #title>任务列表</template>
         </el-menu-item>
+        <el-menu-item index="17">
+          <el-icon><List /></el-icon>
+          <template #title>资源队列</template>
+        </el-menu-item>
         <el-menu-item index="9">
           <el-icon>
             <setting />
@@ -76,6 +80,7 @@
         <UploadData msg="AIHCX" v-else-if="currentKey == '15'" />
         <ExportData msg="AIHCX" v-else-if="currentKey == '14'" />
         <Market msg="AIHCX" v-else-if="currentKey == '16'" />
+        <ResourcePoolList msg="AIHCX" v-else-if="currentKey == '17'" />
         <div v-else>
           <Logos my="4" />
           <h1>Comeing soon...</h1>

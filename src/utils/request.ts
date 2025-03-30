@@ -6,7 +6,10 @@ import { ElMessageBox } from 'element-plus'
 const request = axios.create({
     // API 请求的默认前缀
     baseURL: import.meta.env.VITE_BASE_API,
-
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAccessToken()}`
+    },
     // 请求超时时间
     timeout: 120000
 })

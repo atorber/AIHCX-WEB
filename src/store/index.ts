@@ -7,6 +7,9 @@ import { MutationTypes, ActionTypes } from './mutation-types.js';
 import { getAccessToken, getAkSk } from '../utils/auth.js'
 import { ElMessage } from "element-plus";
 
+// const baseUrl = 'https://6d6q5xfg0drsm.cfc-execute.bj.baidubce.com'
+const baseUrl = 'http://localhost:8000'
+
 // 定义 Mutations 接口
 export interface Mutations {
     [MutationTypes.UPDATE_CHECKED_CITIES](state: State, checkedCities: string[]): void;
@@ -70,9 +73,10 @@ const actions: Actions = {
                 console.error("token is not set");
                 ElMessage.warning("在系统设置中配置API Key");
             } else {
-                const response = await axios.get(
-                    `https://6d6q5xfg0drsm.cfc-execute.bj.baidubce.com/api/v1/aijobs`,
-                    {
+                try {
+                    const response = await axios.get(
+                        `${baseUrl}/?action=DescribeJobs`,
+                        {
                         params: {
                             resourcePoolId,
                         },
@@ -81,7 +85,11 @@ const actions: Actions = {
                         }
                     }
                 );
-                jobs = response.data.result.jobs
+                jobs = response.data.jobs
+                } catch (error) {
+                    console.error("Error fetching jobs:", error);
+                    ElMessage.error("获取任务列表失败");
+                }
             }
             commit(MutationTypes.UPDATE_JOB_LIST, jobs);
         } catch (error) {
@@ -101,7 +109,7 @@ const actions: Actions = {
 
             } else {
                 const response = await axios.get(
-                    `https://6d6q5xfg0drsm.cfc-execute.bj.baidubce.com/api/v1/resourcepools`,
+                    `${baseUrl}/?action=DescribeResourcePools`,
                     {
                         params: {
                         },
@@ -110,7 +118,7 @@ const actions: Actions = {
                         }
                     }
                 );
-                resourcePools = response.data.result.resourcePools
+                resourcePools = response.data.resourcePools
             }
             commit(MutationTypes.UPDATE_RESOURCEPOOLS, resourcePools);
         } catch (error) {

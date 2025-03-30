@@ -1,0 +1,35 @@
+{
+  "name": "backend-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "zip": "zip -r code.zip *",
+    "dev": "ts-node src/index.ts",
+    "build": "tsc",
+    "generate": "vite-ssg build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "start": "node dist/index.js"
+  },
+  "author": "atorber",
+  "license": "ISC",
+  "dependencies": {
+    "@baiducloud/sdk": "^1.0.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
+    "@types/request-promise": "^4.1.51",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  }
+}

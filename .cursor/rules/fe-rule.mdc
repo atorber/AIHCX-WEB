@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+- 所有的列表页保持相同的交互风格
+- 所有的详情页保持相同的交互风格
