@@ -1,7 +1,7 @@
 import { get, post } from '../utils/request'
 
 // 获取任务列表服务接口
-export const ServeGetJobs = (data: { resourcePoolId: string }) => {
+export const ServeGetJobs = (data: { resourcePoolId: string, pageSize?: number, pageNumber?: number }) => {
     return get('/?action=DescribeJobs', data)
 }
 

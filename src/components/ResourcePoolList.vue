@@ -244,95 +244,136 @@
             <h4>队列信息</h4>
             <div v-loading="queueLoading">
               <el-empty v-if="resourceQueueList.length === 0" description="暂无队列信息" />
-              <el-table v-else :data="resourceQueueList" border style="width: 100%">
-                <el-table-column label="名称" prop="name" min-width="120">
-                  <template #default="scope">
-                    <el-tooltip
-                      :content="scope.row.name"
-                      placement="top"
-                      :show-after="500"
-                      :hide-after="0"
-                    >
-                      <div class="queue-name">{{ scope.row.name }}</div>
-                    </el-tooltip>
+              <div v-else class="queue-list">
+                <el-card v-for="queue in resourceQueueList" :key="queue.name" class="queue-card" shadow="hover">
+                  <template #header>
+                    <div class="queue-card-header">
+                      <div class="queue-title">
+                        <el-tooltip
+                          :content="queue.name"
+                          placement="top"
+                          :show-after="500"
+                          :hide-after="0"
+                        >
+                          <span class="queue-name">{{ queue.name }}</span>
+                        </el-tooltip>
+                        <el-tag size="small" :type="queue.state === 'Open' ? 'success' : 'warning'" style="margin-left: 8px">
+                          {{ queue.state }}
+                        </el-tag>
+                      </div>
+                      <div class="queue-actions">
+                        <el-tag size="small" type="info" style="margin-right: 8px">{{ queue.queueType }}</el-tag>
+                        <el-tag size="small" :type="queue.reclaimable ? 'success' : 'info'" style="margin-right: 8px">
+                          可回收: {{ queue.reclaimable ? '是' : '否' }}
+                        </el-tag>
+                        <el-tag size="small" :type="queue.preemptable ? 'success' : 'info'">
+                          可抢占: {{ queue.preemptable ? '是' : '否' }}
+                        </el-tag>
+                      </div>
+                    </div>
                   </template>
-                </el-table-column>
-                <el-table-column label="类型" prop="queueType" width="100" />
-                <el-table-column label="状态" width="100">
-                  <template #default="scope">
-                    <el-tag 
-                      :type="scope.row.state === 'Open' ? 'success' : 'warning'">
-                      {{ scope.row.state || '-' }}
-                    </el-tag>
-                  </template>
-                </el-table-column>
-                <el-table-column label="资源容量" width="100">
-                  <template #default="scope">
-                    <el-tooltip placement="top" effect="light" :show-after="500">
-                      <template #content>
-                        <div v-if="scope.row.capability">
-                          <div v-for="(value, key) in scope.row.capability" :key="key">
-                            {{ key }}: {{ value }}
+                  
+                  <el-descriptions :column="2" border>
+                    <el-descriptions-item label="调度策略">{{ queue.queueingStrategy }}</el-descriptions-item>
+                    <el-descriptions-item label="创建时间">{{ queue.createdTime }}</el-descriptions-item>
+                    <el-descriptions-item label="父队列">{{ queue.parentQueue }}</el-descriptions-item>
+                    <el-descriptions-item label="禁止超售">{{ queue.disableOversell ? '是' : '否' }}</el-descriptions-item>
+                  </el-descriptions>
+
+                  <!-- 资源信息 -->
+                  <div class="resource-section">
+                    <h5>资源信息</h5>
+                    <el-empty 
+                      v-if="!queue.capability && !queue.deserved && !queue.guarantee"
+                      description="暂无资源信息"
+                      :image-size="60"
+                    />
+                    <el-row v-else :gutter="20">
+                      <el-col :span="8" v-if="queue.capability">
+                        <div class="resource-card">
+                          <div class="resource-title">资源容量</div>
+                          <div class="resource-content">
+                            <div v-for="(value, key) in queue.capability" :key="key" class="resource-item">
+                              <span class="resource-label">{{ key }}:</span>
+                              <span class="resource-value">{{ value }}</span>
+                            </div>
                           </div>
                         </div>
-                        <div v-else>无资源容量信息</div>
-                      </template>
-                      <span>{{ getXpuValue(scope.row.capability) }}</span>
-                    </el-tooltip>
-                  </template>
-                </el-table-column>
-                <el-table-column label="分配资源" width="100">
-                  <template #default="scope">
-                    <el-tooltip placement="top" effect="light" :show-after="500">
-                      <template #content>
-                        <div v-if="scope.row.deserved">
-                          <div v-for="(value, key) in scope.row.deserved" :key="key">
-                            {{ key }}: {{ value }}
+                      </el-col>
+                      <el-col :span="queue.capability ? 8 : 12" v-if="queue.deserved">
+                        <div class="resource-card">
+                          <div class="resource-title">分配资源</div>
+                          <div class="resource-content">
+                            <div v-for="(value, key) in queue.deserved" :key="key" class="resource-item">
+                              <span class="resource-label">{{ key }}:</span>
+                              <span class="resource-value">{{ value }}</span>
+                            </div>
                           </div>
                         </div>
-                        <div v-else>无分配资源信息</div>
-                      </template>
-                      <span>{{ getXpuValue(scope.row.deserved) }}</span>
-                    </el-tooltip>
-                  </template>
-                </el-table-column>
-                <el-table-column label="保证资源" width="100">
-                  <template #default="scope">
-                    <el-tooltip placement="top" effect="light" :show-after="500">
-                      <template #content>
-                        <div v-if="scope.row.guarantee">
-                          <div v-for="(value, key) in scope.row.guarantee" :key="key">
-                            {{ key }}: {{ value }}
+                      </el-col>
+                      <el-col :span="queue.capability || queue.deserved ? 8 : 24" v-if="queue.guarantee">
+                        <div class="resource-card">
+                          <div class="resource-title">保证资源</div>
+                          <div class="resource-content">
+                            <div v-for="(value, key) in queue.guarantee" :key="key" class="resource-item">
+                              <span class="resource-label">{{ key }}:</span>
+                              <span class="resource-value">{{ value }}</span>
+                            </div>
                           </div>
                         </div>
-                        <div v-else>无保证资源信息</div>
-                      </template>
-                      <span>{{ getXpuValue(scope.row.guarantee) }}</span>
-                    </el-tooltip>
-                  </template>
-                </el-table-column>
-                <el-table-column label="运行/排队/等待" width="140">
-                  <template #default="scope">
-                    {{ scope.row.running || 0 }}/{{ scope.row.inqueue || 0 }}/{{ scope.row.pending || 0 }}
-                  </template>
-                </el-table-column>
-                <el-table-column label="调度策略" prop="queueingStrategy" width="140" />
-                <el-table-column label="可回收" width="80">
-                  <template #default="scope">
-                    <el-tag :type="scope.row.reclaimable ? 'success' : 'info'" size="small">
-                      {{ scope.row.reclaimable ? '是' : '否' }}
-                    </el-tag>
-                  </template>
-                </el-table-column>
-                <el-table-column label="可抢占" width="80">
-                  <template #default="scope">
-                    <el-tag :type="scope.row.preemptable ? 'success' : 'info'" size="small">
-                      {{ scope.row.preemptable ? '是' : '否' }}
-                    </el-tag>
-                  </template>
-                </el-table-column>
-                <el-table-column label="创建时间" prop="createdTime" width="180" />
-              </el-table>
+                      </el-col>
+                    </el-row>
+                  </div>
+
+                  <!-- 任务状态 -->
+                  <div class="task-status">
+                    <h5>任务状态</h5>
+                    <el-row :gutter="20">
+                      <el-col :span="8">
+                        <div class="status-card">
+                          <div class="status-value">{{ queue.running || 0 }}</div>
+                          <div class="status-label">运行中</div>
+                        </div>
+                      </el-col>
+                      <el-col :span="8">
+                        <div class="status-card">
+                          <div class="status-value">{{ queue.inqueue || 0 }}</div>
+                          <div class="status-label">排队中</div>
+                        </div>
+                      </el-col>
+                      <el-col :span="8">
+                        <div class="status-card">
+                          <div class="status-value">{{ queue.pending || 0 }}</div>
+                          <div class="status-label">等待中</div>
+                        </div>
+                      </el-col>
+                    </el-row>
+                  </div>
+
+                  <!-- 节点信息 -->
+                  <div v-if="queue.nodes" class="node-section">
+                    <h5>节点信息</h5>
+                    <div v-for="(nodeGroup, resourceType) in queue.nodes" :key="resourceType">
+                      <div v-for="(node, index) in nodeGroup" :key="index" class="node-info">
+                        <el-descriptions :column="2" border>
+                          <el-descriptions-item label="机器规格">{{ node.machineSpec }}</el-descriptions-item>
+                          <el-descriptions-item label="节点数量">{{ node.count }}</el-descriptions-item>
+                          <el-descriptions-item label="节点名称" :span="2">
+                            <el-tag 
+                              v-for="nodeName in node.k8sNodeNames" 
+                              :key="nodeName"
+                              size="small"
+                              style="margin-right: 5px"
+                            >
+                              {{ nodeName }}
+                            </el-tag>
+                          </el-descriptions-item>
+                        </el-descriptions>
+                      </div>
+                    </div>
+                  </div>
+                </el-card>
+              </div>
             </div>
           </div>
         </div>
@@ -646,6 +687,118 @@
     overflow: hidden;
     text-overflow: ellipsis;
     display: block;
+  }
+
+  .queue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .queue-card {
+    margin-bottom: 20px;
+  }
+
+  .queue-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .queue-title {
+    display: flex;
+    align-items: center;
+  }
+
+  .queue-actions {
+    display: flex;
+    align-items: center;
+  }
+
+  .resource-section {
+    margin-top: 20px;
+    margin-bottom: 40px;
+  }
+
+  .resource-card {
+    background-color: #f5f7fa;
+    padding: 15px;
+    border-radius: 4px;
+    height: 100%;
+  }
+
+  .resource-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #606266;
+  }
+
+  .resource-content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .resource-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+  }
+
+  .resource-label {
+    color: #606266;
+  }
+
+  .resource-value {
+    color: #303133;
+    font-weight: 500;
+  }
+
+  .task-status {
+    margin-top: 20px;
+  }
+
+  .task-status h5,
+  .resource-section h5,
+  .node-section h5 {
+    margin: 0 0 16px 0;
+    padding: 8px 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: #303133;
+    border-bottom: 1px solid #EBEEF5;
+  }
+
+  .status-card {
+    text-align: center;
+    padding: 15px;
+    background-color: #f5f7fa;
+    border-radius: 4px;
+  }
+
+  .status-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #303133;
+    margin-bottom: 5px;
+  }
+
+  .status-label {
+    color: #606266;
+    font-size: 13px;
+  }
+
+  .node-section {
+    margin-top: 20px;
+  }
+
+  .node-info {
+    margin-bottom: 15px;
+  }
+
+  .node-info:last-child {
+    margin-bottom: 0;
   }
   </style>
   

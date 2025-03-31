@@ -28,7 +28,7 @@ export const getSignature = (ak: string, sk: string, method: string, path: strin
 
 // 提取请求头中的ak、sk、region
 export function extractCredentials(headers: RequestHeaders) {
-  console.log('原始请求头:', JSON.stringify(headers));
+  // console.log('原始请求头:', JSON.stringify(headers));
   
   // 确保所有头部名称的大小写一致性
   const normalizedHeaders: Record<string, any> = {};
@@ -45,7 +45,7 @@ export function extractCredentials(headers: RequestHeaders) {
   // 处理Authorization头部
   if (normalizedHeaders.authorization) {
     try {
-      console.log('处理Authorization头部:', normalizedHeaders.authorization);
+      // console.log('处理Authorization头部:', normalizedHeaders.authorization);
       const authValue = normalizedHeaders.authorization.replace("Bearer ", "");
       const parts = authValue.split("|");
       if (parts.length >= 2) {

@@ -55,8 +55,8 @@ router.get(RESOURCE_POOL_API, async (req: Request, res: Response) => {
     });
 
     res.json(response);
-  } catch (err) {
-    res.status(500).json(err);
+  } catch (err: any) {
+    res.status(err.statusCode || 500).json(err.error);
   }
 });
 
@@ -180,9 +180,8 @@ const DescribeResourcePools = async (req: Request, res: Response) => {
     console.log("返回数据:", responseData);
 
     res.json(responseData);
-  } catch (err) {
-    console.error('DescribeResourcePools错误:', err);
-    throw err;
+  } catch (err: any) {
+    res.status(err.statusCode || 500).json(err.error);
   }
 }
 
@@ -275,9 +274,8 @@ const DescribeResourcePool = async (req: Request, res: Response) => {
     console.log("返回数据:", responseData);
 
     res.json(responseData);
-  } catch (err) {
-    console.error('DescribeResourcePools错误:', err);
-    throw err;
+  } catch (err: any) {
+    res.status(err.statusCode || 500).json(err.error);
   }
 }
 
@@ -357,13 +355,16 @@ const DescribeResourceQueues = async (req: Request, res: Response) => {
       throw new Error('API返回数据格式错误');
     }
 
+    const result = response.result;
+
     const responseData = {
       requestId: uuidv4(),
-      resourceQueues: response.result.queues || [],
-      totalCount: response.result.total || 0,
+      resourceQueues: result.queues || [],
+      totalCount: result.total || 0,
       pageSize: pageSize,
       pageNumber: pageNo,
-      orderBy: response.result.orderBy || orderBy
+      orderBy: result.orderBy,
+      order: result.order
     }
 
     res.header('server', 'AIHC');
@@ -371,9 +372,8 @@ const DescribeResourceQueues = async (req: Request, res: Response) => {
 
     console.log("返回数据:", responseData);
     res.json(responseData);
-  } catch (err) {
-    console.error('DescribeResourceQueues错误:', err);
-    throw err;
+  } catch (err: any) {
+    res.status(err.statusCode || 500).json(err.error);
   }
 }
 
@@ -435,22 +435,26 @@ const DescribeResourceQueue = async (req: Request, res: Response) => {
   const signature = getSignature(ak, sk, 'GET', path, {}, aihcHeaders);
   aihcHeaders.Authorization = signature;
 
-  const response = await rp({
-    method: 'GET',
-    uri: `https://${host}${path}`,
-    headers: aihcHeaders,
-    json: true
-  });
+  try {
+    const response = await rp({
+      method: 'GET',
+      uri: `https://${host}${path}`,
+      headers: aihcHeaders,
+      json: true
+    });
 
-  const responseData = {
-    requestId: uuidv4(),
-    ...response.result.queue
+    const responseData = {
+      requestId: uuidv4(),
+      ...response.result.queue
+    }
+
+    res.header('server', 'AIHC');
+    res.header('x-bce-request-id', responseData.requestId);
+
+    res.json(responseData);
+  } catch (err: any) {
+    res.status(err.statusCode || 500).json(err.error);
   }
-
-  res.header('server', 'AIHC');
-  res.header('x-bce-request-id', responseData.requestId);
-
-  res.json(responseData);
 }
 
 export default router; 

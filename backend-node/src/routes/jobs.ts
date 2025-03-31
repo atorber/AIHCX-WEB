@@ -230,24 +230,32 @@ const DescribeJobs = async (req: Request, res: Response) => {
   const signature = getSignature(ak, sk, 'GET', JOBS_API, aihcQuery, aihcHeaders);
   aihcHeaders.Authorization = signature;
 
-  const response = await rp({
-    method: 'GET',
-    uri: `https://${host}${JOBS_API}`,
-    qs: aihcQuery,
-    headers: aihcHeaders,
-    json: true
-  });
+  try {
+    const response = await rp({
+      method: 'GET',
+      uri: `https://${host}${JOBS_API}`,
+      qs: aihcQuery,
+      headers: aihcHeaders,
+      json: true
+    });
+  
+    console.log("response", response);
 
-  const responseData = {
-    requestId: response.requestId,
-    jobs: response.result.jobs,
-    totalCount: response.totalCount,
-    pageSize: response.pageSize,
-    pageNumber: response.pageNumber,
-    orderBy: response.orderBy
+    const result = response.result;
+    const responseData = {
+      requestId: response.requestId,
+      jobs: result.jobs,
+      totalCount: result.total,
+      pageSize: result.pageSize,
+      pageNumber: result.pageNo,
+      orderBy: result.orderBy,
+      order: result.order
+    }
+  
+    res.json(responseData);
+  } catch (err: any) {
+    res.status(err.statusCode).json(err.error);
   }
-
-  res.json(responseData);
 }
 
 /**
@@ -303,22 +311,26 @@ const DescribeJob = async (req: Request, res: Response) => {
   const signature = getSignature(ak, sk, 'GET', path, aihcQuery, aihcHeaders);
   aihcHeaders.Authorization = signature;
 
-  const response = await rp({
-    method: 'GET',
-    uri: `https://${host}${path}`,
-    qs: aihcQuery,
-    headers: aihcHeaders,
-    json: true
-  });
+  try {
+    const response = await rp({
+      method: 'GET',
+      uri: `https://${host}${path}`,
+      qs: aihcQuery,
+      headers: aihcHeaders,
+      json: true
+    });
 
-  console.log(response);
+    console.log(response);
 
   const responseData = {
     requestId: response.requestId,
     ...response.result
   }
 
-  res.json(responseData);
+    res.json(responseData);
+  } catch (err: any) {
+    res.status(err.statusCode || 500).json(err.error);
+  }
 }
 
 export default router; 

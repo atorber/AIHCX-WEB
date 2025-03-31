@@ -3,7 +3,7 @@
     <BaseHeader />
     <div class="flex main-container">
       <!-- <BaseSide /> -->
-      <el-menu default-active="5" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
+      <el-menu :default-active="currentKey" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
         @select="handSelect">
         <el-menu-item index="16">
           <el-icon>
@@ -94,7 +94,7 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 
-const currentKey = ref("5");
+const currentKey = ref(localStorage.getItem('currentMenuKey') || "5");
 
 const handleOpen = (key: string, keyPath: string[]) => {
   // console.log("handleOpen", key, keyPath);
@@ -106,6 +106,7 @@ const handleClose = (key: string, keyPath: string[]) => {
 const handSelect = (key: string, keyPath: string[]) => {
   // console.log("handSelect", key, keyPath);
   currentKey.value = key;
+  localStorage.setItem('currentMenuKey', key);
 };
 </script>
 

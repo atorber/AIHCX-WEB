@@ -8,45 +8,63 @@
     "
   >
     <h1 color="$ep-color-primary">{{ msg }}</h1>
-    <!-- 刷新 -->
-    <el-button
-      :disabled="!resourcePoolId"
-      type="primary"
-      :loading="isLoading"
-      @click="refreshJobs"
-      :icon="Refresh"
-      >刷新</el-button
-    >
-    <el-select
-      v-model="resourcePoolId"
-      placeholder="Select"
-      style="width: 240px"
-      @change="handleResourcePoolChange"
-    >
-      <el-option
-        v-for="item in resourcepoolList"
-        :key="item.metadata.id"
-        :label="item.metadata.name"
-        :value="item.metadata.id"
+    <!-- 操作栏 -->
+    <div class="operation-bar">
+      <el-input
+        v-model="searchQuery"
+        placeholder="搜索任务名称"
+        class="search-input"
+        clearable
+        @input="handleSearch"
       >
-        <span style="float: left">{{ item.metadata.name }}</span>
-        <span
-          style="
-            float: right;
-            color: var(--el-text-color-secondary);
-            font-size: 13px;
-          "
+        <template #prefix>
+          <el-icon><Search /></el-icon>
+        </template>
+      </el-input>
+      
+      <div class="operation-right">
+        <el-button
+          :disabled="!resourcePoolId"
+          type="primary"
+          :loading="isLoading"
+          @click="refreshJobs"
+          :icon="Refresh"
+        >刷新</el-button>
+        
+        <el-select
+          v-model="resourcePoolId"
+          placeholder="Select"
+          style="width: 240px"
+          @change="handleResourcePoolChange"
         >
-          {{ item.metadata.id }}
-        </span>
-      </el-option>
-    </el-select>
+          <el-option
+            v-for="item in resourcepoolList"
+            :key="item.metadata.id"
+            :label="item.metadata.name"
+            :value="item.metadata.id"
+          >
+            <span style="float: left">{{ item.metadata.name }}</span>
+            <span
+              style="
+                float: right;
+                color: var(--el-text-color-secondary);
+                font-size: 13px;
+              "
+            >
+              {{ item.metadata.id }}
+            </span>
+          </el-option>
+        </el-select>
+      </div>
+    </div>
     <el-table
       highlight-current-row
       :data="jobList"
       :border="parentBorder"
       style="width: 100%"
       v-loading="isLoading"
+      row-key="jobId"
+      @expand-change="handleExpand"
     >
       <el-table-column label="任务名称/ID" min-width="180">
         <template #default="scope">
@@ -98,6 +116,46 @@
             @click="handleViewDetails(scope.row)"
             >查看详情</el-button
           >
+        </template>
+      </el-table-column>
+      <el-table-column type="expand">
+        <template #default="props">
+          <div v-loading="props.row.expandLoading" style="padding: 20px; min-height: 200px;">
+            <template v-if="!props.row.expandLoading">
+              <div v-if="props.row.podList?.pods && props.row.podList.pods.length > 0">
+                <el-table :data="props.row.podList.pods" border>
+                  <el-table-column label="序号" width="60">
+                    <template #default="scope">
+                      {{ scope.$index + 1 }}
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="Pod名称" prop="objectMeta.name" />
+                  <el-table-column label="Pod IP" prop="PodIP" />
+                  <el-table-column label="节点名称" prop="nodeName" />
+                  <el-table-column label="副本类型" prop="replicaType" />
+                  <el-table-column label="状态" prop="podStatus.status">
+                    <template #default="scope">
+                      <el-tag :type="getPodStatusType(scope.row.podStatus.status)">
+                        {{ scope.row.podStatus.status }}
+                      </el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="重启次数" prop="restartCount" />
+                  <el-table-column label="结束时间" prop="finishedAt" />
+                  <el-table-column label="原因" prop="reason" />
+                </el-table>
+              </div>
+              <div v-else style="text-align: center; color: var(--el-text-color-secondary);">
+                暂无Pod信息
+              </div>
+            </template>
+            <template v-else>
+              <div style="text-align: center; padding: 40px 0;">
+                <el-icon class="is-loading" style="font-size: 24px; color: var(--el-color-primary);"><Loading /></el-icon>
+                <div style="margin-top: 10px; color: var(--el-text-color-secondary);">加载中...</div>
+              </div>
+            </template>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -185,6 +243,39 @@
               {{ currentJob.enableBccl ? '是' : '否' }}
             </el-tag>
           </el-descriptions-item>
+          <el-descriptions-item label="BCCL状态" v-if="currentJob.enableBcclStatus">
+            <el-tag :type="getBcclStatusType(currentJob.enableBcclStatus)">
+              {{ currentJob.enableBcclStatus }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="BCCL错误原因" v-if="currentJob.enableBcclErrorReason">
+            {{ currentJob.enableBcclErrorReason }}
+          </el-descriptions-item>
+          <el-descriptions-item label="K8s UID" v-if="currentJob.k8sUID">
+            <div style="display: flex; align-items: center;">
+              {{ currentJob.k8sUID }}
+              <el-button
+                type="primary"
+                link
+                size="small"
+                class="copy-button"
+                @click="copyToClipboard(currentJob.k8sUID)"
+              >
+                <el-icon><CopyDocument /></el-icon>
+              </el-button>
+            </div>
+          </el-descriptions-item>
+          <el-descriptions-item label="K8s命名空间" v-if="currentJob.k8sNamespace">
+            {{ currentJob.k8sNamespace }}
+          </el-descriptions-item>
+          <el-descriptions-item label="替换结果状态" v-if="currentJob.enableReplaceResult">
+            <el-tag :type="getReplaceResultStatusType(currentJob.enableReplaceResult.status)">
+              {{ currentJob.enableReplaceResult.status }}
+            </el-tag>
+            <span v-if="currentJob.enableReplaceResult.message" style="margin-left: 10px; color: #909399;">
+              {{ currentJob.enableReplaceResult.message }}
+            </span>
+          </el-descriptions-item>
           <el-descriptions-item label="启用容错" v-if="currentJob.enableFaultTolerance !== undefined">
             <el-tag :type="currentJob.enableFaultTolerance ? 'success' : 'info'">
               {{ currentJob.enableFaultTolerance ? '是' : '否' }}
@@ -263,6 +354,15 @@
             </el-descriptions-item>
           </el-descriptions>
         </div>
+
+        <div style="margin-top: 20px" v-if="currentJob.tensorboardAddr">
+          <h4>Tensorboard地址</h4>
+          <el-card class="box-card">
+            <el-link type="primary" :href="currentJob.tensorboardAddr" target="_blank">
+              {{ currentJob.tensorboardAddr }}
+            </el-link>
+          </el-card>
+        </div>
       </div>
     </el-drawer>
   </div>
@@ -271,7 +371,7 @@
 <script lang="ts" setup>
 import { ref, computed } from "vue";
 import { ElMessage } from "element-plus";
-import { Refresh, CopyDocument } from "@element-plus/icons-vue";
+import { Refresh, CopyDocument, Search, Loading } from "@element-plus/icons-vue";
 import { useStore } from "../store"; // 确保从 vuex 导入 useStore
 import { ActionTypes } from "../store/mutation-types";
 import { ResourcePool, Job } from "../store/types";
@@ -292,6 +392,8 @@ const currentJob = ref<Job | null>(null);
 // 分页相关
 const currentPage = ref(1);
 const pageSize = ref(10);
+
+const searchQuery = ref('');
 
 // 从 store 中获取状态
 const jobList = computed<Job[]>(() => store.getters.jobList);
@@ -329,7 +431,8 @@ const refreshJobs = async () => {
       await store.dispatch(ActionTypes.FETCH_JOBS, {
         resourcePoolId: resourcePoolId.value,
         pageSize: pageSize.value,
-        pageNumber: currentPage.value
+        pageNumber: currentPage.value,
+        searchQuery: searchQuery.value
       });
     } catch (error) {
       console.error("Error refreshing jobs:", error);
@@ -434,6 +537,76 @@ const handleResourcePoolChange = () => {
   refreshJobs();
 };
 
+// 处理搜索
+const handleSearch = () => {
+  // 重置分页到第一页
+  currentPage.value = 1;
+  refreshJobs();
+};
+
+// 在 script 部分添加新的方法
+const getBcclStatusType = (status: string): 'success' | 'warning' | 'danger' | 'info' => {
+  switch (status.toLowerCase()) {
+    case 'enabled':
+      return 'success';
+    case 'disabled':
+      return 'info';
+    case 'error':
+      return 'danger';
+    default:
+      return 'info';
+  }
+};
+
+const getReplaceResultStatusType = (status: string): 'success' | 'warning' | 'danger' | 'info' => {
+  switch (status.toLowerCase()) {
+    case 'on':
+      return 'success';
+    case 'off':
+      return 'info';
+    case 'error':
+      return 'danger';
+    default:
+      return 'info';
+  }
+};
+
+const getPodStatusType = (status: string): 'success' | 'warning' | 'danger' | 'info' => {
+  switch (status.toLowerCase()) {
+    case 'running':
+      return 'success';
+    case 'pending':
+      return 'warning';
+    case 'failed':
+      return 'danger';
+    case 'succeeded':
+      return 'info';
+    default:
+      return 'info';
+  }
+};
+
+const handleExpand = async (row: any, expanded: boolean) => {
+  if (expanded && !row.podList) {
+    try {
+      row.expandLoading = true;
+      const response: any = await ServeGetJob({ 
+        jobId: row.jobId, 
+        resourcePoolId: resourcePoolId.value 
+      });
+      
+      if (response && response.requestId) {
+        row.podList = response.podList;
+      }
+    } catch (error) {
+      console.error("Error fetching job details:", error);
+      ElMessage.error("获取任务详情失败");
+    } finally {
+      row.expandLoading = false;
+    }
+  }
+};
+
 fetchResourcePools();
 </script>
 
@@ -518,5 +691,23 @@ h4 {
 .pagination-container .el-pagination {
   padding: 0;
   margin: 0;
+}
+
+/* 操作栏样式 */
+.operation-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.operation-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-input {
+  width: 300px;
 }
 </style>

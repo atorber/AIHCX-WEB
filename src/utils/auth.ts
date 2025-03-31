@@ -40,7 +40,7 @@ export function getAkSk() {
  *
  * @returns token
  */
-export function setAccessToken(token = '', expire = 60 * 60 * 2) {
+export function setAccessToken(token = '', expire = 60 * 60 * 24) {
   return storage.set(AccessToken, token, expire) || ''
 }
 

@@ -6,9 +6,11 @@ import { State as StateType, Job, ResourcePool, k8sRecord, SystemPod } from './t
 import { MutationTypes, ActionTypes } from './mutation-types.js';
 import { getAccessToken, getAkSk } from '../utils/auth.js'
 import { ElMessage } from "element-plus";
+import { ServeGetJobs } from '../api/jobs.js';
+import { ServeGetResourcePools } from '../api/resourcepools.js';
 
 // const baseUrl = 'https://6d6q5xfg0drsm.cfc-execute.bj.baidubce.com'
-const baseUrl = 'http://localhost:8000'
+// const baseUrl = 'http://localhost:8000'
 
 // 定义 Mutations 接口
 export interface Mutations {
@@ -24,7 +26,12 @@ export interface Mutations {
 export interface Actions {
     [ActionTypes.FETCH_JOBS](
         context: ActionContext<StateType, StateType>,
-        payload: { resourcePoolId: string, pageSize: number, pageNumber: number }
+        payload: { 
+            resourcePoolId: string, 
+            pageSize: number, 
+            pageNumber: number,
+            searchQuery?: string 
+        }
     ): Promise<void>;
     [ActionTypes.FETCH_RESOURCEPOOLS](context: ActionContext<StateType, StateType>): Promise<void>;
     [key: string]: (context: ActionContext<StateType, StateType>, payload: any) => void;
@@ -94,22 +101,21 @@ const actions: Actions = {
                 ElMessage.warning("在系统设置中配置API Key");
             } else {
                 try {
-                    const response = await axios.get(
-                        `${baseUrl}/?action=DescribeJobs`,
+                    const response: {
+                        jobs: Job[],
+                        totalCount: number,
+                        pageSize: number,
+                        pageNumber: number
+                    } = await ServeGetJobs(
                         {
-                        params: {
                             resourcePoolId,
-                            pageSize: pageSize || 10,
-                            pageNumber: pageNumber || 1
-                        },
-                        headers: {
-                            Authorization: `Bearer ${getAccessToken()}`,
+                            pageSize: pageSize || 100,
+                            pageNumber: pageNumber || 1,
                         }
-                    }
-                );
-                console.log('Response from DescribeJobs:', response.data);
-                jobs = response.data.jobs || [];
-                totalCount = response.data.result?.totalCount || response.data.totalCount || jobs.length;
+                    ) as any
+                console.log('Response from DescribeJobs:', response);
+                jobs = response.jobs || [];
+                totalCount = response.totalCount
                 console.log('Total count:', totalCount, 'Jobs length:', jobs.length);
                 } catch (error) {
                     console.error("Error fetching jobs:", error);
@@ -119,7 +125,7 @@ const actions: Actions = {
             commit(MutationTypes.UPDATE_JOB_LIST, {
                 jobs,
                 totalCount,
-                pageSize: pageSize || 10,
+                pageSize: pageSize || 100,
                 pageNumber: pageNumber || 1
             });
         } catch (error) {
@@ -138,17 +144,13 @@ const actions: Actions = {
                 ElMessage.warning("在系统设置中配置API Key");
 
             } else {
-                const response = await axios.get(
-                    `${baseUrl}/?action=DescribeResourcePools`,
-                    {
-                        params: {
-                        },
-                        headers: {
-                            Authorization: `Bearer ${getAccessToken()}`,
-                        }
-                    }
-                );
-                resourcePools = response.data.resourcePools
+                const response: {
+                    resourcePools: ResourcePool[],
+                    totalCount: number,
+                    pageSize: number,
+                    pageNumber: number
+                } = await ServeGetResourcePools() as any
+                resourcePools = response.resourcePools
             }
             commit(MutationTypes.UPDATE_RESOURCEPOOLS, resourcePools);
         } catch (error) {
