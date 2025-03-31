@@ -66,6 +66,69 @@
       row-key="jobId"
       @expand-change="handleExpand"
     >
+    <el-table-column type="expand">
+        <template #default="props">
+          <div v-loading="loadingPodDetails[props.row.jobId]" class="pod-list-container">
+            <el-table
+              v-if="podDetails[props.row.jobId]?.length"
+              :data="podDetails[props.row.jobId]"
+              style="width: 100%"
+              :border="true"
+              size="small"
+              class="pod-table"
+            >
+              <el-table-column type="index" label="序号" width="60" />
+              <el-table-column label="Pod名称" prop="objectMeta.name" />
+              <el-table-column label="Pod IP" prop="PodIP" />
+              <el-table-column label="节点名称" prop="nodeName" />
+              <el-table-column label="副本类型" prop="replicaType" />
+              <el-table-column label="状态" prop="podStatus.status">
+                <template #default="scope">
+                  <el-tag :type="getPodStatusType(scope.row.podStatus.status)">
+                    {{ scope.row.podStatus.status }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column label="重启次数" prop="restartCount" />
+              <el-table-column label="结束时间" prop="finishedAt" />
+              <el-table-column label="原因" prop="reason" />
+              <el-table-column label="操作" width="120">
+                <template #default="scope">
+                  <el-button 
+                    :disabled="scope.row.podStatus.status !== 'Running'"
+                    type="primary" 
+                    link 
+                    @click="handleWebTerminalUrl(scope.row, { jobId: props.row.jobId })"
+                  >连接终端</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <div v-else class="no-data">暂无Pod信息</div>
+            
+            <!-- 在Pod列表下方显示WebTerminal -->
+            <div v-if="podDetails[props.row.jobId]?.length" class="terminal-list">
+              <div v-for="pod in podDetails[props.row.jobId]" :key="pod.objectMeta.name" class="terminal-item">
+                <div v-if="webshellVisible[`${props.row.jobId}-${pod.objectMeta.name}`]" class="terminal-container">
+                  <div class="terminal-header">
+                    <span>WebShell终端 - {{ pod.objectMeta.name }}</span>
+                    <el-button 
+                      type="danger" 
+                      size="small" 
+                      @click="closeTerminal(`${props.row.jobId}-${pod.objectMeta.name}`)"
+                    >
+                      关闭
+                    </el-button>
+                  </div>
+                  <WebTerminal 
+                    v-if="webshellUrl[`${props.row.jobId}-${pod.objectMeta.name}`]" 
+                    :url="webshellUrl[`${props.row.jobId}-${pod.objectMeta.name}`]" 
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column label="任务名称/ID" min-width="180">
         <template #default="scope">
           <div>
@@ -108,6 +171,7 @@
       <el-table-column label="队列" prop="queue" />
       <el-table-column label="创建时间" prop="createdAt" />
       <el-table-column label="结束时间" prop="finishedAt" />
+      <el-table-column label="原因" prop="reason" />
       <el-table-column label="操作" width="120">
         <template #default="scope">
           <el-button
@@ -116,46 +180,6 @@
             @click="handleViewDetails(scope.row)"
             >查看详情</el-button
           >
-        </template>
-      </el-table-column>
-      <el-table-column type="expand">
-        <template #default="props">
-          <div v-loading="props.row.expandLoading" style="padding: 20px; min-height: 200px;">
-            <template v-if="!props.row.expandLoading">
-              <div v-if="props.row.podList?.pods && props.row.podList.pods.length > 0">
-                <el-table :data="props.row.podList.pods" border>
-                  <el-table-column label="序号" width="60">
-                    <template #default="scope">
-                      {{ scope.$index + 1 }}
-                    </template>
-                  </el-table-column>
-                  <el-table-column label="Pod名称" prop="objectMeta.name" />
-                  <el-table-column label="Pod IP" prop="PodIP" />
-                  <el-table-column label="节点名称" prop="nodeName" />
-                  <el-table-column label="副本类型" prop="replicaType" />
-                  <el-table-column label="状态" prop="podStatus.status">
-                    <template #default="scope">
-                      <el-tag :type="getPodStatusType(scope.row.podStatus.status)">
-                        {{ scope.row.podStatus.status }}
-                      </el-tag>
-                    </template>
-                  </el-table-column>
-                  <el-table-column label="重启次数" prop="restartCount" />
-                  <el-table-column label="结束时间" prop="finishedAt" />
-                  <el-table-column label="原因" prop="reason" />
-                </el-table>
-              </div>
-              <div v-else style="text-align: center; color: var(--el-text-color-secondary);">
-                暂无Pod信息
-              </div>
-            </template>
-            <template v-else>
-              <div style="text-align: center; padding: 40px 0;">
-                <el-icon class="is-loading" style="font-size: 24px; color: var(--el-color-primary);"><Loading /></el-icon>
-                <div style="margin-top: 10px; color: var(--el-text-color-secondary);">加载中...</div>
-              </div>
-            </template>
-          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -375,8 +399,9 @@ import { Refresh, CopyDocument, Search, Loading } from "@element-plus/icons-vue"
 import { useStore } from "../store"; // 确保从 vuex 导入 useStore
 import { ActionTypes } from "../store/mutation-types";
 import { ResourcePool, Job } from "../store/types";
-import { ServeGetJob } from "../api/jobs";
+import { ServeGetJob, ServeGetJobWebTerminal } from "../api/jobs";
 import { MutationTypes } from "../store/mutation-types";
+import WebTerminal from './WebTerminal.vue';
 
 const store = useStore();
 
@@ -399,6 +424,8 @@ const searchQuery = ref('');
 const jobList = computed<Job[]>(() => store.getters.jobList);
 const resourcepoolList = computed<ResourcePool[]>(() => store.getters.resourcepoolList);
 const totalCount = computed(() => store.state.totalCount);
+const loadingPodDetails = ref<{[key: string]: boolean}>({});
+const podDetails = ref<{[key: string]: any[]}>({});
 
 // 获取资源池列表的 Action
 const fetchResourcePools = async () => {
@@ -586,23 +613,56 @@ const getPodStatusType = (status: string): 'success' | 'warning' | 'danger' | 'i
   }
 };
 
+// 修改webshell相关的状态
+const webshellVisible = ref<{[key: string]: boolean}>({});
+const webshellUrl = ref<{[key: string]: string}>({});
+
+const handleWebTerminalUrl = async (row: any, scope: any) => {
+  try {
+    const response: any = await ServeGetJobWebTerminal({ 
+      jobId: scope.jobId, 
+      podName: row.objectMeta.name, 
+      resourcePoolId: resourcePoolId.value 
+    });
+
+    console.log("获取WebTerminal URL", response);
+    
+    if (response && response.WebTerminalUrl) {
+      const terminalId = `${scope.jobId}-${row.objectMeta.name}`;
+      webshellUrl.value[terminalId] = response.WebTerminalUrl;
+      webshellVisible.value[terminalId] = true;
+    } else {
+      ElMessage.error('获取WebTerminal URL失败');
+    }
+  } catch (error) {
+    console.error("Error getting WebTerminal URL:", error);
+    ElMessage.error("获取WebTerminal URL失败");
+  }
+};
+
+// 添加关闭终端的方法
+const closeTerminal = (terminalId: string) => {
+  webshellVisible.value[terminalId] = false;
+  delete webshellUrl.value[terminalId];
+};
+
 const handleExpand = async (row: any, expanded: boolean) => {
-  if (expanded && !row.podList) {
+  if (expanded && !podDetails.value[row.jobId]) {
     try {
-      row.expandLoading = true;
+      loadingPodDetails.value[row.jobId] = true;
       const response: any = await ServeGetJob({ 
         jobId: row.jobId, 
         resourcePoolId: resourcePoolId.value 
       });
       
       if (response && response.requestId) {
-        row.podList = response.podList;
+        podDetails.value[row.jobId] = response.podList?.pods || [];
       }
     } catch (error) {
       console.error("Error fetching job details:", error);
       ElMessage.error("获取任务详情失败");
     } finally {
-      row.expandLoading = false;
+      loadingPodDetails.value[row.jobId] = false;
     }
   }
 };
@@ -709,5 +769,73 @@ h4 {
 
 .search-input {
   width: 300px;
+}
+
+.pod-list-container {
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  margin: 10px;
+}
+
+.pod-table {
+  background-color: white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pod-table :deep(.el-table__header) {
+  background-color: #f5f7fa;
+}
+
+.pod-table :deep(.el-table__row) {
+  background-color: white;
+}
+
+.pod-table :deep(.el-table__row:hover) {
+  background-color: #f5f7fa;
+}
+
+.no-data {
+  text-align: center;
+  padding: 20px;
+  color: #909399;
+  font-size: 14px;
+}
+
+.terminal-list {
+  margin-top: 20px;
+  border-top: 1px solid #EBEEF5;
+  padding-top: 20px;
+}
+
+.terminal-item {
+  margin-bottom: 20px;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 10px 16px;
+  background-color: #f5f7fa;
+  border-bottom: 1px solid #EBEEF5;
+}
+
+.terminal-container {
+  border: 1px solid #DCDFE6;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 400px;
+  background-color: white;
+}
+
+.terminal-container .terminal-header {
+  background-color: #f5f7fa;
+  padding: 8px 16px;
+  border-bottom: 1px solid #DCDFE6;
 }
 </style>

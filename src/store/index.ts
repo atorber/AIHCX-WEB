@@ -7,7 +7,7 @@ import { MutationTypes, ActionTypes } from './mutation-types.js';
 import { getAccessToken, getAkSk } from '../utils/auth.js'
 import { ElMessage } from "element-plus";
 import { ServeGetJobs } from '../api/jobs.js';
-import { ServeGetResourcePools } from '../api/resourcepools.js';
+import { ServeGetResourcePools } from '../api/resourcePools.js';
 
 // const baseUrl = 'https://6d6q5xfg0drsm.cfc-execute.bj.baidubce.com'
 // const baseUrl = 'http://localhost:8000'

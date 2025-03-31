@@ -65,6 +65,7 @@ declare module 'vue' {
     Training: typeof import('./components/Training.vue')['default']
     TrainingCustom: typeof import('./components/TrainingCustom.vue')['default']
     UploadData: typeof import('./components/UploadData.vue')['default']
+    WebTerminal: typeof import('./components/WebTerminal.vue')['default']
   }
   export interface ComponentCustomProperties {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']

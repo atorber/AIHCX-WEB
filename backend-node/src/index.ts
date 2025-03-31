@@ -17,7 +17,8 @@ import {
 
 import {
   DescribeJobs,
-  DescribeJob
+  DescribeJob,
+  DescribeJobWebTerminal
 } from './routes/jobs';
 
 // 从公共工具导入类型和函数
@@ -134,6 +135,9 @@ app.get('/', async (req: Request, res: Response) => {
       res.json(response);
     } else if (action === 'DescribeResourceQueue') {
       const response = await DescribeResourceQueue(req, res);
+      res.json(response);
+    } else if (action === 'DescribeJobWebTerminal') {
+      const response = await DescribeJobWebTerminal(req, res);
       res.json(response);
     } else {
       res.status(400).json({

@@ -333,9 +333,96 @@ const DescribeJob = async (req: Request, res: Response) => {
   }
 }
 
+/**
+ * @swagger
+ * /?action=DescribeJobWebTerminal:
+ *   get:
+ *     tags: ['任务']
+ *     summary: 获取任务Web终端
+ *     description: 获取指定任务的Web终端链接
+ *     parameters:
+ *       - in: header
+ *         name: token
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: "授权信息,authorization/token/x-api-key三选一, 格式: Bearer ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
+ *       - in: header
+ *         name: authorization
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: "授权信息,authorization/token/x-api-key三选一, 格式: Bearer ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
+ *       - in: header
+ *         name: x-api-key
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: "自定义授权信息，authorization/token/x-api-key三选一, 格式: ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
+ *       - in: query
+ *         name: resourcePoolId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: 资源池ID
+ *       - in: query
+ *         name: jobId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: 任务ID
+ *       - in: query
+ *         name: podName
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Pod名称
+ *     responses:
+ *       200:
+ *         description: 成功获取任务Web终端
+ *       500:
+ *         description: 服务器错误
+ */
+const DescribeJobWebTerminal = async (req: Request, res: Response) => {
+  const { jobId, podName, resourcePoolId } = req.query;
+  const { ak, sk, region } = extractCredentials(req.headers as RequestHeaders);
+  const host = `aihc.${region}.baidubce.com`;
+  const path = `${JOBS_API}/${jobId}/pods/${podName}/webterminal`;
+
+  const aihcQuery = {
+    resourcePoolId,
+    jobId,
+    podName
+  }
+
+  const aihcHeaders: any = { Host: host };
+  const signature = getSignature(ak, sk, 'GET', path, aihcQuery, aihcHeaders);
+  aihcHeaders.Authorization = signature;
+
+  try {
+    const response = await rp({
+      method: 'GET',
+      uri: `https://${host}${path}`,
+      qs: aihcQuery,
+      headers: aihcHeaders,
+      json: true
+    });
+
+    const responseData = {
+      requestId: response.requestId,
+      ...response.result
+    }
+
+    res.json(responseData);
+  } catch (err: any) {
+    res.status(err.statusCode || 500).json(err.error);
+  }
+}
+
 export default router; 
 
 export { 
   DescribeJobs,
-  DescribeJob
+  DescribeJob,
+  DescribeJobWebTerminal
 };

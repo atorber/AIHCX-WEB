@@ -388,7 +388,7 @@
   import { useStore } from "../store"; // 确保从 vuex 导入 useStore
   import { ActionTypes } from "../store/mutation-types";
   import { ResourcePool } from "../store/types";
-  import { ServeGetResourcePool, ServeGetResourceQueues } from "../api/resourcepools";
+  import { ServeGetResourcePool, ServeGetResourceQueues } from "../api/resourcePools";
 
 
   const store = useStore();

@@ -14,3 +14,8 @@ export const ServeGetJob = (data: { jobId: string, resourcePoolId: string }) => 
 export const ServeCreateJob = (data: any, options: { params: { resourcePoolId: string } }) => {
     return post('/?action=CreateJob', data, options)
 }
+
+// 获取任务Web终端服务接口
+export const ServeGetJobWebTerminal = (data: { jobId: string, podName: string, resourcePoolId: string }) => {
+    return get('/?action=DescribeJobWebTerminal', data)
+}
