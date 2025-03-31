@@ -805,11 +805,11 @@ h4 {
 .terminal-list {
   margin-top: 20px;
   border-top: 1px solid #EBEEF5;
-  padding-top: 20px;
+  /* padding-top: 20px; */
 }
 
 .terminal-item {
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
   background-color: white;
   border-radius: 4px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
