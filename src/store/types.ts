@@ -119,4 +119,7 @@ export interface State {
     systemPod: SystemPod;
     jobList: Job[];
     resourcepoolList: ResourcePool[];
+    totalCount: number;
+    pageSize: number;
+    pageNumber: number;
 }

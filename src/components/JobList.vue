@@ -21,7 +21,7 @@
       v-model="resourcePoolId"
       placeholder="Select"
       style="width: 240px"
-      @change="refreshJobs"
+      @change="handleResourcePoolChange"
     >
       <el-option
         v-for="item in resourcepoolList"
@@ -101,6 +101,20 @@
         </template>
       </el-table-column>
     </el-table>
+    
+    <!-- 分页 -->
+    <div class="pagination-container" style="margin-top: 20px; display: flex; justify-content: flex-end;">
+      <el-pagination
+        v-if="totalCount > 0"
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="totalCount"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
     
     <!-- 任务详情抽屉 -->
     <el-drawer
@@ -262,6 +276,7 @@ import { useStore } from "../store"; // 确保从 vuex 导入 useStore
 import { ActionTypes } from "../store/mutation-types";
 import { ResourcePool, Job } from "../store/types";
 import { ServeGetJob } from "../api/jobs";
+import { MutationTypes } from "../store/mutation-types";
 
 const store = useStore();
 
@@ -274,16 +289,21 @@ const drawerVisible = ref(false);
 const drawerLoading = ref(false);
 const currentJob = ref<Job | null>(null);
 
-// 从 store 中获取 jobList
+// 分页相关
+const currentPage = ref(1);
+const pageSize = ref(10);
+
+// 从 store 中获取状态
 const jobList = computed<Job[]>(() => store.getters.jobList);
-const resourcepoolList = computed<ResourcePool[]>(
-  () => store.getters.resourcepoolList
-);
+const resourcepoolList = computed<ResourcePool[]>(() => store.getters.resourcepoolList);
+const totalCount = computed(() => store.state.totalCount);
 
 // 获取资源池列表的 Action
 const fetchResourcePools = async () => {
   if (resourcepoolList.value.length > 0) {
     resourcePoolId.value = resourcepoolList.value[0].metadata.id;
+    // 获取任务列表
+    refreshJobs();
   } else {
     try {
       isLoading.value = true;
@@ -306,7 +326,11 @@ const refreshJobs = async () => {
   if (resourcePoolId.value) {
     try {
       isLoading.value = true;
-      await store.dispatch(ActionTypes.FETCH_JOBS, resourcePoolId.value);
+      await store.dispatch(ActionTypes.FETCH_JOBS, {
+        resourcePoolId: resourcePoolId.value,
+        pageSize: pageSize.value,
+        pageNumber: currentPage.value
+      });
     } catch (error) {
       console.error("Error refreshing jobs:", error);
       ElMessage.error("刷新任务失败");
@@ -314,6 +338,19 @@ const refreshJobs = async () => {
       isLoading.value = false;
     }
   }
+};
+
+// 处理页码变化
+const handleCurrentChange = (val: number) => {
+  currentPage.value = val;
+  refreshJobs();
+};
+
+// 处理每页数量变化
+const handleSizeChange = (val: number) => {
+  pageSize.value = val;
+  currentPage.value = 1;
+  refreshJobs();
 };
 
 // 查看任务详情
@@ -390,6 +427,13 @@ const copyToClipboard = (text: string) => {
   ElMessage.success('已复制到剪贴板');
 };
 
+// 处理资源池切换
+const handleResourcePoolChange = () => {
+  // 切换资源池时重置分页到第一页
+  currentPage.value = 1;
+  refreshJobs();
+};
+
 fetchResourcePools();
 </script>
 
@@ -461,5 +505,18 @@ h4 {
   color: #909399;
   display: flex;
   align-items: center;
+}
+
+/* 分页容器样式 */
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 0;
+}
+
+.pagination-container .el-pagination {
+  padding: 0;
+  margin: 0;
 }
 </style>

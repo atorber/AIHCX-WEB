@@ -171,14 +171,8 @@
                     <div class="card-header">
                       <span>节点使用</span>
                       <span class="usage-rate">
-                        <span :class="getUsageRateClass(currentResourcePoolDetail?.status?.nodeCount?.used, currentResourcePoolDetail?.status?.nodeCount?.total)">
-                          {{
-                            Math.round(
-                              ((currentResourcePoolDetail?.status?.nodeCount?.used || 0) /
-                                (currentResourcePoolDetail?.status?.nodeCount?.total || 1)) *
-                                100
-                            )
-                          }}%
+                        <span :class="getUsageRateClass(currentResourcePoolDetail?.status?.nodeCount?.used, currentResourcePoolDetail?.status?.nodeCount?.total, true)">
+                          {{currentResourcePoolDetail?.status?.nodeCount?.used || 0}}/{{currentResourcePoolDetail?.status?.nodeCount?.total || 0}}
                         </span>
                       </span>
                     </div>
@@ -186,7 +180,7 @@
                   <el-progress 
                     :percentage="Math.round(((currentResourcePoolDetail?.status?.nodeCount?.used || 0) / (currentResourcePoolDetail?.status?.nodeCount?.total || 1)) * 100)" 
                     :format="() => `${currentResourcePoolDetail?.status?.nodeCount?.used || 0}/${currentResourcePoolDetail?.status?.nodeCount?.total || 0}`"
-                    :status="getProgressStatus(currentResourcePoolDetail?.status?.nodeCount?.used, currentResourcePoolDetail?.status?.nodeCount?.total)"
+                    :status="getProgressStatus(currentResourcePoolDetail?.status?.nodeCount?.used, currentResourcePoolDetail?.status?.nodeCount?.total, true)"
                   />
                 </el-card>
               </el-col>
@@ -197,13 +191,7 @@
                       <span>GPU使用</span>
                       <span class="usage-rate">
                         <span :class="getUsageRateClass(currentResourcePoolDetail?.status?.gpuCount?.used, currentResourcePoolDetail?.status?.gpuCount?.total)">
-                          {{
-                            Math.round(
-                              ((currentResourcePoolDetail?.status?.gpuCount?.used || 0) /
-                                (currentResourcePoolDetail?.status?.gpuCount?.total || 1)) *
-                                100
-                            )
-                          }}%
+                          {{currentResourcePoolDetail?.status?.gpuCount?.used || 0}}/{{currentResourcePoolDetail?.status?.gpuCount?.total || 0}}
                         </span>
                       </span>
                     </div>
@@ -234,7 +222,7 @@
                     />
                     <span class="usage-rate table-usage-rate">
                       <span :class="getUsageRateClass(scope.row.used, scope.row.total)">
-                        {{ Math.round((scope.row.used / scope.row.total) * 100 || 0) }}%
+                        {{scope.row.used}}/{{scope.row.total}}
                       </span>
                     </span>
                   </div>
@@ -250,6 +238,103 @@
               {{ currentResourcePoolDetail.status.phase }}
             </el-tag>
           </div>
+          
+          <!-- 资源池队列信息 -->
+          <div style="margin-top: 20px">
+            <h4>队列信息</h4>
+            <div v-loading="queueLoading">
+              <el-empty v-if="resourceQueueList.length === 0" description="暂无队列信息" />
+              <el-table v-else :data="resourceQueueList" border style="width: 100%">
+                <el-table-column label="名称" prop="name" min-width="120">
+                  <template #default="scope">
+                    <el-tooltip
+                      :content="scope.row.name"
+                      placement="top"
+                      :show-after="500"
+                      :hide-after="0"
+                    >
+                      <div class="queue-name">{{ scope.row.name }}</div>
+                    </el-tooltip>
+                  </template>
+                </el-table-column>
+                <el-table-column label="类型" prop="queueType" width="100" />
+                <el-table-column label="状态" width="100">
+                  <template #default="scope">
+                    <el-tag 
+                      :type="scope.row.state === 'Open' ? 'success' : 'warning'">
+                      {{ scope.row.state || '-' }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="资源容量" width="100">
+                  <template #default="scope">
+                    <el-tooltip placement="top" effect="light" :show-after="500">
+                      <template #content>
+                        <div v-if="scope.row.capability">
+                          <div v-for="(value, key) in scope.row.capability" :key="key">
+                            {{ key }}: {{ value }}
+                          </div>
+                        </div>
+                        <div v-else>无资源容量信息</div>
+                      </template>
+                      <span>{{ getXpuValue(scope.row.capability) }}</span>
+                    </el-tooltip>
+                  </template>
+                </el-table-column>
+                <el-table-column label="分配资源" width="100">
+                  <template #default="scope">
+                    <el-tooltip placement="top" effect="light" :show-after="500">
+                      <template #content>
+                        <div v-if="scope.row.deserved">
+                          <div v-for="(value, key) in scope.row.deserved" :key="key">
+                            {{ key }}: {{ value }}
+                          </div>
+                        </div>
+                        <div v-else>无分配资源信息</div>
+                      </template>
+                      <span>{{ getXpuValue(scope.row.deserved) }}</span>
+                    </el-tooltip>
+                  </template>
+                </el-table-column>
+                <el-table-column label="保证资源" width="100">
+                  <template #default="scope">
+                    <el-tooltip placement="top" effect="light" :show-after="500">
+                      <template #content>
+                        <div v-if="scope.row.guarantee">
+                          <div v-for="(value, key) in scope.row.guarantee" :key="key">
+                            {{ key }}: {{ value }}
+                          </div>
+                        </div>
+                        <div v-else>无保证资源信息</div>
+                      </template>
+                      <span>{{ getXpuValue(scope.row.guarantee) }}</span>
+                    </el-tooltip>
+                  </template>
+                </el-table-column>
+                <el-table-column label="运行/排队/等待" width="140">
+                  <template #default="scope">
+                    {{ scope.row.running || 0 }}/{{ scope.row.inqueue || 0 }}/{{ scope.row.pending || 0 }}
+                  </template>
+                </el-table-column>
+                <el-table-column label="调度策略" prop="queueingStrategy" width="140" />
+                <el-table-column label="可回收" width="80">
+                  <template #default="scope">
+                    <el-tag :type="scope.row.reclaimable ? 'success' : 'info'" size="small">
+                      {{ scope.row.reclaimable ? '是' : '否' }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="可抢占" width="80">
+                  <template #default="scope">
+                    <el-tag :type="scope.row.preemptable ? 'success' : 'info'" size="small">
+                      {{ scope.row.preemptable ? '是' : '否' }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="创建时间" prop="createdTime" width="180" />
+              </el-table>
+            </div>
+          </div>
         </div>
       </el-drawer>
     </div>
@@ -262,7 +347,7 @@
   import { useStore } from "../store"; // 确保从 vuex 导入 useStore
   import { ActionTypes } from "../store/mutation-types";
   import { ResourcePool } from "../store/types";
-  import { ServeGetResourcePool } from "../api/resourcepools";
+  import { ServeGetResourcePool, ServeGetResourceQueues } from "../api/resourcepools";
 
 
   const store = useStore();
@@ -274,6 +359,8 @@
   const drawerVisible = ref(false);
   const drawerLoading = ref(false);
   const searchKeyword = ref('');
+  const resourceQueueList = ref<any[]>([]);
+  const queueLoading = ref(false);
   
   // 从 store 中获取资源池列表
   const resourcepoolList = computed<ResourcePool[]>(
@@ -323,6 +410,30 @@
     drawerVisible.value = true;
     if (row.metadata?.id) {
       await fetchResourcePool(row.metadata.id);
+      await fetchResourceQueues(row.metadata.id);
+    }
+  };
+  
+  // 获取资源池队列信息
+  const fetchResourceQueues = async (resourcePoolId: string) => {
+    try {
+      queueLoading.value = true;
+      console.log("开始请求资源池队列信息", resourcePoolId);
+      const response: any = await ServeGetResourceQueues({ resourcePoolId });
+      console.log("资源池队列信息响应", JSON.stringify(response, null, 2));
+      
+      if (response && Array.isArray(response.resourceQueues)) {
+        resourceQueueList.value = response.resourceQueues;
+      } else {
+        resourceQueueList.value = [];
+        console.warn("资源池队列信息格式不符合预期", response);
+      }
+    } catch (error) {
+      console.error("Error fetching resource queues:", error);
+      resourceQueueList.value = [];
+      ElMessage.error("获取资源池队列信息失败");
+    } finally {
+      queueLoading.value = false;
     }
   };
   
@@ -339,12 +450,38 @@
   // 初始加载资源池数据
   fetchResourcePools();
 
+  // 从资源对象中获取XPU值
+  const getXpuValue = (resourceObj: any): string => {
+    if (!resourceObj) return '-';
+    
+    // 查找XPU资源
+    const xpuKey = Object.keys(resourceObj).find(key => key.includes('xpu'));
+    if (xpuKey) {
+      return `${xpuKey}: ${resourceObj[xpuKey]}`;
+    }
+    
+    // 如果没有XPU，返回第一个资源
+    const firstKey = Object.keys(resourceObj)[0];
+    if (firstKey) {
+      return `${firstKey}: ${resourceObj[firstKey]}`;
+    }
+    
+    return '-';
+  };
+
   // 根据使用率返回进度条状态
-  const getProgressStatus = (used: number | undefined, total: number | undefined): '' | 'success' | 'warning' | 'exception' => {
+  const getProgressStatus = (used: number | undefined, total: number | undefined, isNode = false): '' | 'success' | 'warning' | 'exception' => {
     if (used === undefined || total === undefined || total === 0) {
       return '';
     }
     const percentage = Math.round((used / total) * 100);
+    
+    // 节点使用特殊处理：节点全部使用是正常状态，部分使用为警告状态
+    if (isNode) {
+      return used === total ? 'success' : 'warning';
+    }
+    
+    // 其他资源使用率判断
     if (percentage <= 80) {
       return 'success';
     } else if (percentage <= 100) {
@@ -355,11 +492,18 @@
   };
 
   // 根据使用率返回进度条状态的类名
-  const getUsageRateClass = (used: number | undefined, total: number | undefined): string => {
+  const getUsageRateClass = (used: number | undefined, total: number | undefined, isNode = false): string => {
     if (used === undefined || total === undefined || total === 0) {
       return '';
     }
     const percentage = Math.round((used / total) * 100);
+    
+    // 节点使用特殊处理：节点全部使用是正常状态，部分使用为警告状态
+    if (isNode) {
+      return used === total ? 'usage-rate-success' : 'usage-rate-warning';
+    }
+    
+    // 其他资源使用率判断
     if (percentage <= 80) {
       return 'usage-rate-success';
     } else if (percentage <= 100) {
@@ -436,18 +580,18 @@
   }
 
   .pool-name {
-    max-width: 180px;
+    width: 300px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: inline-block;
+    display: block;
   }
 
   .detail-name {
-    max-width: 180px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    max-width: 100%;
+    white-space: normal;
+    overflow: visible;
+    word-break: break-word;
     display: inline-block;
   }
 
@@ -494,6 +638,14 @@
 
   .search-input {
     width: 300px;
+  }
+  
+  .queue-name {
+    width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
   }
   </style>
   
