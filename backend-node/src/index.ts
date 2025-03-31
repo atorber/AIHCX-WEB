@@ -40,7 +40,7 @@ const swaggerOptions = {
     info: {
       title: 'AIHCX API 文档',
       version: '1.0.0',
-      description: '百度智能云 AIHC 服务 API 接口文档'
+      description: 'AIHCX 服务 API 接口文档'
     },
     servers: [
       {

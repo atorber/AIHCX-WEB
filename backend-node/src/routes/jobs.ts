@@ -161,19 +161,19 @@ router.post(JOBS_API, async (req: Request, res: Response) => {
 *         schema:
 *           type: string
 *         required: false
-*         description: "授权信息, 格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
+*         description: "授权信息,authorization/token/x-api-key三选一, 格式: Bearer ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
 *       - in: header
 *         name: authorization
 *         schema:
 *           type: string
 *         required: false
-*         description: "授权信息, 格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
+*         description: "授权信息,authorization/token/x-api-key三选一, 格式: Bearer ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
 *       - in: header
 *         name: x-api-key
 *         schema:
 *           type: string
 *         required: false
-*         description: "自定义授权信息，格式: <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
+*         description: "自定义授权信息，authorization/token/x-api-key三选一, 格式: ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
 *       - in: query
 *         name: resourcePoolId
 *         schema:
@@ -229,19 +229,19 @@ const DescribeJobs = async (req: Request, res: Response) => {
  *         schema:
  *           type: string
  *         required: true
- *         description: "授权信息, 格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
+ *         description: "授权信息,authorization/token/x-api-key三选一, 格式: Bearer ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: header
  *         name: authorization
  *         schema:
  *           type: string
  *         required: true
- *         description: "授权信息, 格式: Bearer <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
+ *         description: "授权信息,authorization/token/x-api-key三选一, 格式: Bearer ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: header
  *         name: x-api-key
  *         schema:
  *           type: string
  *         required: true
- *         description: "自定义授权信息，格式: <ak>|<sk>|<region>,区域,可选值: bj, gz, su, bd, fwh, yq"
+ *         description: "自定义授权信息，authorization/token/x-api-key三选一, 格式: ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
  *       - in: query
  *         name: jobId
  *         schema:
