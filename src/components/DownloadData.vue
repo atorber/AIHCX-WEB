@@ -70,7 +70,7 @@
 
       <div style="padding: 20px">
         <el-text style="color: grey">
-          说明：从百度云对象存储BOS中下载数据集或权重到PFS或本地磁盘
+          说明：从对象存储BOS中下载数据集或权重到PFS或本地磁盘
         </el-text>
       </div>
       <!-- 提交按钮 -->

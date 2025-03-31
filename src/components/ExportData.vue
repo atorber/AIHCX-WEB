@@ -49,7 +49,7 @@
 
       <div style="padding: 20px">
         <el-text style="color: grey">
-          说明：从PFS或本地磁盘导出数据集或权重到百度云对象存储BOS中
+          说明：从PFS或本地磁盘导出数据集或权重到对象存储BOS中
         </el-text>
       </div>
       <!-- 提交按钮 -->
