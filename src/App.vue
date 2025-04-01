@@ -1,9 +1,9 @@
 <template>
   <el-config-provider namespace="ep">
-    <BaseHeader />
+    <BaseHeader @show-docs="handleShowDocs" @reset-view="handleResetView" />
     <div class="flex main-container">
       <!-- <BaseSide /> -->
-      <el-menu :default-active="currentKey" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
+      <el-menu v-if="currentKey !== 'docs'" :default-active="currentKey" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
         @select="handSelect">
         <el-menu-item index="16">
           <el-icon>
@@ -65,6 +65,14 @@
           </el-icon>
           <template #title>系统设置</template>
         </el-menu-item>
+        <el-sub-menu index="0-2">
+          <template #title>
+            <el-icon><ElementPlus /></el-icon>组件示例
+          </template>
+          <el-menu-item index="18">
+            <template #title>动态表单</template>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
       <div w="full" py="4">
         <Home msg="AIHCX" v-if="currentKey == '2'" />
@@ -81,11 +89,14 @@
         <ExportData msg="AIHCX" v-else-if="currentKey == '14'" />
         <Market msg="AIHCX" v-else-if="currentKey == '16'" />
         <ResourcePoolList msg="AIHCX" v-else-if="currentKey == '17'" />
+        <DynamicFormExample msg="AIHCX" v-else-if="currentKey == '18'" />
+        <div v-else-if="currentKey == 'docs'" class="w-full h-full">
+          <iframe src="http://127.0.0.1:8000/docs/" class="w-full h-full border-none"></iframe>
+        </div>
         <div v-else>
           <Logos my="4" />
           <h1>Comeing soon...</h1>
         </div>
-        <!-- <HelloWorld v-else msg="Hello Vue 3 + Element Plus + Vite" /> -->
       </div>
     </div>
   </el-config-provider>
@@ -95,6 +106,7 @@
 import { ref } from "vue";
 
 const currentKey = ref(localStorage.getItem('currentMenuKey') || "5");
+const showDocs = ref(false);
 
 const handleOpen = (key: string, keyPath: string[]) => {
   // console.log("handleOpen", key, keyPath);
@@ -107,6 +119,17 @@ const handSelect = (key: string, keyPath: string[]) => {
   // console.log("handSelect", key, keyPath);
   currentKey.value = key;
   localStorage.setItem('currentMenuKey', key);
+};
+
+const handleShowDocs = () => {
+  showDocs.value = true;
+  currentKey.value = 'docs';
+};
+
+const handleResetView = () => {
+  showDocs.value = false;
+  currentKey.value = '2'; // 重置为默认页面
+  localStorage.setItem('currentMenuKey', '2');
 };
 </script>
 

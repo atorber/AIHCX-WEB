@@ -18,12 +18,14 @@ import {
 import {
   DescribeJobs,
   DescribeJob,
-  DescribeJobWebTerminal
+  DescribeJobWebTerminal,
+  CreateJob
 } from './routes/jobs';
 
-// 从公共工具导入类型和函数
-import { RequestHeaders, getSignature, extractCredentials } from './utils/common';
-const rp = require("request-promise");
+import {
+  DescribeApps,
+  DescribeApp
+} from './routes/apps';
 
 const app = express();
 app.use(express.json());
@@ -38,11 +40,11 @@ app.use(cors({
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
-    info: {
-      title: 'AIHCX API 文档',
-      version: '1.0.0',
-      description: 'AIHCX 服务 API 接口文档'
-    },
+    // info: {
+    //   title: 'AIHCX API 文档',
+    //   version: '1.0.0',
+    //   description: 'AIHCX 服务 API 接口文档'
+    // },
     servers: [
       {
         url: 'http://127.0.0.1:8000',
@@ -57,6 +59,10 @@ const swaggerOptions = {
       {
         name: '任务',
         description: '任务相关操作'
+      },
+      {
+        name: '应用',
+        description: '应用相关操作'
       }
     ]
   },
@@ -64,17 +70,14 @@ const swaggerOptions = {
 };
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: "AIHCX API 文档"
+}));
 
 // 注册路由
 app.use('/', resourcePoolsRouter);
 app.use('/', jobsRouter);
-
-const AIHC_APIS = {
-  getResourcepools: "/api/v1/resourcepools",
-  getJobs: "/api/v1/aijobs",
-  createJob: "/api/v1/aijobs",
-};
 
 // RPC风格API入口
 app.post('/', async (req: Request, res: Response) => {
@@ -139,6 +142,12 @@ app.get('/', async (req: Request, res: Response) => {
     } else if (action === 'DescribeJobWebTerminal') {
       const response = await DescribeJobWebTerminal(req, res);
       res.json(response);
+    } else if (action === 'DescribeApps') {
+      const response = await DescribeApps(req, res);
+      res.json(response);
+    } else if (action === 'DescribeApp') {
+      const response = await DescribeApp(req, res);
+      res.json(response);
     } else {
       res.status(400).json({
         message: 'Invalid action'
@@ -152,42 +161,6 @@ app.get('/', async (req: Request, res: Response) => {
     });
   }
 });
-
-/**
- * @swagger
- * /?action=CreateJob:
- *   post:
- *     tags: ['任务']
- *     summary: 创建任务
- *     description: 创建一个新任务
- *     parameters:
- *       - in: body
- *         name: job
- *         schema:
- *           type: object
- *         required: true
- *         description: 任务信息
- *     responses:
- *       200:
- *         description: 成功创建任务
- *       500:
- *         description: 服务器错误
- */
-const CreateJob = async (req: Request, res: Response) => {
-  const { method, params, query, body, headers, url, baseUrl, originalUrl } = req;
-  const responseData = {
-    url,
-    baseUrl,
-    originalUrl,
-    method,
-    params,
-    query,
-    body,
-    headers
-  }
-
-  res.json(responseData);
-}
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {

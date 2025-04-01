@@ -39,7 +39,7 @@
       <!-- 模型卡片列表 -->
       <el-row :gutter="20" class="model-grid">
         <el-col 
-          v-for="model in filteredModels" 
+          v-for="model in filteredApps" 
           :key="model.id" 
           :xs="24" 
           :sm="12" 
@@ -49,8 +49,7 @@
         >
           <el-card class="model-card" shadow="hover">
             <div class="model-tags">
-              <el-tag size="small" type="success">{{ model.category }}</el-tag>
-              <el-tag size="small" type="info" v-if="model.subcategory">{{ model.subcategory }}</el-tag>
+              <el-tag v-for="tag in model.tags" size="small" type="success">{{ tag }}</el-tag>
             </div>
             <h2 class="model-title">{{ model.name }}</h2>
             <p class="model-description">{{ model.description }}</p>
@@ -61,20 +60,13 @@
               </div>
               <el-button-group>
                 <el-button 
-                  v-if="model.supportDeploy" 
+                  v-for="action in model.actions"
+                  :key="action"
                   type="primary" 
                   size="small"
-                  @click="handleDeploy(model)"
+                  @click="handleAction(model, action)"
                 >
-                  一键部署
-                </el-button>
-                <el-button 
-                  v-if="model.supportDeploy" 
-                  type="primary" 
-                  size="small"
-                  @click="handleFineTune(model)"
-                >
-                  模型微调
+                  {{ action }}
                 </el-button>
               </el-button-group>
             </div>
@@ -82,306 +74,26 @@
         </el-col>
       </el-row>
 
-      <!-- 添加抽屉组件 -->
-      <el-drawer
-        v-model="drawerVisible"
-        title="创建任务"
-        size="50%"
-        :destroy-on-close="true"
-      >
-        <template #header>
-          <h4 class="drawer-title">创建任务</h4>
-        </template>
-        <div class="deploy-info">
-          <el-form 
-            ref="formRef"
-            :model="deployForm"
-            label-width="120px"
-            class="deploy-form"
-          >
-            <!-- 基础信息 -->
-            <div class="form-section">
-              <div class="section-title">基础信息</div>
-              <el-form-item label="任务名称" required>
-                <el-input v-model="deployForm.taskName" placeholder="请输入任务名称" />
-                <div class="form-tip">支持小写字母、数字以及-，且开头必须是小写字母，结尾必须是小写字母或数字，长度1-50</div>
-              </el-form-item>
-              <el-form-item label="资源池类型">
-                <el-radio-group v-model="deployForm.poolType">
-                  <el-radio label="通用资源池">通用资源池</el-radio>
-                  <el-radio label="托管资源池">托管资源池</el-radio>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item label="资源池">
-                <el-select v-model="deployForm.pool" placeholder="请选择资源池">
-                  <el-option label="shengzhaotest-A800" value="shengzhaotest-A800" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="队列">
-                <el-select v-model="deployForm.queue" placeholder="请选择队列">
-                  <el-option label="中" value="middle" />
-                </el-select>
-                <div class="form-tip">必填项</div>
-              </el-form-item>
-              <el-form-item label="优先级">
-                <el-select v-model="deployForm.priority" placeholder="请选择优先级">
-                  <el-option label="中" value="middle" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="训练框架">
-                <el-select v-model="deployForm.framework" placeholder="请选择训练框架">
-                  <el-option label="PyTorch" value="pytorch" />
-                </el-select>
-              </el-form-item>
-            </div>
+      <!-- 使用抽离的组件 -->
+      <CreateTaskDrawer 
+        v-model:visible="drawerVisible" 
+        :model="selectedModel"
+        @submit="handleTaskSubmit"
+      />
+      
+      <FineTuneDrawer 
+        v-model:visible="fineTuneDrawerVisible" 
+        :model="selectedModel"
+        @submit="handleFineTuneSubmit"
+      />
 
-            <!-- 环境配置 -->
-            <div class="form-section">
-              <div class="section-title">环境配置</div>
-              <el-form-item label="镜像地址">
-                <el-input v-model="deployForm.imageUrl" placeholder="请输入镜像地址" />
-                <div class="form-tip">若需私有镜像仓库授权码，请输入账号密码</div>
-              </el-form-item>
-              <el-form-item label="执行命令">
-                <el-input
-                  v-model="deployForm.command"
-                  type="textarea"
-                  :rows="4"
-                  placeholder="请输入执行命令"
-                />
-              </el-form-item>
-            </div>
-
-            <!-- 在环境配置部分后添加新的表单部分 -->
-            <div class="form-section">
-              <div class="section-title">资源配置</div>
-              <el-form-item label="实例数" required>
-                <el-input-number v-model="deployForm.instanceCount" :min="1" :max="100" />
-              </el-form-item>
-              
-              <el-form-item label="加速芯片申请">
-                <el-switch v-model="deployForm.enableGpu" />
-              </el-form-item>
-              
-              <el-form-item label="加速芯片类型" v-if="deployForm.enableGpu">
-                <el-select v-model="deployForm.gpuType" placeholder="请输入加速芯片类型">
-                  <el-option label="不限制" value="unlimited" />
-                </el-select>
-              </el-form-item>
-              
-              <el-form-item label="每实例加速芯片数" v-if="deployForm.enableGpu" required>
-                <el-input-number v-model="deployForm.gpuPerInstance" :min="1" :max="8" />
-              </el-form-item>
-              
-              <el-form-item label="CPU">
-                <el-input-number v-model="deployForm.cpu" placeholder="不限制" />
-                <div class="form-tip">核</div>
-              </el-form-item>
-              
-              <el-form-item label="内存">
-                <el-input-number v-model="deployForm.memory" placeholder="不限制" />
-                <div class="form-tip">GiB</div>
-              </el-form-item>
-              
-              <el-form-item label="共享内存">
-                <el-input-number v-model="deployForm.sharedMemory" :min="1" />
-                <div class="form-tip">GiB</div>
-              </el-form-item>
-              
-              <el-form-item label="RDMA">
-                <el-switch v-model="deployForm.enableRdma" />
-                <div class="form-tip">开启后系统将自动调度任务到支持RDMA的节点上</div>
-              </el-form-item>
-            </div>
-
-            <div class="form-section">
-              <div class="section-title">设置数据源</div>
-              <el-form-item label="存储类型">
-                <el-button type="primary" plain @click="handleAddStorage">
-                  <el-icon><Plus /></el-icon> 添加
-                </el-button>
-              </el-form-item>
-            </div>
-
-            <!-- 在设置数据源部分后添加新的表单部分 -->
-            <div class="form-section">
-              <div class="section-title">容错&诊断</div>
-              <el-form-item label="容错">
-                <el-switch v-model="deployForm.enableFaultTolerance" />
-                <el-button 
-                  type="primary" 
-                  link 
-                  v-if="deployForm.enableFaultTolerance"
-                  @click="handleConfigFaultTolerance"
-                >
-                  修改配置
-                </el-button>
-              </el-form-item>
-            </div>
-
-            <div class="form-section">
-              <div class="section-title">高级配置</div>
-              <el-form-item label="Tensorboard">
-                <el-switch v-model="deployForm.enableTensorboard" />
-                <el-tooltip
-                  content="开启后，可以在任务详情页查看训练过程中的指标变化"
-                  placement="top"
-                >
-                  <el-icon class="info-icon"><InfoFilled /></el-icon>
-                </el-tooltip>
-              </el-form-item>
-
-              <el-form-item label="自动删除">
-                <el-switch v-model="deployForm.autoDelete" />
-                <el-tooltip
-                  content="开启后，仅针对于成功/失败状态的任务生效，您可以自定义配置保留时长"
-                  placement="top"
-                >
-                  <el-icon class="info-icon"><InfoFilled /></el-icon>
-                </el-tooltip>
-              </el-form-item>
-
-              <el-form-item label="告警">
-                <el-switch v-model="deployForm.enableAlerts" />
-              </el-form-item>
-
-              <el-form-item label="定时提交">
-                <el-switch v-model="deployForm.enableScheduledSubmit" />
-                <el-tooltip
-                  content="可选择在指定时间提交训练任务"
-                  placement="top"
-                >
-                  <el-icon class="info-icon"><InfoFilled /></el-icon>
-                </el-tooltip>
-              </el-form-item>
-            </div>
-
-            <!-- 操作按钮 -->
-            <div class="form-actions">
-              <el-button @click="drawerVisible = false">取消</el-button>
-              <el-button type="primary" @click="submitForm">完成</el-button>
-            </div>
-          </el-form>
-        </div>
-      </el-drawer>
-
-      <!-- 微调抽屉组件 -->
-      <el-drawer
-        v-model="fineTuneDrawerVisible"
-        title="模型微调"
-        size="50%"
-        :destroy-on-close="true"
-      >
-        <template #header>
-          <h4 class="drawer-title">模型微调</h4>
-        </template>
-        <div class="deploy-info">
-          <el-form 
-            ref="fineTuneFormRef"
-            :model="fineTuneForm"
-            label-width="120px"
-            class="deploy-form"
-          >
-            <!-- 基础信息 -->
-            <div class="form-section">
-              <div class="section-title">基础信息</div>
-              <el-form-item label="微调任务名称" required>
-                <el-input v-model="fineTuneForm.taskName" placeholder="请输入微调任务名称" />
-                <div class="form-tip">支持小写字母、数字以及-，且开头必须是小写字母，结尾必须是小写字母或数字，长度1-50</div>
-              </el-form-item>
-              <el-form-item label="资源池类型">
-                <el-radio-group v-model="fineTuneForm.poolType">
-                  <el-radio label="通用资源池">通用资源池</el-radio>
-                  <el-radio label="专用资源池">专用资源池</el-radio>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item label="资源池">
-                <el-select v-model="fineTuneForm.pool" placeholder="请选择资源池">
-                  <el-option label="shengzhaotest-A800" value="shengzhaotest-A800" />
-                </el-select>
-              </el-form-item>
-            </div>
-
-            <!-- 微调数据集 -->
-            <div class="form-section">
-              <div class="section-title">微调数据集</div>
-              <el-form-item label="数据集选择">
-                <el-select v-model="fineTuneForm.dataset" placeholder="请选择数据集">
-                  <el-option label="金融领域问答集" value="finance-qa" />
-                  <el-option label="医疗领域问答集" value="medical-qa" />
-                  <el-option label="法律领域问答集" value="legal-qa" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="数据集预览">
-                <el-button type="primary" plain @click="previewDataset">
-                  预览数据集
-                </el-button>
-              </el-form-item>
-              <el-form-item label="自定义数据集">
-                <el-upload
-                  action="#"
-                  :auto-upload="false"
-                  :on-change="handleFileChange"
-                  :limit="1"
-                >
-                  <el-button type="primary" plain>上传数据集</el-button>
-                  <div class="form-tip">支持JSON、CSV、TXT格式，最大2GB</div>
-                </el-upload>
-              </el-form-item>
-            </div>
-
-            <!-- 微调参数 -->
-            <div class="form-section">
-              <div class="section-title">微调参数</div>
-              <el-form-item label="学习率">
-                <el-input-number v-model="fineTuneForm.learningRate" :min="0.000001" :max="0.01" :step="0.000001" :precision="6" />
-              </el-form-item>
-              <el-form-item label="训练轮次">
-                <el-input-number v-model="fineTuneForm.epochs" :min="1" :max="100" />
-              </el-form-item>
-              <el-form-item label="批次大小">
-                <el-input-number v-model="fineTuneForm.batchSize" :min="1" :max="128" />
-              </el-form-item>
-              <el-form-item label="训练方法">
-                <el-select v-model="fineTuneForm.method" placeholder="请选择训练方法">
-                  <el-option label="LoRA" value="lora" />
-                  <el-option label="QLoRA" value="qlora" />
-                  <el-option label="全参数微调" value="full" />
-                </el-select>
-              </el-form-item>
-            </div>
-
-            <!-- 高级配置 -->
-            <div class="form-section">
-              <div class="section-title">高级配置</div>
-              <el-form-item label="Tensorboard">
-                <el-switch v-model="fineTuneForm.enableTensorboard" />
-                <el-tooltip
-                  content="开启后，可以在任务详情页查看训练过程中的指标变化"
-                  placement="top"
-                >
-                  <el-icon class="info-icon"><InfoFilled /></el-icon>
-                </el-tooltip>
-              </el-form-item>
-              <el-form-item label="自动评估">
-                <el-switch v-model="fineTuneForm.autoEvaluate" />
-                <el-tooltip
-                  content="开启后，微调完成后将自动评估模型性能"
-                  placement="top"
-                >
-                  <el-icon class="info-icon"><InfoFilled /></el-icon>
-                </el-tooltip>
-              </el-form-item>
-            </div>
-
-            <!-- 操作按钮 -->
-            <div class="form-actions">
-              <el-button @click="fineTuneDrawerVisible = false">取消</el-button>
-              <el-button type="primary" @click="submitFineTuneForm">开始微调</el-button>
-            </div>
-          </el-form>
-        </div>
-      </el-drawer>
+    <!-- 动态表单抽屉 -->
+    <!-- <DynamicFormDrawer
+      v-model:visible="jobDrawerVisible"
+        :title="selectedModel.name"
+        :form-descriptor="selectedModel.jobFormDescriptor"
+        @submit="handleJobSubmit"
+      /> -->
     </div>
   </template>
   
@@ -389,6 +101,9 @@
   import { ref, computed } from 'vue'
   import { Search, Plus, InfoFilled } from '@element-plus/icons-vue'
   import { ElMessage } from 'element-plus'
+  import { ServeGetApps } from '../api/apps'
+  import CreateTaskDrawer from './CreateTaskDrawer.vue'
+  import FineTuneDrawer from './FineTuneDrawer.vue'
   
   const tags = [
     'DeepSeek',
@@ -414,143 +129,24 @@
   const supportOneClick = ref(false)
   const searchQuery = ref('')
   
-  const models = ref([
-    {
-      id: 1,
-      category: 'DeepSeek',
-      subcategory: 'LLM',
-      name: 'DeepSeek-R1',
-      description: 'DeepSeek推出的第一代推理模型 DeepSeek-R1-Zero 和 DeepSeek-R1。DeepSeek-R1-Zero 是一种通过大规模化学习 (RL) 训练的模型，先需监督微调 (SFT) 作为初步步骤，在推理方面表现...',
-      updateDate: '2025-3-25更新',
-      version: 'DeepSeek-R1',
-      supportDeploy: true
-    },
-    {
-      id: 2,
-      category: 'AI工具',
-      name: '数据转储',
-      description: 'Gemma 是来自 Google 的一系列轻量级、最先进的开放模型，基于用于创建 Gemini 模型的相同研究和技术构建。Gemma 3 模型是多模态的，处理文本和图像输入并生成文本输出，提供了预训练...',
-      updateDate: '2025-3-25更新',
-      version: 'gemma-3-27b-it',
-      supportDeploy: true
-    },
-    {
-      id: 3,
-      category: 'LLM',
-      name: 'QwQ-32B',
-      description: 'QwQ 是 Qwen 系列的推理模型，与传统的指令调优模型相比，具备思考和推理能力的 QwQ 在下游任务中，特别是在解决难题时，能够显著提高性能。QwQ-32B 是一个中等规模的推理模型，其性能...',
-      updateDate: '2025-3-25更新',
-      version: 'QwQ-32B',
-      supportDeploy: true
-    },
-    {
-      id: 4,
-      category: 'LLM',
-      name: 'gemma-3-12b-it',
-      description: 'Gemma 是来自 Google 的一系列轻量级、最先进的开放模型，基于用于创建 Gemini 模型的相同研究和技术构建。Gemma 3 模型是多模态的，处理文本和图像输入并生成文本输出，提供了预训练...',
-      updateDate: '2025-3-25更新',
-      version: 'gemma-3-12b-it',
-      supportDeploy: true
-    },
-    {
-      id: 5,
-      category: 'AI工具',
-      name: '模型权重转换',
-      description: 'Gemma 是来自 Google 的一系列轻量级、最先进的开放模型，基于用于创建 Gemini 模型的相同研究和技术构建。Gemma 3 模型是多模态的，处理文本和图像输入并生成文本输出，提供了预训练...',
-      updateDate: '2025-3-25更新',
-      version: 'gemma-3-12b-it',
-      supportDeploy: true
-    },
-    {
-      id: 6,
-      category: 'AI工具',
-      name: '数据预处理',
-      description: 'Gemma 是来自 Google 的一系列轻量级、最先进的开放模型，基于用于创建 Gemini 模型的相同研究和技术构建。Gemma 3 模型是多模态的，处理文本和图像输入并生成文本输出，提供了预训练...',
-      updateDate: '2025-3-25更新',
-      version: 'gemma-3-12b-it',
-      supportDeploy: true
-    },
-      {
-        id: 7,
-        category: 'AI工具',
-        name: '文件上传',
-        description: 'Gemma 是来自 Google 的一系列轻量级、最先进的开放模型，基于用于创建 Gemini 模型的相同研究和技术构建。Gemma 3 模型是多模态的，处理文本和图像输入并生成文本输出，提供了预训练...',
-        updateDate: '2025-3-25更新',
-        version: 'gemma-3-12b-it',
-        supportDeploy: true
-      },
-      {
-        id: 8,
-        category: 'AI工具',
-        name: '文件下载',
-        description: 'Gemma 是来自 Google 的一系列轻量级、最先进的开放模型，基于用于创建 Gemini 模型的相同研究和技术构建。Gemma 3 模型是多模态的，处理文本和图像输入并生成文本输出，提供了预训练...',
-        updateDate: '2025-3-25更新',
-        version: 'gemma-3-12b-it',
-        supportDeploy: true
-      },
-      {
-        id: 9,
-        category: 'AI工具',
-        name: '数据导出到对象存储',
-        description: 'Gemma 是来自 Google 的一系列轻量级、最先进的开放模型，基于用于创建 Gemini 模型的相同研究和技术构建。Gemma 3 模型是多模态的，处理文本和图像输入并生成文本输出，提供了预训练...',
-        updateDate: '2025-3-25更新',
-        version: 'gemma-3-12b-it',
-        supportDeploy: true
-      }
-  ])
+  const apps = ref([])
+  const getApps = async () => {
+    const res = await ServeGetApps({ pageSize: 100, pageNumber: 1 })
+    apps.value = res.apps
+  }
+  getApps()
   
   const drawerVisible = ref(false)
   const fineTuneDrawerVisible = ref(false)
+  const jobDrawerVisible = ref(false)
   const selectedModel = ref(null)
-  
-  const deployForm = ref({
-    taskName: '',
-    poolType: '通用资源池',
-    pool: 'shengzhaotest-A800',
-    queue: '中',
-    priority: '中',
-    framework: 'PyTorch',
-    image: '',
-    createType: 'self',
-    imageUrl: '',
-    command: '',
-    instanceCount: 1,
-    enableGpu: false,
-    gpuType: '',
-    gpuPerInstance: 1,
-    cpu: null,
-    memory: null,
-    sharedMemory: 10,
-    enableRdma: false,
-    enableFaultTolerance: false,
-    enableTensorboard: false,
-    autoDelete: false,
-    enableAlerts: false,
-    enableScheduledSubmit: false,
-  })
-  
-  const fineTuneForm = ref({
-    taskName: '',
-    poolType: '通用资源池',
-    pool: 'shengzhaotest-A800',
-    dataset: '',
-    learningRate: 0.00002,
-    epochs: 3,
-    batchSize: 8,
-    method: 'lora',
-    enableTensorboard: true,
-    autoEvaluate: false
-  })
-  
-  const formRef = ref(null)
-  const fineTuneFormRef = ref(null)
   
   const handleTagClick = (tag) => {
     activeTag.value = activeTag.value === tag ? '' : tag
   }
   
-  const filteredModels = computed(() => {
-    return models.value.filter(model => {
+  const filteredApps = computed(() => {
+    return apps.value.filter(model => {
       const matchesSearch = searchQuery.value === '' || 
         model.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         model.description.toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -565,49 +161,31 @@
       return matchesSearch && matchesTag && matchesDeploy && matchesOneClick
     })
   })
-  
-  const handleDeploy = (model) => {
-    selectedModel.value = model
-    drawerVisible.value = true
-  }
 
-  const handleFineTune = (model) => {
+  const handleAction = (model, action) => {
     selectedModel.value = model
-    fineTuneDrawerVisible.value = true
-    // 设置默认任务名称
-    fineTuneForm.value.taskName = `${model.name}-微调-${new Date().getTime().toString().slice(-6)}`
+    if (action === '一键部署') {
+      drawerVisible.value = true
+    } else if (action === '模型微调') {
+      fineTuneDrawerVisible.value = true
+    } else if (action === '运行任务') {
+      jobDrawerVisible.value = true
+    }
   }
   
-  const submitForm = async () => {
-    // 这里添加表单提交逻辑
+  const handleTaskSubmit = (formData) => {
+    console.log('任务表单提交数据:', formData)
     ElMessage.success('任务创建成功')
-    drawerVisible.value = false
   }
 
-  const handleAddStorage = () => {
-    // 处理添加存储的逻辑
-    console.log('添加存储')
-  }
-
-  const handleConfigFaultTolerance = () => {
-    // 处理容错配置的逻辑
-    console.log('配置容错')
-  }
-
-  const previewDataset = () => {
-    // 处理数据集预览的逻辑
-    console.log('预览数据集', fineTuneForm.value.dataset)
-  }
-
-  const handleFileChange = (file) => {
-    // 处理文件上传变化
-    console.log('文件上传', file)
-  }
-
-  const submitFineTuneForm = async () => {
-    // 这里添加微调表单提交逻辑
+  const handleFineTuneSubmit = (formData) => {
+    console.log('微调表单提交数据:', formData)
     ElMessage.success('微调任务创建成功')
-    fineTuneDrawerVisible.value = false
+  }
+
+  const handleJobSubmit = (formData) => {
+    console.log('任务表单提交数据:', formData)
+    ElMessage.success('任务创建成功')
   }
   </script>
   
@@ -677,6 +255,7 @@
     color: var(--el-text-color-secondary);
     font-size: 14px;
     line-height: 1.6;
+    min-height: 4lh;
     margin: 12px 0;
     text-align: left;
   }
