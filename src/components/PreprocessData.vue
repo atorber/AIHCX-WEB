@@ -129,9 +129,41 @@
               >生成执行命令</el-button
             >
             <el-button @click="handleReset">重置</el-button>
-            <!-- <el-button v-if="generatedParams" type="primary" @click="copyToClipboard">
-              复制到剪切板
-            </el-button> -->
+            <div>
+              <el-select
+                v-if="generatedParams"
+                v-model="resourcePoolId"
+                placeholder="请选择资源池"
+                style="width: 240px"
+                @change="getResourcePoolInfo"
+              >
+                <el-option
+                  v-for="item in resourcepoolList"
+                  :key="item.metadata.id"
+                  :label="item.metadata.name"
+                  :value="item.metadata.id"
+                >
+                  <span style="float: left">{{ item.metadata.name }}</span>
+                  <span
+                    style="
+                      float: right;
+                      color: var(--el-text-color-secondary);
+                      font-size: 13px;
+                    "
+                  >
+                    {{ item.metadata.id }}
+                  </span>
+                </el-option>
+              </el-select>
+
+              <el-button
+                v-if="generatedParams"
+                type="primary"
+                @click="createJob"
+                :disabled="!resourcePoolId"
+                >提交任务</el-button
+              >
+            </div>
           </el-form-item>
         </el-col>
       </el-row>
@@ -159,6 +191,19 @@
 import { reactive, computed, watch, ref } from "vue";
 import { ElMessage, FormRules } from "element-plus";
 import { generatePreprocessData, timeStr } from "./aiak-parms";
+import { useStore } from "../store";
+import { ResourcePool } from "../store/types";
+import { getAccessToken } from "../utils/auth";
+import { ServeCreateJob } from "../api/jobs";
+
+const store = useStore();
+
+const resourcepoolList = computed<ResourcePool[]>(
+  () => store.getters.resourcepoolList
+);
+
+const resourcePoolId = ref("");
+const resourcePoolInfo = ref({} as ResourcePool);
 
 // 定义响应式的表单模型
 const formModel = reactive({
@@ -329,6 +374,76 @@ const handleReset = () => {
     ElMessage.success("表单已重置");
   }
 };
+
+const createJob = async () => {
+  if (!resourcePoolId.value) {
+    ElMessage.error("请选择资源池");
+    return;
+  }
+  const token = getAccessToken();
+  if (!token) {
+    ElMessage.error("在系统设置中配置API Key");
+    return;
+  }
+  const body = {
+    queue: "default",
+    priority: "normal",
+    jobFramework: "PyTorchJob",
+    name: `preprocess-data-${formModel.version}`,
+    jobSpec: {
+      command: generatedParams.value,
+      image: formModel.image,
+      replicas: 1,
+      resources: [],
+      enableRDMA: true,
+      envs: [
+        {
+          name: "CUDA_DEVICE_MAX_CONNECTIONS",
+          value: "1",
+        },
+      ],
+    },
+    datasources: [
+      {
+        type: "pfs",
+        name: resourcePoolInfo.value.spec.associatedPfsId,
+        sourcePath: "/",
+        mountPath: formModel.mountPath,
+      },
+    ],
+  };
+  try {
+    const res: any = await ServeCreateJob(body, resourcePoolId.value);
+    console.log(res.data);
+    if (res && res.jobId) {
+      ElMessage.success("创建任务成功");
+    } else {
+      ElMessage.error("创建任务失败");
+    }
+  } catch (error) {
+    console.error("Error creating job:", error);
+    ElMessage.error("创建任务失败");
+  }
+};
+
+const getResourcePoolInfo = () => {
+  resourcePoolInfo.value =
+    resourcepoolList.value.find(
+      (item) => item.metadata.id === resourcePoolId.value
+    ) || ({} as ResourcePool);
+  console.log(JSON.stringify(resourcePoolInfo.value));
+};
+
+// 获取资源池列表的 Action
+const fetchResourcePools = async () => {
+  if (resourcepoolList.value.length > 0) {
+    resourcePoolId.value = resourcepoolList.value[0].metadata.id;
+  }
+  if (resourcePoolId.value) {
+    getResourcePoolInfo();
+  }
+};
+fetchResourcePools();
 </script>
 
 <style>

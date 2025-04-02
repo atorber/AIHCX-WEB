@@ -11,8 +11,8 @@ export const ServeGetJob = (data: { jobId: string, resourcePoolId: string }) => 
 }
 
 // 创建任务服务接口
-export const ServeCreateJob = (data: any, options: { params: { resourcePoolId: string } }) => {
-    return post('/?action=CreateJob', data, options)
+export const ServeCreateJob = (data: any, resourcePoolId: string) => {
+    return post('/?action=CreateJob', data, { params: { resourcePoolId } })
 }
 
 // 获取任务Web终端服务接口

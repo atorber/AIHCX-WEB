@@ -174,10 +174,12 @@ const setUpSocket = () => {
     socket.value.onmessage = (e) => {
       console.log('[WebTerminal] 收到消息:', e.data)
       if (typeof e.data === 'string') {
+        console.log('[WebTerminal] 收到消息 string:', e.data)
         terminal.value.write(e.data.replace(/\r$/g, '\r\n'))
       } else if (e.data instanceof ArrayBuffer) {
         const decoder = new TextDecoder('utf-8')
         const text = decoder.decode(new Uint8Array(e.data))
+        console.log('[WebTerminal] 收到消息 ArrayBuffer:', text)
         terminal.value.write(text.replace(/\r$/g, '\r\n'))
       }
     }

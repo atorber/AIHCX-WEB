@@ -1,82 +1,53 @@
 <template>
-  <div
-    style="
+  <div style="
       padding: 0px 20px;
       max-width: 1200px;
       margin: 0 auto;
       text-align: left;
-    "
-  >
+    ">
     <h1 color="$ep-color-primary">{{ msg }}</h1>
     <!-- 操作栏 -->
     <div class="operation-bar">
-      <el-input
-        v-model="searchQuery"
-        placeholder="搜索任务名称"
-        class="search-input"
-        clearable
-        @input="handleSearch"
-      >
+      <el-input v-model="searchQuery" placeholder="搜索任务名称" class="search-input" clearable @input="handleSearch">
         <template #prefix>
-          <el-icon><Search /></el-icon>
+          <el-icon>
+            <Search />
+          </el-icon>
         </template>
       </el-input>
-      
+
       <div class="operation-right">
-        <el-button
-          :disabled="!resourcePoolId"
-          type="primary"
-          :loading="isLoading"
-          @click="refreshJobs"
-          :icon="Refresh"
-        >刷新</el-button>
-        
-        <el-select
-          v-model="resourcePoolId"
-          placeholder="Select"
-          style="width: 240px"
-          @change="handleResourcePoolChange"
-        >
-          <el-option
-            v-for="item in resourcepoolList"
-            :key="item.metadata.id"
-            :label="item.metadata.name"
-            :value="item.metadata.id"
-          >
+        <el-select v-model="resourcePoolId" placeholder="Select" style="width: 240px"
+          @change="handleResourcePoolChange">
+          <el-option v-for="item in resourcepoolList" :key="item.metadata.id" :label="item.metadata.name"
+            :value="item.metadata.id">
             <span style="float: left">{{ item.metadata.name }}</span>
-            <span
-              style="
+            <span style="
                 float: right;
                 color: var(--el-text-color-secondary);
                 font-size: 13px;
-              "
-            >
+              ">
               {{ item.metadata.id }}
             </span>
           </el-option>
         </el-select>
+
+        <el-select v-model="statusFilter" placeholder="按状态筛选" clearable style="width: 120px">
+          <el-option v-for="status in availableStatuses" :key="status" :label="status" :value="status" />
+        </el-select>
+
+        <el-button :disabled="!resourcePoolId" type="primary" :loading="isLoading" @click="refreshJobs"
+          :icon="Refresh">刷新</el-button>
+
       </div>
     </div>
-    <el-table
-      highlight-current-row
-      :data="jobList"
-      :border="parentBorder"
-      style="width: 100%"
-      v-loading="isLoading"
-      row-key="jobId"
-      @expand-change="handleExpand"
-    >
-    <el-table-column type="expand">
+    <el-table highlight-current-row :data="filteredJobList" :border="parentBorder" style="width: 100%"
+      v-loading="isLoading" row-key="jobId" @expand-change="handleExpand">
+      <el-table-column type="expand">
         <template #default="props">
           <div v-loading="loadingPodDetails[props.row.jobId]" class="pod-list-container">
-            <el-table
-              v-if="podDetails[props.row.jobId]?.length"
-              :data="podDetails[props.row.jobId]"
-              style="width: 100%"
-              :border="true"
-              size="small"
-              class="pod-table"
-            >
+            <el-table v-if="podDetails[props.row.jobId]?.length" :data="podDetails[props.row.jobId]" style="width: 100%"
+              :border="true" size="small" class="pod-table">
               <el-table-column type="index" label="序号" width="60" />
               <el-table-column label="Pod名称" prop="objectMeta.name" />
               <el-table-column label="Pod IP" prop="PodIP" />
@@ -94,39 +65,30 @@
               <el-table-column label="原因" prop="reason" />
               <el-table-column label="操作" width="120">
                 <template #default="scope">
-                  <el-button 
-                    :disabled="scope.row.podStatus.status !== 'Running'"
-                    type="primary" 
-                    link 
-                    @click="handleWebTerminalUrl(scope.row, { jobId: props.row.jobId })"
-                  >连接终端</el-button>
+                  <el-button :disabled="scope.row.podStatus.status !== 'Running'" type="primary" link
+                    @click="handleWebTerminalUrl(scope.row, { jobId: props.row.jobId })">连接终端</el-button>
                 </template>
               </el-table-column>
             </el-table>
             <div v-else class="no-data">暂无Pod信息</div>
-            
+
             <!-- 在Pod列表下方显示WebTerminal -->
             <div v-if="podDetails[props.row.jobId]?.length" class="terminal-list">
               <div v-for="pod in podDetails[props.row.jobId]" :key="pod.objectMeta.name" class="terminal-item">
                 <div v-if="webshellVisible[`${props.row.jobId}-${pod.objectMeta.name}`]" class="terminal-container">
                   <div class="terminal-header">
                     <span>WebShell终端 - {{ pod.objectMeta.name }}</span>
-                    <el-button 
-                      type="danger" 
-                      size="small" 
-                      @click="closeTerminal(`${props.row.jobId}-${pod.objectMeta.name}`)"
-                    >
+                    <el-button type="danger" size="small"
+                      @click="closeTerminal(`${props.row.jobId}-${pod.objectMeta.name}`)">
                       关闭
                     </el-button>
                   </div>
-                  <WebTerminal 
-                    v-if="webshellUrl[`${props.row.jobId}-${pod.objectMeta.name}`] && webshellVisible[`${props.row.jobId}-${pod.objectMeta.name}`]" 
-                    :socketUrl="webshellUrl[`${props.row.jobId}-${pod.objectMeta.name}`]"
-                    :style="{ height: '400px' }"
+                  <WebTerminal
+                    v-if="webshellUrl[`${props.row.jobId}-${pod.objectMeta.name}`] && webshellVisible[`${props.row.jobId}-${pod.objectMeta.name}`]"
+                    :socketUrl="webshellUrl[`${props.row.jobId}-${pod.objectMeta.name}`]" :style="{ height: '400px' }"
                     @connect="handleTerminalConnect(`${props.row.jobId}-${pod.objectMeta.name}`)"
                     @disconnect="handleTerminalDisconnect(`${props.row.jobId}-${pod.objectMeta.name}`)"
-                    :key="`${props.row.jobId}-${pod.objectMeta.name}-${webshellVisible[`${props.row.jobId}-${pod.objectMeta.name}`]}`"
-                  />
+                    :key="`${props.row.jobId}-${pod.objectMeta.name}-${webshellVisible[`${props.row.jobId}-${pod.objectMeta.name}`]}`" />
                 </div>
               </div>
             </div>
@@ -137,33 +99,19 @@
         <template #default="scope">
           <div>
             <div>
-              <el-tooltip
-                :content="scope.row.name"
-                placement="top"
-                :show-after="500"
-                :hide-after="0"
-              >
-                <el-link 
-                  type="primary" 
-                  :underline="false"
-                  @click="handleViewDetails(scope.row)"
-                  class="job-name"
-                >
+              <el-tooltip :content="scope.row.name" placement="top" :show-after="500" :hide-after="0">
+                <el-link type="primary" :underline="false" @click="handleViewDetails(scope.row)" class="job-name">
                   {{ scope.row.name }}
                 </el-link>
               </el-tooltip>
             </div>
             <div class="job-id">
               <el-text size="small">{{ scope.row.jobId || '-' }}</el-text>
-              <el-button
-                v-if="scope.row.jobId"
-                type="primary"
-                link
-                size="small"
-                class="copy-button"
-                @click.stop="copyToClipboard(scope.row.jobId)"
-              >
-                <el-icon><CopyDocument /></el-icon>
+              <el-button v-if="scope.row.jobId" type="primary" link size="small" class="copy-button"
+                @click.stop="copyToClipboard(scope.row.jobId)">
+                <el-icon>
+                  <CopyDocument />
+                </el-icon>
               </el-button>
             </div>
           </div>
@@ -173,44 +121,26 @@
       <el-table-column label="优先级" prop="priority" />
       <el-table-column label="资源池ID" prop="resourcePoolId" />
       <el-table-column label="队列" prop="queue" />
+      <el-table-column label="实例数" prop="replicas" />
       <el-table-column label="创建时间" prop="createdAt" />
       <el-table-column label="结束时间" prop="finishedAt" />
-      <el-table-column label="原因" prop="reason" />
+      <!-- <el-table-column label="原因" prop="reason" /> -->
       <el-table-column label="操作" width="120">
         <template #default="scope">
-          <el-button
-            link
-            type="primary"
-            @click="handleViewDetails(scope.row)"
-            >查看详情</el-button
-          >
+          <el-button link type="primary" @click="handleViewDetails(scope.row)">查看详情</el-button>
         </template>
       </el-table-column>
     </el-table>
-    
+
     <!-- 分页 -->
     <div class="pagination-container" style="margin-top: 20px; display: flex; justify-content: flex-end;">
-      <el-pagination
-        v-if="totalCount > 0"
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :page-sizes="[10, 20, 50, 100]"
-        :total="totalCount"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <el-pagination v-if="totalCount > 0" v-model:current-page="currentPage" v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]" :total="totalCount" layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
-    
+
     <!-- 任务详情抽屉 -->
-    <el-drawer
-      v-model="drawerVisible"
-      title="任务详情"
-      size="50%"
-      :with-header="true"
-      direction="rtl"
-      destroy-on-close
-    >
+    <el-drawer v-model="drawerVisible" title="任务详情" size="50%" :with-header="true" direction="rtl" destroy-on-close>
       <div v-if="currentJob" class="drawer-content" v-loading="drawerLoading">
         <el-descriptions :column="2" border>
           <el-descriptions-item label="任务名称">
@@ -219,15 +149,11 @@
           <el-descriptions-item label="任务ID">
             <div style="display: flex; align-items: center;">
               {{ currentJob.jobId || '-' }}
-              <el-button
-                v-if="currentJob.jobId"
-                type="primary"
-                link
-                size="small"
-                class="copy-button"
-                @click="copyToClipboard(currentJob.jobId)"
-              >
-                <el-icon><CopyDocument /></el-icon>
+              <el-button v-if="currentJob.jobId" type="primary" link size="small" class="copy-button"
+                @click="copyToClipboard(currentJob.jobId)">
+                <el-icon>
+                  <CopyDocument />
+                </el-icon>
               </el-button>
             </div>
           </el-descriptions-item>
@@ -238,14 +164,11 @@
           <el-descriptions-item label="资源池ID">
             <div style="display: flex; align-items: center;">
               {{ currentJob.resourcePoolId }}
-              <el-button
-                type="primary"
-                link
-                size="small"
-                class="copy-button"
-                @click="copyToClipboard(currentJob.resourcePoolId)"
-              >
-                <el-icon><CopyDocument /></el-icon>
+              <el-button type="primary" link size="small" class="copy-button"
+                @click="copyToClipboard(currentJob.resourcePoolId)">
+                <el-icon>
+                  <CopyDocument />
+                </el-icon>
               </el-button>
             </div>
           </el-descriptions-item>
@@ -254,7 +177,8 @@
           <el-descriptions-item label="结束时间">{{ currentJob.finishedAt || '-' }}</el-descriptions-item>
           <el-descriptions-item label="调度时间">{{ currentJob.scheduledAt || '-' }}</el-descriptions-item>
           <el-descriptions-item label="运行时间">{{ currentJob.runningAt || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="任务框架" v-if="currentJob.jobFramework">{{ currentJob.jobFramework }}</el-descriptions-item>
+          <el-descriptions-item label="任务框架" v-if="currentJob.jobFramework">{{ currentJob.jobFramework
+            }}</el-descriptions-item>
           <el-descriptions-item label="副本数" v-if="currentJob.replicas">{{ currentJob.replicas }}</el-descriptions-item>
           <el-descriptions-item label="启用RDMA" v-if="currentJob.enableRDMA !== undefined">
             <el-tag :type="currentJob.enableRDMA ? 'success' : 'info'">
@@ -282,14 +206,11 @@
           <el-descriptions-item label="K8s UID" v-if="currentJob.k8sUID">
             <div style="display: flex; align-items: center;">
               {{ currentJob.k8sUID }}
-              <el-button
-                type="primary"
-                link
-                size="small"
-                class="copy-button"
-                @click="copyToClipboard(currentJob.k8sUID)"
-              >
-                <el-icon><CopyDocument /></el-icon>
+              <el-button type="primary" link size="small" class="copy-button"
+                @click="copyToClipboard(currentJob.k8sUID)">
+                <el-icon>
+                  <CopyDocument />
+                </el-icon>
               </el-button>
             </div>
           </el-descriptions-item>
@@ -310,21 +231,21 @@
             </el-tag>
           </el-descriptions-item>
         </el-descriptions>
-        
+
         <div style="margin-top: 20px" v-if="currentJob.image">
           <h4>镜像地址</h4>
           <el-card class="box-card">
             {{ currentJob.image }}
           </el-card>
         </div>
-        
+
         <div style="margin-top: 20px" v-if="currentJob.command">
           <h4>执行命令</h4>
           <el-card class="box-card">
             <pre class="pre-wrap">{{ currentJob.command }}</pre>
           </el-card>
         </div>
-        
+
         <div style="margin-top: 20px" v-if="currentJob.resources && currentJob.resources.length > 0">
           <h4>资源需求</h4>
           <el-table :data="currentJob.resources" border>
@@ -349,7 +270,7 @@
             </el-table-column>
           </el-table>
         </div>
-        
+
         <div style="margin-top: 20px" v-if="currentJob.envs && currentJob.envs.length > 0">
           <h4>环境变量</h4>
           <el-table :data="currentJob.envs" border>
@@ -357,7 +278,7 @@
             <el-table-column label="值" prop="value" />
           </el-table>
         </div>
-        
+
         <div style="margin-top: 20px" v-if="currentJob.labels && currentJob.labels.length > 0">
           <h4>标签</h4>
           <el-table :data="currentJob.labels" border>
@@ -423,13 +344,41 @@ const currentPage = ref(1);
 const pageSize = ref(10);
 
 const searchQuery = ref('');
+const statusFilter = ref('');
 
 // 从 store 中获取状态
 const jobList = computed<Job[]>(() => store.getters.jobList);
 const resourcepoolList = computed<ResourcePool[]>(() => store.getters.resourcepoolList);
 const totalCount = computed(() => store.state.totalCount);
-const loadingPodDetails = ref<{[key: string]: boolean}>({});
-const podDetails = ref<{[key: string]: any[]}>({});
+const loadingPodDetails = ref<{ [key: string]: boolean }>({});
+const podDetails = ref<{ [key: string]: any[] }>({});
+
+// 计算当前列表中存在的所有状态
+const availableStatuses = computed(() => {
+  const statusSet = new Set(jobList.value.map(job => job.status));
+  return Array.from(statusSet).sort();
+});
+
+// 计算筛选后的任务列表
+const filteredJobList = computed(() => {
+  let filtered = jobList.value;
+
+  // 应用状态筛选
+  if (statusFilter.value) {
+    filtered = filtered.filter(job => job.status === statusFilter.value);
+  }
+
+  // 应用名称搜索
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(job =>
+      job.name.toLowerCase().includes(query) ||
+      (job.jobId && job.jobId.toLowerCase().includes(query))
+    );
+  }
+
+  return filtered;
+});
 
 // 获取资源池列表的 Action
 const fetchResourcePools = async () => {
@@ -492,7 +441,7 @@ const handleViewDetails = (row: Job) => {
   currentJob.value = row; // 先设置基本信息
   drawerVisible.value = true;
   drawerLoading.value = true;
-  
+
   // 调用API获取详细信息
   fetchJobDetails(row);
 };
@@ -508,15 +457,15 @@ const fetchJobDetails = async (job: Job) => {
       drawerLoading.value = false;
       return;
     }
-    
+
     console.log("开始请求任务详情", jobId, resourcePoolId.value);
-    const response: any = await ServeGetJob({ 
-      jobId, 
-      resourcePoolId: resourcePoolId.value 
+    const response: any = await ServeGetJob({
+      jobId,
+      resourcePoolId: resourcePoolId.value
     });
-    
+
     console.log("任务详情响应", response);
-    
+
     // 检查响应结构
     if (response && response.requestId) {
       // 更新任务详情
@@ -618,19 +567,19 @@ const getPodStatusType = (status: string): 'success' | 'warning' | 'danger' | 'i
 };
 
 // 修改webshell相关的状态
-const webshellVisible = ref<{[key: string]: boolean}>({});
-const webshellUrl = ref<{[key: string]: string}>({});
+const webshellVisible = ref<{ [key: string]: boolean }>({});
+const webshellUrl = ref<{ [key: string]: string }>({});
 
 const handleWebTerminalUrl = async (row: any, scope: any) => {
   try {
-    const response: any = await ServeGetJobWebTerminal({ 
-      jobId: scope.jobId, 
-      podName: row.objectMeta.name, 
-      resourcePoolId: resourcePoolId.value 
+    const response: any = await ServeGetJobWebTerminal({
+      jobId: scope.jobId,
+      podName: row.objectMeta.name,
+      resourcePoolId: resourcePoolId.value
     });
 
     console.log("获取WebTerminal URL请求结果", response);
-    
+
     if (response && response.WebTerminalUrl) {
       console.log("获取WebTerminal URL成功", response.WebTerminalUrl);
       const terminalId = `${scope.jobId}-${row.objectMeta.name}`;
@@ -692,11 +641,11 @@ const handleExpand = async (row: any, expanded: boolean) => {
   if (expanded && !podDetails.value[row.jobId]) {
     try {
       loadingPodDetails.value[row.jobId] = true;
-      const response: any = await ServeGetJob({ 
-        jobId: row.jobId, 
-        resourcePoolId: resourcePoolId.value 
+      const response: any = await ServeGetJob({
+        jobId: row.jobId,
+        resourcePoolId: resourcePoolId.value
       });
-      
+
       if (response && response.requestId) {
         podDetails.value[row.jobId] = response.podList?.pods || [];
       }
@@ -716,9 +665,11 @@ fetchResourcePools();
 .el-row {
   margin-bottom: 20px;
 }
+
 .el-row:last-child {
   margin-bottom: 0;
 }
+
 .el-col {
   border-radius: 4px;
   min-height: 48px;

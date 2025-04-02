@@ -213,6 +213,7 @@
                 v-if="generatedParams"
                 type="primary"
                 @click="createJob"
+                :disabled="!resourcePoolId"
                 >提交任务</el-button
               >
             </div>
@@ -253,6 +254,7 @@ import { ResourcePool, Job } from "../store/types";
 import axios from "axios";
 import { getAccessToken } from "../utils/auth";
 import { ActionTypes } from "../store/mutation-types";
+import { ServeCreateJob } from "../api/jobs";
 
 const store = useStore();
 
@@ -444,6 +446,10 @@ const handleReset = () => {
 };
 
 const createJob = async () => {
+  if (!resourcePoolId.value) {
+    ElMessage.error("请选择资源池");
+    return;
+  }
   const token = getAccessToken();
   if (!token) {
     ElMessage.error("在系统设置中配置API Key");
@@ -482,20 +488,9 @@ const createJob = async () => {
     ],
   };
   try {
-    const res = await axios.post(
-      `https://6d6q5xfg0drsm.cfc-execute.bj.baidubce.com/api/v1/aijobs`,
-      body,
-      {
-        params: {
-          resourcePoolId: resourcePoolInfo.value.metadata.id,
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const res: any = await ServeCreateJob(body, resourcePoolId.value);
     console.log(res.data);
-    if (res.data.result && res.data.result.jobId) {
+    if (res && res.jobId) {
       ElMessage.success("创建任务成功");
     } else {
       ElMessage.error("创建任务失败");
