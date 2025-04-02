@@ -11,6 +11,7 @@ declare module 'vue' {
     BaseSide: typeof import('./components/layouts/BaseSide.vue')['default']
     ConvertCheckpoint: typeof import('./components/ConvertCheckpoint.vue')['default']
     ConvertCheckpointCustom: typeof import('./components/ConvertCheckpointCustom.vue')['default']
+    copy: typeof import('./components/WebTerminal copy.vue')['default']
     CreateTaskDrawer: typeof import('./components/CreateTaskDrawer.vue')['default']
     DownloadData: typeof import('./components/DownloadData.vue')['default']
     DynamicFormDrawer: typeof import('./components/DynamicFormDrawer.vue')['default']

@@ -120,8 +120,12 @@
                     </el-button>
                   </div>
                   <WebTerminal 
-                    v-if="webshellUrl[`${props.row.jobId}-${pod.objectMeta.name}`]" 
-                    :url="webshellUrl[`${props.row.jobId}-${pod.objectMeta.name}`]" 
+                    v-if="webshellUrl[`${props.row.jobId}-${pod.objectMeta.name}`] && webshellVisible[`${props.row.jobId}-${pod.objectMeta.name}`]" 
+                    :socketUrl="webshellUrl[`${props.row.jobId}-${pod.objectMeta.name}`]"
+                    :style="{ height: '400px' }"
+                    @connect="handleTerminalConnect(`${props.row.jobId}-${pod.objectMeta.name}`)"
+                    @disconnect="handleTerminalDisconnect(`${props.row.jobId}-${pod.objectMeta.name}`)"
+                    :key="`${props.row.jobId}-${pod.objectMeta.name}-${webshellVisible[`${props.row.jobId}-${pod.objectMeta.name}`]}`"
                   />
                 </div>
               </div>
@@ -393,7 +397,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
+import { ref, computed, nextTick } from "vue";
 import { ElMessage } from "element-plus";
 import { Refresh, CopyDocument, Search, Loading } from "@element-plus/icons-vue";
 import { useStore } from "../store"; // 确保从 vuex 导入 useStore
@@ -625,13 +629,30 @@ const handleWebTerminalUrl = async (row: any, scope: any) => {
       resourcePoolId: resourcePoolId.value 
     });
 
-    console.log("获取WebTerminal URL", response);
+    console.log("获取WebTerminal URL请求结果", response);
     
     if (response && response.WebTerminalUrl) {
+      console.log("获取WebTerminal URL成功", response.WebTerminalUrl);
       const terminalId = `${scope.jobId}-${row.objectMeta.name}`;
+      // 先清除可能存在的旧连接
+      if (webshellUrl.value[terminalId]) {
+        delete webshellUrl.value[terminalId];
+        console.log("清除旧连接", terminalId);
+      } else {
+        console.log("没有旧连接", terminalId);
+      }
+      // 等待 DOM 更新
+      await nextTick();
+      // 设置新的 URL
       webshellUrl.value[terminalId] = response.WebTerminalUrl;
+      console.log("设置新连接", terminalId, response.WebTerminalUrl);
+      // 再次等待 DOM 更新
+      await nextTick();
+      // 显示终端
       webshellVisible.value[terminalId] = true;
+      console.log("显示终端", terminalId);
     } else {
+      console.log("获取WebTerminal URL失败", response);
       ElMessage.error('获取WebTerminal URL失败');
     }
   } catch (error) {
@@ -640,10 +661,31 @@ const handleWebTerminalUrl = async (row: any, scope: any) => {
   }
 };
 
-// 添加关闭终端的方法
-const closeTerminal = (terminalId: string) => {
-  webshellVisible.value[terminalId] = false;
-  delete webshellUrl.value[terminalId];
+// 修改 closeTerminal 方法
+const closeTerminal = async (terminalId: string) => {
+  try {
+    // 先设置可见性为 false
+    webshellVisible.value[terminalId] = false;
+    // 等待 DOM 更新
+    await nextTick();
+    // 清除 URL
+    if (webshellUrl.value[terminalId]) {
+      delete webshellUrl.value[terminalId];
+    }
+  } catch (error) {
+    console.error("Error closing terminal:", error);
+  }
+};
+
+// 修改 handleTerminalDisconnect 方法
+const handleTerminalDisconnect = async (terminalId: string) => {
+  console.log(`终端 ${terminalId} 断开连接`);
+  // 断开连接时自动关闭终端
+  await closeTerminal(terminalId);
+};
+
+const handleTerminalConnect = (terminalId: string) => {
+  console.log(`终端 ${terminalId} 连接成功`);
 };
 
 const handleExpand = async (row: any, expanded: boolean) => {

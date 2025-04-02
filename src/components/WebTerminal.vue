@@ -1,264 +1,304 @@
 <template>
-  <div class="terminal-container">
-    <div id="terminal" class="terminal"></div>
+  <div class="webshell-container">
+    <div ref="terminalRef" class="terminal"></div>
   </div>
 </template>
 
-<script lang="ts" setup>
-import { onMounted, onUnmounted } from 'vue';
-import { Terminal } from '@xterm/xterm';
-import { FitAddon } from '@xterm/addon-fit';
-import { WebLinksAddon } from '@xterm/addon-web-links';
-import { da } from 'element-plus/es/locale';
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { Terminal } from 'xterm'
+import { FitAddon } from 'xterm-addon-fit'
+import 'xterm/css/xterm.css'
 
-const props = defineProps<{
-  url: string;
-}>();
+const props = defineProps({
+  socketUrl: {
+    type: String,
+    required: true
+  },
+  style: {
+    type: Object,
+    default: () => ({})
+  },
+  width: {
+    type: [Number, String],
+    default: '100%'
+  },
+  height: {
+    type: [Number, String],
+    default: '100%'
+  }
+})
 
-console.log("WebTerminal props", props);
+const emit = defineEmits(['message', 'fullScreen', 'connect', 'disconnect'])
 
-let terminal: Terminal;
-let fitAddon: FitAddon;
-let ws: WebSocket;
-let handleResize: () => void;
+const terminalRef = ref(null)
+const terminal = ref(null)
+const fitAddon = ref(null)
+const socket = ref(null)
+const pingTimer = ref(null)
+const mutationObserver = ref(null)
 
-onMounted(async () => {
-  // 创建终端实例
-  terminal = new Terminal({
+// 连接状态常量
+const GENERAL_LINK = 1
+const PENDING_LINK = 0
+const SUCCESS_LINK = -1
+const linkStatus = ref(GENERAL_LINK)
+
+// 初始化终端
+const initTerminal = () => {
+  terminal.value = new Terminal({
     cursorBlink: true,
+    cursorStyle: 'block',
     fontSize: 14,
     fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-    convertEol: true,
-    scrollback: 1000,
-    cols: 120,
-    rows: 30,
-    allowTransparency: false,
-    cursorStyle: 'block',
-    cursorWidth: 1,
+    tabStopWidth: 4,
     theme: {
       background: '#1e1e1e',
-      foreground: '#ffffff',
-      cursor: '#ffffff',
-      black: '#000000',
-      red: '#cd3131',
-      green: '#0dbc79',
-      yellow: '#e5e510',
-      blue: '#2472c8',
-      magenta: '#bc3fbc',
-      cyan: '#11a8cd',
-      white: '#e5e5e5',
-      brightBlack: '#666666',
-      brightRed: '#f14c4c',
-      brightGreen: '#23d18b',
-      brightYellow: '#f5f543',
-      brightBlue: '#3b8eea',
-      brightMagenta: '#d670d6',
-      brightCyan: '#29b8db',
-      brightWhite: '#e5e5e5'
+      foreground: '#ffffff'
     }
-  });
+  })
 
-  // 添加插件
-  fitAddon = new FitAddon();
-  terminal.loadAddon(fitAddon);
-  terminal.loadAddon(new WebLinksAddon());
+  fitAddon.value = new FitAddon()
+  terminal.value.loadAddon(fitAddon.value)
 
-  // 打开终端
-  const terminalElement = document.getElementById('terminal');
-  terminal.open(terminalElement as HTMLElement);
-  
-  // 创建WebSocket连接
-  try {
-    ws = new WebSocket(props.url);
-    
-    ws.addEventListener('open', () => {
-      console.log('WebSocket连接已建立');
-      terminal.write('\r');
-      // terminal.clear();
-      // terminal.reset();
-      
-      // // 发送初始化命令
-      // ws.send(JSON.stringify({
-      //   operation: 'resize',
-      //   cols: terminal.cols,
-      //   rows: terminal.rows
-      // }));
-    });
+  terminal.value.open(terminalRef.value)
+  fitAddon.value.fit()
+  terminal.value.focus()
 
-    // 处理收到的消息
-    ws.addEventListener('message', async (event) => {
-      console.log("接收到event:", event);
-      try {
-        const data = event.data;
-        console.log("接收到data:", data);
+  terminal.value.onData(data => {
+    console.log('[WebTerminal] 收到终端输入:', {
+      data,
+      length: data.length,
+      timestamp: new Date().toISOString()
+    })
+    sendMessage(data)
+  })
 
-        // 如果是Blob类型，转换为文本
-        let text = data
-        if (data instanceof Blob) {
-          text = await data.text();
-          console.log("接收到Blob数据:", text);
-        }
-        
-        // 尝试解析为JSON
-        try {
-          const jsonData = JSON.parse(text);
-          console.log("接收到JSON数据:", jsonData);
-
-          if (jsonData.operation === 'stdout') {
-            terminal.write(jsonData.data);
-          } else if (jsonData.operation === 'stderr') {
-            terminal.write('\x1b[31m' + jsonData.data + '\x1b[0m');
-          } else {
-            console.log('未知操作类型:', jsonData.operation);
-          }
-          
-          if (jsonData.operation === 'stdout') {
-            terminal.write(jsonData.data);
-          } else if (jsonData.operation === 'stderr') {
-            terminal.write('\x1b[31m' + jsonData.data + '\x1b[0m');
-          } else {
-            console.log('未知操作类型:', jsonData.operation);
-          }
-        } catch (e) {
-          // 不是JSON格式，直接写入终端
-          console.log("接收到非JSON数据:", text);
-
-          terminal.write(text);
-        }
-      } catch (error) {
-        console.error('处理WebSocket消息时出错:', error);
+  // 监听终端容器大小变化
+  if (terminalRef.value) {
+    mutationObserver.value = new MutationObserver(() => {
+      const terminal = document.querySelector('.terminal')
+      if (terminal) {
+        terminal.style.height = '100%'
+        fitAddon.value?.fit()
       }
-    });
-
-    // 处理终端输入
-    terminal.onData((data) => {
-      console.log("接收到终端输入:", data);
-      if (ws?.readyState === WebSocket.OPEN) {
-        console.log("发送数据:", data);
-        const msg = {
-          operation: 'stdin',
-          data: data
-        }
-        ws.send(JSON.stringify(msg));
-      } else {
-        console.warn('WebSocket未连接，无法发送数据');
-      }
-    });
-
-    ws.addEventListener('error', (error) => {
-      console.error('WebSocket连接错误:', error);
-      terminal.write('\r\n\x1b[31mWebSocket连接错误\x1b[0m\r\n');
-    });
-
-    ws.addEventListener('close', (event) => {
-      console.warn('WebSocket连接已关闭:', event);
-      terminal.write('Connection closed');
-    });
-
-  } catch (error) {
-    console.error('创建WebSocket连接失败:', error);
-    terminal.write('\r\n\x1b[31m创建WebSocket连接失败\x1b[0m\r\n');
+    })
+    mutationObserver.value.observe(terminalRef.value, { childList: true, subtree: false })
   }
+}
 
-  // 确保终端大小适应容器
-  setTimeout(() => {
-    fitAddon.fit();
-    terminal.focus();
-  }, 100);
+// WebSocket 编码
+const webShellEncode = (text) => {
+  console.log('[WebTerminal] 开始编码消息:', {
+    originalText: text,
+    length: text.length,
+    timestamp: new Date().toISOString()
+  })
+  const textEncoder = window.TextEncoder ? new TextEncoder() : null
+  if (textEncoder) {
+    const encoded = textEncoder.encode(text)
+    console.log('[WebTerminal] 使用TextEncoder编码完成:', {
+      encodedLength: encoded.length,
+      timestamp: new Date().toISOString()
+    })
+    return encoded
+  }
+  const utf8 = encodeURIComponent(text)
+  const textArray = utf8.split('').map(item => item.charCodeAt(0))
+  const result = new Uint8Array(textArray)
+  console.log('[WebTerminal] 使用encodeURIComponent编码完成:', {
+    encodedLength: result.length,
+    timestamp: new Date().toISOString()
+  })
+  return result
+}
 
-  // 处理终端大小变化
-  terminal.onResize((size) => {
-    console.log("终端大小变化:", size);
-    if (ws?.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({
-        operation: 'resize',
-        cols: size.cols,
-        rows: size.rows
-      }));
+// 安全发送消息
+const safeSend = (data) => {
+  if (socket.value?.readyState === WebSocket.OPEN) {
+    console.log('[WebTerminal] 准备发送消息:', {
+      dataLength: data.length,
+      socketState: socket.value.readyState,
+      timestamp: new Date().toISOString()
+    })
+    socket.value.send(data)
+    console.log('[WebTerminal] 消息发送完成')
+  } else {
+    console.error('[WebTerminal] WebSocket未连接，无法发送消息:', {
+      socketState: socket.value?.readyState,
+      socketStateText: socket.value?.readyState === WebSocket.OPEN ? 'OPEN' : 
+                      socket.value?.readyState === WebSocket.CLOSED ? 'CLOSED' : 
+                      socket.value?.readyState === WebSocket.CONNECTING ? 'CONNECTING' : 'CLOSING',
+      timestamp: new Date().toISOString()
+    })
+  }
+}
+
+// 心跳包
+const ping = () => {
+  console.log('[WebTerminal] 发送心跳包')
+  safeSend(webShellEncode('\x00\x00\x00'))
+}
+
+// 调整终端大小
+const resize = (socketSendData = safeSend, sizeArgs = null) => {
+  console.log('[WebTerminal] 调整终端大小')
+  fitAddon.value?.fit()
+  const size = sizeArgs || {
+    rows: terminal.value?.rows || 0,
+    cols: terminal.value?.cols || 0
+  }
+  const sizeMsg = { Height: size.rows, Width: size.cols }
+  // 通过4号通道传递terminal size
+  const textEncoder = new TextEncoder()
+  socketSendData(textEncoder.encode('\x04' + JSON.stringify(sizeMsg)))
+}
+
+// 设置 WebSocket 连接
+const setUpSocket = () => {
+  console.log('[WebTerminal] 开始设置WebSocket连接')
+  linkStatus.value = PENDING_LINK
+  try {
+    socket.value = new WebSocket(props.socketUrl)
+    socket.value.binaryType = 'arraybuffer'
+
+    socket.value.onopen = () => {
+      console.log('[WebTerminal] WebSocket连接成功')
+      terminal.value.writeln('连接成功')
+      linkStatus.value = SUCCESS_LINK
+      pingTimer.value = window.setInterval(ping, 30000)
+      resize()
+      emit('connect')
     }
-  });
 
-  // 处理窗口大小变化
-  handleResize = () => {
-    console.log("窗口大小变化");
-    fitAddon.fit();
-    if (ws?.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({
-        operation: 'resize',
-        cols: terminal.cols,
-        rows: terminal.rows
-      }));
+    socket.value.onmessage = (e) => {
+      console.log('[WebTerminal] 收到消息:', e.data)
+      if (typeof e.data === 'string') {
+        terminal.value.write(e.data.replace(/\r$/g, '\r\n'))
+      } else if (e.data instanceof ArrayBuffer) {
+        const decoder = new TextDecoder('utf-8')
+        const text = decoder.decode(new Uint8Array(e.data))
+        terminal.value.write(text.replace(/\r$/g, '\r\n'))
+      }
     }
-  };
 
-  window.addEventListener('resize', handleResize);
-  handleResize(); // 初始化时调用一次
-});
+    socket.value.onclose = () => {
+      console.log('[WebTerminal] WebSocket连接关闭')
+      clearInterval(pingTimer.value)
+      linkStatus.value = GENERAL_LINK
+      emit('disconnect')
+    }
+
+    socket.value.onerror = (error) => {
+      console.error('[WebTerminal] WebSocket错误:', error)
+      closeSocket(error.code)
+      linkStatus.value = GENERAL_LINK
+      terminal.value.writeln(`连接失败: ${error.code}`)
+      emit('disconnect')
+    }
+  } catch (e) {
+    console.error('[WebTerminal] 设置WebSocket连接失败:', e)
+    terminal.value.writeln(`连接失败: ${e}`)
+    emit('disconnect')
+  }
+}
+
+// 关闭 WebSocket 连接
+const closeSocket = (code, reason) => {
+  console.log('[WebTerminal] 关闭WebSocket连接, code:', code, 'reason:', reason)
+  clearInterval(pingTimer.value)
+  socket.value?.close(code, reason)
+}
+
+// 连接 WebSocket
+const connectWebSSH = () => {
+  console.log('[WebTerminal] 尝试连接WebSSH, 当前状态:', linkStatus.value)
+  if (linkStatus.value === PENDING_LINK) {
+    console.log('[WebTerminal] 连接正在进行中，跳过')
+    return
+  }
+  if (linkStatus.value === SUCCESS_LINK) {
+    console.log('[WebTerminal] 已连接，重新连接')
+    closeSocket()
+    setUpSocket()
+    return
+  }
+  if (linkStatus.value === GENERAL_LINK) {
+    console.log('[WebTerminal] 开始新连接')
+    setUpSocket()
+  }
+}
+
+// 发送消息
+const sendMessage = (data) => {
+  console.log('[WebTerminal] 发送终端消息:', {
+    data,
+    length: data.length,
+    timestamp: new Date().toISOString(),
+    socketState: socket.value?.readyState,
+    socketStateText: socket.value?.readyState === WebSocket.OPEN ? 'OPEN' : 
+                    socket.value?.readyState === WebSocket.CLOSED ? 'CLOSED' : 
+                    socket.value?.readyState === WebSocket.CONNECTING ? 'CONNECTING' : 'CLOSING'
+  })
+  safeSend(webShellEncode(`\x00${data}`))
+}
+
+// 销毁终端
+const disposeTerminal = () => {
+  try {
+    if (terminal.value) {
+      // 先移除所有插件
+      terminal.value.loadedAddons?.forEach(addon => {
+        try {
+          terminal.value.removeAddon(addon)
+        } catch (e) {
+          console.warn('[WebTerminal] 移除插件失败:', e)
+        }
+      })
+      terminal.value.dispose()
+    }
+    mutationObserver.value?.disconnect()
+  } catch (e) {
+    console.warn('[WebTerminal] 销毁终端时发生错误:', e)
+  }
+}
+
+onMounted(() => {
+  initTerminal()
+  connectWebSSH()
+  window.addEventListener('resize', () => resize())
+})
 
 onUnmounted(() => {
-  console.log("终端组件卸载");
-  if (ws) {
-    ws.close();
-  }
-  if (terminal) {
-    terminal.dispose();
-  }
-  window.removeEventListener('resize', handleResize);
-});
+  window.removeEventListener('resize', () => resize())
+  disposeTerminal()
+  closeSocket()
+})
+
+defineExpose({
+  terminalRef: terminal,
+  writeln: (text) => terminal.value?.writeln(text),
+  write: (text) => terminal.value?.write(text),
+  resize,
+  setup: initTerminal,
+  dispose: disposeTerminal,
+  fit: () => fitAddon.value?.fit(),
+  connect: connectWebSSH,
+  disconnect: closeSocket
+})
 </script>
 
-<style>
-.terminal-container {
+<style scoped>
+.webshell-container {
   width: 100%;
   height: 100%;
-  background-color: #1e1e1e;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
+  background: #1e1e1e;
+  padding: 10px;
+  border-radius: 4px;
 }
 
 .terminal {
   width: 100%;
   height: 100%;
-  background-color: #1e1e1e;
-  padding: 4px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
-
-:deep(.xterm) {
-  height: 100%;
-  padding: 0;
-  position: relative;
-}
-
-:deep(.xterm-viewport) {
-  overflow-y: auto;
-  background-color: #1e1e1e !important;
-  width: 100% !important;
-}
-
-:deep(.xterm-screen) {
-  background-color: #1e1e1e !important;
-}
-
-:deep(.xterm-cursor-layer) {
-  z-index: 1;
-}
-
-:deep(.xterm-decoration-container) {
-  z-index: 2;
-}
-
-:deep(.xterm-selection-layer) {
-  z-index: 3;
-}
-
-:deep(.xterm-rows) {
-  padding: 2px;
 }
 </style> 

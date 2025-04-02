@@ -13,3 +13,4 @@ pnpm-lock.yaml
 
 *.log
 backend-node/.env
+src/components/examples(luyuchaodeMacBook-Pro.local)/*
