@@ -7,119 +7,6 @@ const router = Router();
 
 const RESOURCE_POOL_API = "/api/v1/resourcepools";
 
-/**
- * /api/v1/resourcepools:
- *   get:
- *     tags: ['资源池']
- *     summary: 获取资源池列表
- *     description: 获取所有可用资源池列表
- *     parameters:
- *       - in: header
- *         name: ak
- *         schema:
- *           type: string
- *         required: true
- *         description: API密钥
- *       - in: header
- *         name: sk
- *         schema:
- *           type: string
- *         required: true
- *         description: API密钥
- *       - in: header
- *         name: region
- *         schema:
- *           type: string
- *         required: true
- *         description: 地域
- *     responses:
- *       200:
- *         description: 成功获取资源池列表
- *       500:
- *         description: 服务器错误
- */
-router.get(RESOURCE_POOL_API, async (req: Request, res: Response) => {
-  try {
-    const { ak, sk, region } = extractCredentials(req.headers as RequestHeaders);
-    const host = `aihc.${region}.baidubce.com`;
-    
-    const headers: any = { Host: host };
-    const signature = getSignature(ak, sk, 'GET', RESOURCE_POOL_API, {}, headers);
-    headers.Authorization = signature;
-
-    const response = await rp({
-      method: 'GET',
-      uri: `https://${host}${RESOURCE_POOL_API}`,
-      headers,
-      json: true
-    });
-
-    res.json(response);
-  } catch (err: any) {
-    res.status(err.statusCode || 500).json(err.error);
-  }
-});
-
-/**
- * @swagger
- * /?action=DescribeResourcePools:
- *   get:
- *     tags: ['资源池']
- *     summary: 获取资源池列表
- *     description: 获取所有可用资源池列表
- *     parameters:
- *       - in: header
- *         name: authorization
- *         schema:
- *           type: string
- *         required: false
- *         description: "授权信息,authorization/token/x-api-key三选一, 格式: Bearer ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: header
- *         name: x-api-key
- *         schema:
- *           type: string
- *         required: false
- *         description: "自定义授权信息，authorization/token/x-api-key三选一, 格式: ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: header
- *         name: token
- *         schema:
- *           type: string
- *         required: false
- *         description: "自定义授权信息，authorization/token/x-api-key三选一, 格式: Bearer ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: query
- *         name: pageNumber
- *         schema:
- *           type: number
- *         required: false
- *         default: 1
- *         description: 页码
- *       - in: query
- *         name: pageSize
- *         schema:
- *           type: number
- *         required: false
- *         default: 100
- *         description: 每页数量
- *       - in: query
- *         name: orderBy
- *         schema:
- *           type: string
- *         required: false
- *         default: createdAt
- *         description: "排序字段, 可选值: clusterName, clusterID, createdAt"
- *       - in: query
- *         name: order
- *         schema:
- *           type: string
- *         required: false
- *         default: desc
- *         description: "排序方向, 可选值: asc, desc"
- *     responses:
- *       200:
- *         description: 成功获取资源池列表
- *       500:
- *         description: 服务器错误
- */
 const DescribeResourcePools = async (req: Request, res: Response) => {
   const { method, params, query, body, headers, url, baseUrl, originalUrl } = req;
   console.log("请求头:", JSON.stringify(headers));
@@ -185,44 +72,6 @@ const DescribeResourcePools = async (req: Request, res: Response) => {
   }
 }
 
-/**
- * @swagger
- * /?action=DescribeResourcePool:
- *   get:
- *     tags: ['资源池']
- *     summary: 获取资源池详情
- *     description: 获取指定资源池的详情
- *     parameters:
- *       - in: header
- *         name: authorization
- *         schema:
- *           type: string
- *         required: false
- *         description: "授权信息,authorization/token/x-api-key三选一, 格式: Bearer ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: header
- *         name: x-api-key
- *         schema:
- *           type: string
- *         required: false
- *         description: "自定义授权信息，authorization/token/x-api-key三选一, 格式: ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: header
- *         name: token
- *         schema:
- *           type: string
- *         required: false
- *         description: "自定义授权信息，authorization/token/x-api-key三选一, 格式: Bearer ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: query
- *         name: resourcePoolId
- *         schema:
- *           type: string
- *         required: true
- *         description: 资源池ID
- *     responses:
- *       200:
- *         description: 成功获取资源池详情
- *       500:
- *         description: 服务器错误
- */
 const DescribeResourcePool = async (req: Request, res: Response) => {
   const { method, params, query, body, headers, url, baseUrl, originalUrl } = req;
 
@@ -279,44 +128,6 @@ const DescribeResourcePool = async (req: Request, res: Response) => {
   }
 }
 
-/**
- * @swagger
- * /?action=DescribeResourceQueues:
- *   get:
- *     tags: ['资源池']
- *     summary: 获取资源队列列表
- *     description: 获取指定资源池中的资源队列列表
- *     parameters:
- *       - in: header
- *         name: authorization
- *         schema:
- *           type: string
- *         required: false
- *         description: "授权信息,authorization/token/x-api-key三选一, 格式: Bearer ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: header
- *         name: x-api-key
- *         schema:
- *           type: string
- *         required: false
- *         description: "自定义授权信息，authorization/token/x-api-key三选一, 格式: ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: header
- *         name: token
- *         schema:
- *           type: string
- *         required: false
- *         description: "自定义授权信息，authorization/token/x-api-key三选一, 格式: Bearer ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: query
- *         name: resourcePoolId
- *         schema:
- *           type: string
- *         required: true
- *         description: 资源池ID
- *     responses:
- *       200:
- *         description: 成功获取资源队列列表
- *       500:
- *         description: 服务器错误
- */
 const DescribeResourceQueues = async (req: Request, res: Response) => {
   const { method, params, query, body, headers, url, baseUrl, originalUrl } = req;
   const path = `${RESOURCE_POOL_API}/${query.resourcePoolId}/queue`;
@@ -377,50 +188,6 @@ const DescribeResourceQueues = async (req: Request, res: Response) => {
   }
 }
 
-/**
- * @swagger
- * /?action=DescribeResourceQueue:
- *   get:
- *     tags: ['资源池']
- *     summary: 获取资源队列详情
- *     description: 获取指定资源队列的详情
- *     parameters:
- *       - in: header
- *         name: authorization
- *         schema:
- *           type: string
- *         required: false
- *         description: "授权信息,authorization/token/x-api-key三选一, 格式: Bearer ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: header
- *         name: x-api-key
- *         schema:
- *           type: string
- *         required: false
- *         description: "自定义授权信息，authorization/token/x-api-key三选一, 格式: ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: header
- *         name: token
- *         schema:
- *           type: string
- *         required: false
- *         description: "自定义授权信息，authorization/token/x-api-key三选一, 格式: Bearer ak|sk|region,区域,可选值: bj, gz, su, bd, fwh, yq"
- *       - in: query
- *         name: resourcePoolId
- *         schema:
- *           type: string
- *         required: true
- *         description: 资源池ID
- *       - in: query
- *         name: queueName
- *         schema:
- *           type: string
- *         required: true
- *         description: 资源队列名称
- *     responses:
- *       200:
- *         description: 成功获取资源队列详情
- *       500:
- *         description: 服务器错误
- */
 const DescribeResourceQueue = async (req: Request, res: Response) => {
   const { method, params, query, body, headers, url, baseUrl, originalUrl } = req;
   const { resourcePoolId, queueName } = query;

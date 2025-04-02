@@ -91,7 +91,7 @@
         <ResourcePoolList msg="AIHCX" v-else-if="currentKey == '17'" />
         <DynamicFormExample msg="AIHCX" v-else-if="currentKey == '18'" />
         <div v-else-if="currentKey == 'docs'" class="w-full h-full">
-          <iframe src="http://127.0.0.1:8000/docs/" class="w-full h-full border-none"></iframe>
+          <iframe src="http://127.0.0.1:8000/api-docs/" class="w-full h-full border-none"></iframe>
         </div>
         <div v-else>
           <Logos my="4" />

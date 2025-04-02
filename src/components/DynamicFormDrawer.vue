@@ -169,6 +169,8 @@ import { ref, defineProps, defineEmits, computed, reactive, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { InfoFilled } from '@element-plus/icons-vue'
 
+import { ServeCreateJob } from '../api/jobs'
+
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -327,6 +329,11 @@ const submitForm = async () => {
     ElMessage.error('表单验证失败，请检查输入')
     console.error('表单验证失败', error)
   }
+}
+
+const createJob = async () => {
+  const res = await ServeCreateJob(formData)
+  console.log('创建任务', res)
 }
 
 const close = () => {

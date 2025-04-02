@@ -9,3 +9,8 @@ export const ServeGetApps = (data: { pageSize?: number, pageNumber?: number }) =
 export const ServeGetApp = (data: { appId: string }) => {
     return get('/?action=DescribeApp', data)
 }
+
+// 获取应用标签服务接口
+export const ServeGetAppTags = () => {
+    return get('/?action=DescribeAppTags')
+}

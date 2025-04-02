@@ -1,8 +1,7 @@
-const express = require("express");
-import { Request, Response } from 'express';
-const cors = require("cors");
-const swaggerJSDoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
+import express, { Request, Response } from 'express';
+import cors from 'cors';
+import * as swaggerUi from 'swagger-ui-express';
+import { swaggerDocument } from './swagger';
 
 // 导入路由
 import resourcePoolsRouter from './routes/resourcePools';
@@ -24,55 +23,34 @@ import {
 
 import {
   DescribeApps,
-  DescribeApp
+  DescribeApp,
+  DescribeAppTags
 } from './routes/apps';
 
 const app = express();
+const port = process.env.PORT || 8000;
+
+// 解析 JSON 请求体
 app.use(express.json());
+
 // 配置CORS中间件，允许暴露必要的响应头并接收Authorization请求头
 app.use(cors({
   exposedHeaders: ['Authorization', 'x-bce-request-id', 'server'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'token', 'ak', 'sk', 'region'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'token', 'ak', 'sk', 'region', 'x-api-key'],
   credentials: true
 }));
 
-// Swagger 配置
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    // info: {
-    //   title: 'AIHCX API 文档',
-    //   version: '1.0.0',
-    //   description: 'AIHCX 服务 API 接口文档'
-    // },
-    servers: [
-      {
-        url: 'http://127.0.0.1:8000',
-        description: '开发服务器'
-      }
-    ],
-    tags: [
-      {
-        name: '资源池',
-        description: '资源池相关操作'
-      },
-      {
-        name: '任务',
-        description: '任务相关操作'
-      },
-      {
-        name: '应用',
-        description: '应用相关操作'
-      }
-    ]
+// 集成 Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+  swaggerOptions: {
+    defaultModelsExpandDepth: 3, // 展开模型的深度
+    defaultModelExpandDepth: 3,  // 展开默认模型的深度
+    filter: true,                // 启用过滤
+    showExtensions: true,        // 显示扩展
+    showCommonExtensions: true,  // 显示通用扩展
   },
-  apis: ['./src/routes/*.ts', './src/index.ts'] // 指定包含 API 注释的文件路径
-};
-
-const swaggerSpec = swaggerJSDoc(swaggerOptions);
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: "AIHCX API 文档"
+  customCss: '.swagger-ui .topbar { display: none }', // 隐藏顶部栏
+  customSiteTitle: "AI训练平台 API 文档"  // 设置页面标题
 }));
 
 // 注册路由
@@ -148,6 +126,10 @@ app.get('/', async (req: Request, res: Response) => {
     } else if (action === 'DescribeApp') {
       const response = await DescribeApp(req, res);
       res.json(response);
+    } else if (action === 'DescribeAppTags') {
+      const response = await DescribeAppTags(req, res);
+      console.log(response);
+      res.json(response);
     } else {
       res.status(400).json({
         message: 'Invalid action'
@@ -162,7 +144,8 @@ app.get('/', async (req: Request, res: Response) => {
   }
 });
 
-const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+// 启动服务器
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
+  console.log(`API documentation is available at http://localhost:${port}/api-docs`);
 });

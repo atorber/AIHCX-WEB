@@ -9,6 +9,7 @@ import { onMounted, onUnmounted } from 'vue';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
+import { da } from 'element-plus/es/locale';
 
 const props = defineProps<{
   url: string;
@@ -72,32 +73,44 @@ onMounted(async () => {
     
     ws.addEventListener('open', () => {
       console.log('WebSocket连接已建立');
-      terminal.clear();
-      terminal.reset();
+      terminal.write('\r');
+      // terminal.clear();
+      // terminal.reset();
       
-      // 发送初始化命令
-      ws.send(JSON.stringify({
-        operation: 'resize',
-        cols: terminal.cols,
-        rows: terminal.rows
-      }));
+      // // 发送初始化命令
+      // ws.send(JSON.stringify({
+      //   operation: 'resize',
+      //   cols: terminal.cols,
+      //   rows: terminal.rows
+      // }));
     });
 
     // 处理收到的消息
     ws.addEventListener('message', async (event) => {
+      console.log("接收到event:", event);
       try {
-        let data = event.data;
-        
+        const data = event.data;
+        console.log("接收到data:", data);
+
         // 如果是Blob类型，转换为文本
+        let text = data
         if (data instanceof Blob) {
-          data = await data.text();
-          console.log("接收到Blob数据:", data);
+          text = await data.text();
+          console.log("接收到Blob数据:", text);
         }
         
         // 尝试解析为JSON
         try {
-          const jsonData = JSON.parse(data);
+          const jsonData = JSON.parse(text);
           console.log("接收到JSON数据:", jsonData);
+
+          if (jsonData.operation === 'stdout') {
+            terminal.write(jsonData.data);
+          } else if (jsonData.operation === 'stderr') {
+            terminal.write('\x1b[31m' + jsonData.data + '\x1b[0m');
+          } else {
+            console.log('未知操作类型:', jsonData.operation);
+          }
           
           if (jsonData.operation === 'stdout') {
             terminal.write(jsonData.data);
@@ -108,8 +121,9 @@ onMounted(async () => {
           }
         } catch (e) {
           // 不是JSON格式，直接写入终端
-          console.log("接收到非JSON数据:", data);
-          terminal.write(data);
+          console.log("接收到非JSON数据:", text);
+
+          terminal.write(text);
         }
       } catch (error) {
         console.error('处理WebSocket消息时出错:', error);
@@ -118,12 +132,14 @@ onMounted(async () => {
 
     // 处理终端输入
     terminal.onData((data) => {
+      console.log("接收到终端输入:", data);
       if (ws?.readyState === WebSocket.OPEN) {
         console.log("发送数据:", data);
-        ws.send(JSON.stringify({
+        const msg = {
           operation: 'stdin',
           data: data
-        }));
+        }
+        ws.send(JSON.stringify(msg));
       } else {
         console.warn('WebSocket未连接，无法发送数据');
       }
@@ -136,7 +152,7 @@ onMounted(async () => {
 
     ws.addEventListener('close', (event) => {
       console.warn('WebSocket连接已关闭:', event);
-      terminal.write('\r\n\x1b[31mWebSocket连接已关闭\x1b[0m\r\n');
+      terminal.write('Connection closed');
     });
 
   } catch (error) {
@@ -205,6 +221,7 @@ onUnmounted(() => {
 .terminal {
   width: 100%;
   height: 100%;
+  background-color: #1e1e1e;
   padding: 4px;
   position: absolute;
   top: 0;

@@ -71,6 +71,7 @@ declare module 'vue' {
     Training: typeof import('./components/Training.vue')['default']
     TrainingCustom: typeof import('./components/TrainingCustom.vue')['default']
     UploadData: typeof import('./components/UploadData.vue')['default']
+    WebShell: typeof import('./components/WebShell.vue')['default']
     WebTerminal: typeof import('./components/WebTerminal.vue')['default']
   }
   export interface ComponentCustomProperties {

@@ -88,12 +88,14 @@
       />
 
     <!-- 动态表单抽屉 -->
-    <!-- <DynamicFormDrawer
+    <DynamicFormDrawer
       v-model:visible="jobDrawerVisible"
-        :title="selectedModel.name"
-        :form-descriptor="selectedModel.jobFormDescriptor"
-        @submit="handleJobSubmit"
-      /> -->
+      :title="selectedModel?.name || ''"
+      :form-descriptor="selectedModel?.jobFormDescriptor"
+      :init-data="selectedModel?.formInitData"
+      @submit="handleJobSubmit"
+    />
+
     </div>
   </template>
   
@@ -101,28 +103,16 @@
   import { ref, computed } from 'vue'
   import { Search, Plus, InfoFilled } from '@element-plus/icons-vue'
   import { ElMessage } from 'element-plus'
-  import { ServeGetApps } from '../api/apps'
+  import { ServeGetApps, ServeGetAppTags } from '../api/apps'
   import CreateTaskDrawer from './CreateTaskDrawer.vue'
   import FineTuneDrawer from './FineTuneDrawer.vue'
   
-  const tags = [
-    'DeepSeek',
-    'LLM',
-    'veTuner',
-    'Distill',
-    'Megatron',
-    '量化',
-    'Ray',
-    '科学计算',
-    '自动驾驶',
-    'FineTune',
-    'ViT',
-    'verl',
-    '强化学习',
-    'Audio',
-    'Text-to-Video',
-    'VLM'
-  ]
+  const tags = ref([])
+  const getTags = async () => {
+    const res = await ServeGetAppTags()
+    tags.value = res.tags
+  }
+  getTags()
   
   const activeTag = ref('')
   const supportDeploy = ref(false)
@@ -163,6 +153,7 @@
   })
 
   const handleAction = (model, action) => {
+    console.log(model, action)
     selectedModel.value = model
     if (action === '一键部署') {
       drawerVisible.value = true
