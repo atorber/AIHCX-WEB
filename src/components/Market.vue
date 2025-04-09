@@ -2,7 +2,7 @@
     <div class="market-container">
       <!-- 顶部描述 -->
       <el-card class="description-card">
-        <h1>应用市场</h1>
+        <h1 style="font-size: 24px; font-weight: 600; margin-bottom: 8px;">应用市场</h1>
         <p class="subtitle">一站式模型实践共享与部署平台，支持开发者快速试用多样化预训练模型，加速智能应用创新落地</p>
       </el-card>
   

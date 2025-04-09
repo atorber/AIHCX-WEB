@@ -7,7 +7,10 @@
       text-align: left;
     "
   >
-    <h1 color="$ep-color-primary">{{ msg }}</h1>
+    <h1 color="$ep-color-primary" style="font-size: 24px; font-weight: 600; margin-bottom: 8px;">{{ msg }}</h1>
+    <div style="color: var(--el-text-color-regular); font-size: 14px; margin-bottom: 24px;">
+      模型训练命令生成
+    </div>
 
     <!-- 表单开始 -->
     <el-form

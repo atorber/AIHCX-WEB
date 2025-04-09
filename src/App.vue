@@ -6,14 +6,22 @@
       <el-menu v-if="currentKey !== 'docs'" :default-active="currentKey" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose"
         @select="handSelect">
         <el-menu-item index="16">
-          <el-icon>
-            <setting />
-          </el-icon>
+          <el-icon><Grid /></el-icon>
           <template #title>应用市场</template>
         </el-menu-item>
+
+        <el-sub-menu index="0-3">
+          <template #title>
+            <el-icon><MagicStick /></el-icon>开发者工具
+          </template>
+          <el-menu-item index="19">
+            <template #title>任务命令</template>
+          </el-menu-item>
+        </el-sub-menu>
+
         <el-sub-menu index="0-0">
           <template #title>
-            <el-icon><ElementPlus /></el-icon>自定义训练
+            <el-icon><Compass /></el-icon>自定义训练
           </template>
           <el-menu-item index="11">
             <template #title>下载数据</template>
@@ -36,10 +44,10 @@
         </el-sub-menu>
         <el-sub-menu index="0-1">
           <template #title>
-            <el-icon><SwitchFilled /></el-icon>启动命令生成
+            <el-icon><SwitchFilled /></el-icon>启动命令
           </template>
           <el-menu-item index="5">
-          <template #title>权重转换与切分</template>
+          <template #title>权重转换</template>
         </el-menu-item>
         <el-menu-item index="6">
           <template #title>数据预处理</template>
@@ -56,7 +64,7 @@
           <template #title>任务列表</template>
         </el-menu-item>
         <el-menu-item index="17">
-          <el-icon><List /></el-icon>
+          <el-icon><Monitor /></el-icon>
           <template #title>资源队列</template>
         </el-menu-item>
         <el-menu-item index="9">
@@ -90,6 +98,7 @@
         <Market msg="AIHCX" v-else-if="currentKey == '16'" />
         <ResourcePoolList msg="AIHCX" v-else-if="currentKey == '17'" />
         <DynamicFormExample msg="AIHCX" v-else-if="currentKey == '18'" />
+        <TrainingCLI msg="AIHCX" v-else-if="currentKey == '19'" />
         <div v-else-if="currentKey == 'docs'" class="w-full h-full">
           <iframe src="http://127.0.0.1:8000/api-docs/" class="w-full h-full border-none"></iframe>
         </div>
@@ -137,9 +146,26 @@ const handleResetView = () => {
 #app {
   text-align: center;
   color: var(--ep-text-color-primary);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .main-container {
-  height: calc(100vh - var(--ep-menu-item-height) - 3px);
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.el-menu-vertical-demo {
+  height: 100%;
+  overflow-y: auto;
+  border-right: none;
+}
+
+.main-container > div:last-child {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
 }
 </style>

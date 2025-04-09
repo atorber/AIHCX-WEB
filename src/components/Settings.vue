@@ -7,7 +7,7 @@
       text-align: left;
     "
   >
-    <h1 color="$ep-color-primary">{{ msg }}</h1>
+    <h1 color="$ep-color-primary" style="font-size: 24px; font-weight: 600; margin-bottom: 24px;">{{ msg }}</h1>
     <el-form :model="form" label-width="auto" style="max-width: 600px">
       <el-form-item label="Access Key">
         <el-input v-model="form.ak" placeholder="输入Access Key" />
@@ -90,6 +90,7 @@ import {
   setAccessToken,
   getAkSk,
 } from "../utils/auth";
+import { ServeLogin, ServeGetUserInfo } from "../api/auth";
 
 const msg = "系统设置";
 // do not use same name with ref
@@ -111,14 +112,19 @@ form.ak = ak;
 form.sk = sk;
 form.region = region || 'bj';
 
-const onSubmit = () => {
+const onSubmit = async () => {
   console.log("submit!", form.ak, form.sk, form.region);
   // 保存到localStorage
   if (!form.ak || !form.sk || !form.region) {
     ElMessage.warning("ak, sk, region is required");
     return;
   } else {
-    setAccessToken(`${form.ak}|${form.sk}|${form.region}`);
+
+    // 登录
+    const res: any = await ServeLogin({ ak: form.ak, sk: form.sk, region: form.region });
+    console.log(res);
+
+    setAccessToken(res.token);
     ElMessage.success("保存成功");
   }
 };

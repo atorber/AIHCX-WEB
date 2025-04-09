@@ -44,6 +44,24 @@ const PENDING_LINK = 0
 const SUCCESS_LINK = -1
 const linkStatus = ref(GENERAL_LINK)
 
+function parseDirectory(input) {
+  // 合并正则：匹配 ANSI 颜色码 + Unicode 控制字符（如 \u0001）
+  const cleanRegex = /(\x1B\[[\d;]*m)|[\x00-\x1F\x7F-\x9F]/g;
+
+  return input
+    .trim()
+    .split(/\s+/) // 分割条目
+    .map(rawItem => {
+      // 清理非法字符和颜色码
+      const name = rawItem.replace(cleanRegex, '');
+      // 根据原始字符串是否含颜色码判断类型
+      const type = /\x1B\[[\d;]*m/.test(rawItem) ? "directory" : "file";
+      
+      return { name, type };
+    })
+    .filter(item => item.name !== ''); // 过滤空名称（由纯控制字符产生）
+}
+
 // 初始化终端
 const initTerminal = () => {
   terminal.value = new Terminal({
@@ -169,18 +187,26 @@ const setUpSocket = () => {
       pingTimer.value = window.setInterval(ping, 30000)
       resize()
       emit('connect')
+      // sendMessage('ls \r')
     }
 
     socket.value.onmessage = (e) => {
       console.log('[WebTerminal] 收到消息:', e.data)
       if (typeof e.data === 'string') {
-        console.log('[WebTerminal] 收到消息 string:', e.data)
+        console.log('[WebTerminal] 收到string消息:', e.data)
         terminal.value.write(e.data.replace(/\r$/g, '\r\n'))
       } else if (e.data instanceof ArrayBuffer) {
         const decoder = new TextDecoder('utf-8')
         const text = decoder.decode(new Uint8Array(e.data))
-        console.log('[WebTerminal] 收到消息 ArrayBuffer:', text)
-        terminal.value.write(text.replace(/\r$/g, '\r\n'))
+        console.log('[WebTerminal] 收到ArrayBuffer消息:', text)
+        const displayText = text.replace(/\r$/g, '\r\n')
+        terminal.value.write(displayText)
+        console.log('[WebTerminal] 收到ArrayBuffer显示消息:', displayText)
+
+        if (displayText.includes('[0m')) {
+          const result = parseDirectory(displayText)
+          console.log(JSON.stringify(result, null, 2))
+        }
       }
     }
 

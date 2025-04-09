@@ -7,7 +7,7 @@
         text-align: left;
       "
     >
-      <h1 color="$ep-color-primary">{{ msg }}</h1>
+      <h1 color="$ep-color-primary" style="font-size: 24px; font-weight: 600; margin-bottom: 8px;">{{ msg }}</h1>
       
       <!-- 操作栏 -->
       <div class="operation-bar">
@@ -488,8 +488,10 @@
     });
   };
   
-  // 初始加载资源池数据
-  fetchResourcePools();
+  // 如果资源池列表为空，则初始加载资源池数据
+  if (resourcepoolList.value.length === 0) {
+    fetchResourcePools();
+  }
 
   // 从资源对象中获取XPU值
   const getXpuValue = (resourceObj: any): string => {

@@ -27,6 +27,11 @@ import {
   DescribeAppTags
 } from './routes/apps';
 
+import {
+  Login,
+  DescribeUser
+} from './routes/user';
+
 const app = express();
 const port = process.env.PORT || 8000;
 
@@ -75,6 +80,9 @@ app.post('/', async (req: Request, res: Response) => {
   if (action === 'CreateJob') {
     const response = await CreateJob(req, res);
     res.json(response);
+  } else if (action === 'Login') {
+    const response = await Login(req, res);
+    res.json(response);
   } else {
     res.status(400).json({
       message: 'Invalid action'
@@ -99,7 +107,10 @@ app.get('/', async (req: Request, res: Response) => {
   console.log(responseData);
 
   try {
-    if (action === 'DescribeJobs') {
+    if (action === 'DescribeUser') {
+      const response = await DescribeUser(req, res);
+      res.json(response);
+    } else if (action === 'DescribeJobs') {
       const response = await DescribeJobs(req, res);
       res.json(response);
     } else if (action === 'DescribeJob') {

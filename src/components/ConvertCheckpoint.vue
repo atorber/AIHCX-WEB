@@ -2,8 +2,10 @@
   <div
     style="padding: 0px 20px; max-width: 1200px; margin: 0 auto; text-align: left"
   >
-    <h1 color="$ep-color-primary">{{ msg }}</h1>
-
+    <h1 color="$ep-color-primary" style="font-size: 24px; font-weight: 600; margin-bottom: 8px;">{{ msg }}</h1>
+    <div style="color: var(--el-text-color-regular); font-size: 14px; margin-bottom: 24px;">
+      将HF格式模型权重转换为AIAK训练格式
+    </div>
     <!-- 表单开始 -->
     <el-form
       ref="formRef"

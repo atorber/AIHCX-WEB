@@ -1,6 +1,9 @@
 <template>
   <div style="padding: 0px 20px; max-width: 1200px; margin: 0 auto; text-align: left">
-    <h1 color="$ep-color-primary">数据上传</h1>
+    <h1 color="$ep-color-primary" style="font-size: 24px; font-weight: 600; margin-bottom: 8px;">数据上传</h1>
+    <div style="color: var(--el-text-color-regular); font-size: 14px; margin-bottom: 24px;">
+      上传PC本地文件到PFS或本地磁盘
+    </div>
 
     <!-- 表单开始 -->
     <el-form ref="formRef" :model="formModel" :rules="rules" @submit.prevent="handleSubmit" label-width="120px"

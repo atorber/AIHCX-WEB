@@ -5,7 +5,7 @@
       margin: 0 auto;
       text-align: left;
     ">
-    <h1 color="$ep-color-primary">{{ msg }}</h1>
+    <h1 color="$ep-color-primary" style="font-size: 24px; font-weight: 600; margin-bottom: 8px;">{{ msg }}</h1>
     <!-- 操作栏 -->
     <div class="operation-bar">
       <el-input v-model="searchQuery" placeholder="搜索任务名称" class="search-input" clearable @input="handleSearch">
@@ -17,7 +17,7 @@
       </el-input>
 
       <div class="operation-right">
-        <el-select v-model="resourcePoolId" placeholder="Select" style="width: 240px"
+        <el-select v-model="resourcePoolId" placeholder="选择资源池" style="width: 240px"
           @change="handleResourcePoolChange">
           <el-option v-for="item in resourcepoolList" :key="item.metadata.id" :label="item.metadata.name"
             :value="item.metadata.id">
@@ -318,7 +318,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, nextTick } from "vue";
+import { ref, computed, nextTick, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 import { Refresh, CopyDocument, Search, Loading } from "@element-plus/icons-vue";
 import { useStore } from "../store"; // 确保从 vuex 导入 useStore
@@ -338,6 +338,17 @@ const isLoading = ref(false);
 const drawerVisible = ref(false);
 const drawerLoading = ref(false);
 const currentJob = ref<Job | null>(null);
+
+// 从本地存储中获取资源池ID
+const getStoredResourcePoolId = () => {
+  const storedId = localStorage.getItem('selectedResourcePoolId');
+  return storedId || '';
+};
+
+// 保存资源池ID到本地存储
+const saveResourcePoolId = (id: string) => {
+  localStorage.setItem('selectedResourcePoolId', id);
+};
 
 // 分页相关
 const currentPage = ref(1);
@@ -382,24 +393,27 @@ const filteredJobList = computed(() => {
 
 // 获取资源池列表的 Action
 const fetchResourcePools = async () => {
-  if (resourcepoolList.value.length > 0) {
-    resourcePoolId.value = resourcepoolList.value[0].metadata.id;
-    // 获取任务列表
-    refreshJobs();
-  } else {
-    try {
-      isLoading.value = true;
-      await store.dispatch(ActionTypes.FETCH_RESOURCEPOOLS);
-      if (resourcepoolList.value.length > 0) {
+  try {
+    isLoading.value = true;
+    await store.dispatch(ActionTypes.FETCH_RESOURCEPOOLS);
+    
+    if (resourcepoolList.value.length > 0) {
+      // 优先使用本地存储中的资源池ID
+      const storedId = getStoredResourcePoolId();
+      if (storedId && resourcepoolList.value.some(pool => pool.metadata.id === storedId)) {
+        resourcePoolId.value = storedId;
+      } else {
         resourcePoolId.value = resourcepoolList.value[0].metadata.id;
-        refreshJobs();
+        saveResourcePoolId(resourcePoolId.value);
       }
-    } catch (error) {
-      console.error("Error fetching resource pools:", error);
-      ElMessage.error("获取资源池失败");
-    } finally {
-      isLoading.value = false;
+      // 获取任务列表
+      refreshJobs();
     }
+  } catch (error) {
+    console.error("Error fetching resource pools:", error);
+    ElMessage.error("获取资源池失败");
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -422,6 +436,20 @@ const refreshJobs = async () => {
     }
   }
 };
+
+// 在组件挂载时初始化
+onMounted(() => {
+  // 先尝试从本地存储获取资源池ID
+  const storedId = getStoredResourcePoolId();
+  if (storedId) {
+    resourcePoolId.value = storedId;
+  }
+
+  // 如果资源池列表为空，则初始加载资源池数据
+  if (resourcepoolList.value.length === 0) {
+    fetchResourcePools();
+  }
+});
 
 // 处理页码变化
 const handleCurrentChange = (val: number) => {
@@ -512,6 +540,8 @@ const copyToClipboard = (text: string) => {
 
 // 处理资源池切换
 const handleResourcePoolChange = () => {
+  // 保存选中的资源池ID
+  saveResourcePoolId(resourcePoolId.value);
   // 切换资源池时重置分页到第一页
   currentPage.value = 1;
   refreshJobs();
@@ -657,8 +687,6 @@ const handleExpand = async (row: any, expanded: boolean) => {
     }
   }
 };
-
-fetchResourcePools();
 </script>
 
 <style>

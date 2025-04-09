@@ -23,6 +23,8 @@
     "axios": "^1.7.7",
     "dompurify": "^3.1.6",
     "element-plus": "^2.6.2",
+    "highlight.js": "^11.11.1",
+    "js-yaml": "^4.1.0",
     "sass": "^1.71.0",
     "vue": "^3.4.21",
     "vuex": "^4.1.0",
@@ -32,6 +34,7 @@
   "devDependencies": {
     "@iconify-json/ep": "^1.1.15",
     "@jridgewell/gen-mapping": "^0.3.7",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.11.30",
     "@vitejs/plugin-vue": "^5.0.4",
     "typescript": "^5.4.3",
