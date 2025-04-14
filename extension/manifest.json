@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
     "name": "AIHC助手",
-    "version": "1.0",
-    "description": "AIHCX浏览器辅助工具 - 任务参数生成、任务管理与百度云API集成",
+    "version": "0.1.2",
+    "description": "AIHCX浏览器辅助工具 - CLI命令生成/JSON参数/YAML参数/API文档",
     
     "icons": {
       "16": "assets/icons/icon16.png",

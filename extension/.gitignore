@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# 打包文件的压缩文件,排除extension目录下“AIHC助手插件”开头的文件
+dist-*.zip
+release/AIHC助手插件v*.zip

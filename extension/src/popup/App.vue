@@ -2,6 +2,9 @@
     <div class="popup-container">
         <div class="header">
             <h1 style="text-align: left;">AIHC助手</h1>
+        </div>
+
+        <template v-if="isSupportedPage">
             <p style="text-align: left;">{{ curPage }}</p>
             <div v-if="isSupportedPage" class="tabs">
                 <button v-if="taskParams.cliItems.length > 0" :class="{ active: activeTab === 'cli' }"
@@ -13,18 +16,15 @@
                 <button v-if="taskParams.apiDocs.length > 0" :class="{ active: activeTab === 'apiDocs' }"
                     @click="activeTab = 'apiDocs'">API文档</button>
             </div>
-        </div>
-
-        <template v-if="isSupportedPage">
             <!-- CLI命令选项卡 -->
             <div v-if="activeTab === 'cli'" class="tab-content">
                 <div v-if="taskParams.cliItems.length > 0" class="result-container">
                     <div v-for="item in taskParams.cliItems" :key="item.title" class="result-item">
-                        <h3>
+                        <h3 style="display: flex; justify-content: space-between;">
                             {{ item.title }}
                             <span style="margin-left: 10px;">
-                                <button @click="copyToClipboard(item.text)">复制到剪贴板</button>
-                                <button v-if="item.doc" @click="openUrl(item.doc)">CLI使用手册</button>
+                                <button style="margin-left: 10px;" @click="copyToClipboard(item.text)">复制到剪贴板</button>
+                                <button style="margin-left: 10px;" v-if="item.doc" @click="openUrl(item.doc)">CLI使用手册</button>
                             </span>
                         </h3>
                         <pre>{{ item.text }}</pre>
@@ -36,7 +36,7 @@
             <div v-if="activeTab === 'json'" class="tab-content">
                 <div v-if="taskParams.jsonItems.length > 0" class="result-container">
                     <div v-for="item in taskParams.jsonItems" :key="item.title" class="result-item">
-                        <h3>
+                        <h3 style="display: flex; justify-content: space-between;">
                             {{ item.title }}
                             <button @click="copyToClipboard(item.text)">复制到剪贴板</button>
                         </h3>
@@ -49,7 +49,7 @@
             <div v-if="activeTab === 'yaml'" class="tab-content">
                 <div v-if="taskParams.yamlItems.length > 0" class="result-container">
                     <div v-for="item in taskParams.yamlItems" :key="item.title" class="result-item">
-                        <h3>
+                        <h3 style="display: flex; justify-content: space-between;">
                             {{ item.title }}
                             <button @click="copyToClipboard(item.text)">复制到剪贴板</button>
                         </h3>
@@ -62,7 +62,7 @@
             <div v-if="activeTab === 'apiDocs'" class="tab-content">
                 <div v-if="taskParams.apiDocs.length > 0" class="result-container">
                     <div v-for="item in taskParams.apiDocs" :key="item.title" class="result-item">
-                        <h3>
+                        <h3 style="display: flex; justify-content: space-between;">
                             {{ item.title }}
                             <button @click="openUrl(item.text)">查看说明文档</button>
                         </h3>
@@ -73,11 +73,25 @@
         </template>
 
         <div v-else class="unsupported-page">
-            <ul class="supported-pages">
-                <li v-for="(name, url) in urlList" :key="url">
-                    {{ name }}<span v-if="name == '任务列表'" style="color: #4285f4; font-size: 12px;">（需要下拉选中一个资源池）</span>
-                </li>
-            </ul>
+            <div class="unsupported-header">
+                <span class="unsupported-text">请在百舸AIHC控制台页面使用</span>
+                <a href="https://console.bce.baidu.com/aihc" target="_blank" class="console-link">
+                    https://console.bce.baidu.com/aihc
+                </a>
+            </div>
+
+            <div class="supported-pages-container">
+                <h3 class="supported-title">支持的功能页面：</h3>
+                <ul class="supported-pages">
+                    <li v-for="(name, url) in urlList" :key="url" class="supported-item">
+                        <span class="item-name">{{ name }}</span>
+                        <span v-if="name == '任务列表'" class="item-hint">
+                            <i class="hint-icon">ℹ️</i>
+                            需要下拉选中一个资源池
+                        </span>
+                    </li>
+                </ul>
+            </div>
         </div>
 
         <div v-if="message" class="message" :class="message.type">
@@ -473,7 +487,7 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
         taskParams.cliItems = [{
             title: '获取资源池详情',
             text: `aihc pool get -p ${params.clusterUuid}`,
-            doc:'https://cloud.baidu.com/doc/AIHC/s/Tm7x702fo#%E8%8E%B7%E5%8F%96%E8%B5%84%E6%BA%90%E6%B1%A0%E8%AF%A6%E6%83%85'
+            doc: 'https://cloud.baidu.com/doc/AIHC/s/Tm7x702fo#%E8%8E%B7%E5%8F%96%E8%B5%84%E6%BA%90%E6%B1%A0%E8%AF%A6%E6%83%85'
         }]
 
         taskParams.apiDocs = [{
@@ -980,71 +994,80 @@ const isSupportedPage = computed(() => {
 }
 
 .unsupported-page {
-    padding: 16px;
-    text-align: left;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
-.unsupported-page h3 {
-    margin: 0 0 12px 0;
+.unsupported-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.unsupported-text {
     font-size: 14px;
     color: #666;
+}
+
+.console-link {
+    color: #4285f4;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.console-link:hover {
+    color: #3367d6;
+    text-decoration: underline;
+}
+
+.supported-pages-container {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.supported-title {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 12px;
+    font-weight: bold;
 }
 
 .supported-pages {
     list-style: none;
     padding: 0;
     margin: 0;
-}
-
-.supported-pages li {
-    margin-bottom: 8px;
-}
-
-.supported-pages a {
-    color: #4285f4;
-    text-decoration: none;
-    font-size: 13px;
-}
-
-.supported-pages a:hover {
-    text-decoration: underline;
-}
-
-.result-item {
-    margin-bottom: 12px;
-}
-
-.result-item h3 {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    align-items: center;
-    margin: 0 0 8px 0;
-    font-size: 14px;
-    flex-wrap: wrap;
     gap: 8px;
 }
 
-.result-item pre {
-    margin: 0 0 8px 0;
-    white-space: pre-wrap;
-    font-size: 12px;
-    background: #fff;
-    border: 1px solid #eee;
-    padding: 8px;
-    border-radius: 4px;
-    overflow-x: auto;
+.supported-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #333;
 }
 
-.result-item button {
-    padding: 4px 8px;
-    background: #4285f4;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+.item-name {
+    font-weight: 500;
+}
+
+.item-hint {
+    color: #4285f4;
     font-size: 12px;
-    margin-left: 8px;
-    min-width: 80px;
-    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.hint-icon {
+    font-size: 12px;
 }
 </style>

@@ -4,6 +4,12 @@ This template should help get you started developing with Vue 3 and TypeScript i
 
 Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
 
+## 安装插件
+
+1. 解压缩插件到本地磁盘
+
+2. Chrome浏览器中打开 管理拓展程序>加载已解压的拓展程序
+
 ## 浏览器插件开发指南
 
 ### 环境准备
