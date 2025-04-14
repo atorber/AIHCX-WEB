@@ -23,7 +23,7 @@
       }
     ],
     
-    "permissions": ["storage", "activeTab"],
+    "permissions": ["storage", "activeTab", "tabs"],
     
     "web_accessible_resources": [
       {

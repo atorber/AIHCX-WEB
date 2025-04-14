@@ -44,7 +44,7 @@ const injectComponent = () => {
   // 创建辅助按钮
   const button = document.createElement('button');
   button.id = 'aihcx-helper-button';
-  button.textContent = 'AIHCX助手';
+  button.textContent = 'AIHC助手';
   button.style.cssText = `
     position: fixed;
     bottom: 20px;
