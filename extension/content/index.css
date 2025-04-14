@@ -1,0 +1,30 @@
+#aihcx-floating-button {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    width: 40px;
+    height: 40px;
+    background-color: #4285f4;
+    border-radius: 50%;
+    cursor: move;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    transition: background-color 0.3s;
+}
+
+#aihcx-floating-button:hover {
+    background-color: #3367d6;
+}
+
+.aihcx-button-icon {
+    color: white;
+    width: 24px;
+    height: 24px;
+}
+
+#aihcx-floating-button:active {
+    cursor: grabbing;
+} 

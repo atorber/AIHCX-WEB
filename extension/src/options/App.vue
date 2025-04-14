@@ -43,7 +43,7 @@ declare const chrome: {
   }
 }
 
-const title = ref('AIHCX 设置')
+const title = ref('AIHC助手设置')
 const settings = ref({
   ak: '',
   sk: '',

@@ -4,37 +4,67 @@
             <h1 style="text-align: left;">AIHC助手</h1>
             <p style="text-align: left;">{{ curPage }}</p>
             <div v-if="isSupportedPage" class="tabs">
-                <button :class="{ active: activeTab === 'cli' }" @click="activeTab = 'cli'">CLI命令</button>
-                <button :class="{ active: activeTab === 'json' }" @click="activeTab = 'json'">JSON格式参数</button>
-                <button :class="{ active: activeTab === 'yaml' }" @click="activeTab = 'yaml'">YAML格式参数</button>
+                <button v-if="taskParams.cliItems.length > 0" :class="{ active: activeTab === 'cli' }"
+                    @click="activeTab = 'cli'">CLI命令</button>
+                <button v-if="taskParams.jsonItems.length > 0" :class="{ active: activeTab === 'json' }"
+                    @click="activeTab = 'json'">JSON参数</button>
+                <button v-if="taskParams.yamlItems.length > 0" :class="{ active: activeTab === 'yaml' }"
+                    @click="activeTab = 'yaml'">YAML参数</button>
+                <button v-if="taskParams.apiDocs.length > 0" :class="{ active: activeTab === 'apiDocs' }"
+                    @click="activeTab = 'apiDocs'">API文档</button>
             </div>
         </div>
 
         <template v-if="isSupportedPage">
             <!-- CLI命令选项卡 -->
             <div v-if="activeTab === 'cli'" class="tab-content">
-                <div v-if="taskParams.generated" class="result-container">
-                    <h3>生成的CLI命令</h3>
-                    <pre>{{ taskParams.generated }}</pre>
-                    <button @click="copyToClipboard">复制到粘贴板</button>
+                <div v-if="taskParams.cliItems.length > 0" class="result-container">
+                    <div v-for="item in taskParams.cliItems" :key="item.title" class="result-item">
+                        <h3>
+                            {{ item.title }}
+                            <button @click="copyToClipboard(item.text)">复制到剪贴板</button>
+                        </h3>
+                        <pre>{{ item.text }}</pre>
+                    </div>
                 </div>
             </div>
 
             <!-- JSON格式选项卡 -->
             <div v-if="activeTab === 'json'" class="tab-content">
-                <div v-if="taskParams.generated" class="result-container">
-                    <h3>生成的JSON参数</h3>
-                    <pre>{{ taskParams.generated }}</pre>
-                    <button @click="copyToClipboard">复制到粘贴板</button>
+                <div v-if="taskParams.jsonItems.length > 0" class="result-container">
+                    <div v-for="item in taskParams.jsonItems" :key="item.title" class="result-item">
+                        <h3>
+                            {{ item.title }}
+                            <button @click="copyToClipboard(item.text)">复制到剪贴板</button>
+                        </h3>
+                        <pre>{{ item.text }}</pre>
+                    </div>
                 </div>
             </div>
 
             <!-- YAML格式选项卡 -->
             <div v-if="activeTab === 'yaml'" class="tab-content">
-                <div v-if="taskParams.generated" class="result-container">
-                    <h3>生成的YAML参数</h3>
-                    <pre>{{ taskParams.generated }}</pre>
-                    <button @click="copyToClipboard">复制到粘贴板</button>
+                <div v-if="taskParams.yamlItems.length > 0" class="result-container">
+                    <div v-for="item in taskParams.yamlItems" :key="item.title" class="result-item">
+                        <h3>
+                            {{ item.title }}
+                            <button @click="copyToClipboard(item.text)">复制到剪贴板</button>
+                        </h3>
+                        <pre>{{ item.text }}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API文档选项卡 -->
+            <div v-if="activeTab === 'apiDocs'" class="tab-content">
+                <div v-if="taskParams.apiDocs.length > 0" class="result-container">
+                    <div v-for="item in taskParams.apiDocs" :key="item.title" class="result-item">
+                        <h3>
+                            {{ item.title }}
+                            <button @click="openUrl(item.text)">查看文档</button>
+                        </h3>
+                        <a :href="item.text" target="_blank">{{ item.text }}</a>
+                    </div>
                 </div>
             </div>
         </template>
@@ -74,6 +104,7 @@ declare const chrome: {
         }
     },
     tabs: {
+        create: (createProperties: { url: string }) => void;
         query: (queryInfo: { active: boolean, currentWindow: boolean }, callback: (tabs: any[]) => void) => void;
         onUpdated: {
             addListener: (callback: (tabId: number, changeInfo: any, tab: any) => void) => void;
@@ -96,52 +127,52 @@ const urlList = {
 
 // 添加调试信息
 const debugLog = (message: string, data?: any) => {
-    console.log(`[AIHCX Debug] ${message}`, data || '');
+    console.log(`[AIHC Debug] ${message}`, data || '');
 }
 
-interface UrlResponse {
-    url?: string;
-    error?: string;
+const openUrl = (url: string) => {
+    chrome.tabs.create({ url })
 }
 
 const checkCurPage = () => {
     debugLog('开始检查当前页面')
-    
+
     // 直接使用 chrome.tabs.query 获取当前标签页
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.tabs.query({ active: true, currentWindow: true },async (tabs) => {
         if (chrome.runtime.lastError) {
             debugLog('获取标签页时出错:', chrome.runtime.lastError.message)
             curPage.value = chrome.runtime.lastError.message
             return
         }
-        
+
         if (!tabs || tabs.length === 0) {
             debugLog('未找到活动标签页')
             curPage.value = '无法获取当前标签页'
             return
         }
-        
+
         const currentUrl = tabs[0].url
         debugLog('当前URL', currentUrl)
-        
+
         if (!currentUrl) {
             debugLog('当前标签页没有URL')
             curPage.value = '无法获取页面URL'
             return
         }
-        
+
         let matched = false
         for (const [key, value] of Object.entries(urlList)) {
             debugLog(`尝试匹配URL模式`, key)
-            
+
             if (currentUrl.startsWith(key)) {
                 debugLog(`匹配成功`, { pattern: key, page: value })
                 curPage.value = value
                 matched = true
+                await handleFetchUrl(value, currentUrl)
                 break
             }
         }
-        
+
         if (!matched) {
             debugLog('未找到匹配的URL模式')
             curPage.value = '不支持当前页面，支持的页面列表：'
@@ -159,20 +190,301 @@ const observeUrlChanges = () => {
     })
 }
 
+// 解析Url，获取url和query参数 https://console.bce.baidu.com/aihc/tasks?clusters=cce-0a5oqsgp&keywordTypeAndKeyword[]=k8sName&keywordTypeAndKeyword[]=&pageNo=1&pageSize=10&queue=&showMyTask=false
+const parseUrl = (url: string) => {
+    const urlObj = new URL(url)
+    const queryParams = urlObj.searchParams
+    const params: Record<string, string> = {}
+    for (const [key, value] of queryParams.entries()) {
+        params[key] = value
+    }
+    return {
+        url: urlObj.origin + urlObj.pathname,
+        params: params
+    }
+}
+
+const handleFetchUrl = async (curPage: string, currentUrl: string) => {
+    debugLog('当前页面', curPage)
+    if (curPage === '任务详情') {
+        debugLog('任务详情')
+        // 解析currentUrl，获取任务参数 https://console.bce.baidu.com/aihc/infoTaskIndex/detail?clusterUuid=cce-0a5oqsgp&k8sNamespace=default&k8sName=sglang-r1-distill-qwen-14b-a10-2&kind=PyTorchJob&status=Running&name=sglang-r1-distill-qwen-14b-a10-2&jobId=pytorchjob-5c25f154-3104-4507-8259-fa7a357fd44c&queueID=default
+        const { url, params } = parseUrl(currentUrl)
+        debugLog('url', url)
+        debugLog('params', params)
+
+        taskParams.cliItems = [{
+            title: '获取任务详情',
+            text: `aihc job get ${params.jobId} -p ${params.clusterUuid}`
+        }]
+
+        // 获取GPU类型的简称
+        const getGpuTypeShortName = (gpuType: string) => {
+            const gpuMapping: Record<string, string> = {
+                'nvidia-v100': 'v100',
+                'nvidia-a100': 'a100',
+                'nvidia-a800': 'a800',
+                'nvidia-a10': 'a10',
+                'nvidia-a30': 'a30',
+                'nvidia-a40': 'a40',
+                'nvidia-h800': 'h800',
+                'nvidia-h100': 'h100',
+                'nvidia-l4': 'l4',
+                'kunlunxin-p800': 'klx-p800',
+                'kunlunxin-p100': 'klx-p100',
+                'kunlunxin-p920': 'klx-p920',
+                'iluvatar-bi': 'bi',
+                'iluvatar-pigeon': 'pigeon'
+            };
+
+            const lowerType = gpuType.toLowerCase();
+
+            for (const [key, shortName] of Object.entries(gpuMapping)) {
+                if (lowerType.includes(key)) {
+                    return shortName;
+                }
+            }
+
+            return lowerType;
+        }
+
+        try {
+            const url = `https://console.bce.baidu.com/api/cce/ai-service/v1/cluster/${params.clusterUuid}/aijob/${params.k8sName}?kind=${params.kind}&namespace=${params.k8sNamespace}&queueID=${params.queueID}&locale=zh-cn&_=${Date.now()}`
+            debugLog('请求URL:', url)
+            showMessage('success', url)
+            const response = await fetch(url)
+            const data = await response.json();
+            debugLog('API响应数据:', data);
+
+            if (!data.result || !data.result.rawRequest) {
+                showMessage('error', 'API响应中缺少必要的数据字段');
+                return;
+            }
+
+            let taskInfo;
+            try {
+                taskInfo = JSON.parse(data.result.rawRequest);
+                debugLog('解析后的任务信息:', taskInfo);
+            } catch (e) {
+                const error = e as Error;
+                debugLog('JSON解析错误:', error);
+                debugLog('原始数据:', data.result.rawRequest);
+                showMessage('error', '解析任务信息失败: ' + error.message);
+                return;
+            }
+
+            // 生成CLI命令
+            let cliCommand = `aihc job create --name "${taskInfo.name}" --framework ${taskInfo.workloadType.toLowerCase()} --image "${taskInfo.jobSpec.Master.image}:${taskInfo.jobSpec.Master.tag}"`;
+
+            // 添加队列参数（如果有）
+            if (taskInfo.queue && taskInfo.queue !== 'default') {
+                cliCommand += ` --queue "${taskInfo.queue}"`;
+            }
+
+            // 添加RDMA参数
+            cliCommand += ` --enable-rdma=${taskInfo.enableRdma || false}`;
+
+            // 添加GPU资源（如果有）
+            if (taskInfo.jobSpec.Master.resource && taskInfo.jobSpec.Master.resource.gpu) {
+                const gpuType = getGpuTypeShortName(taskInfo.jobSpec.Master.resource.gpu.type);
+                cliCommand += ` --gpu ${gpuType}=${taskInfo.jobSpec.Master.resource.gpu.count}`;
+            }
+
+            // 添加CPU和内存资源（如果有）
+            if (taskInfo.jobSpec.Master.resource) {
+                if (taskInfo.jobSpec.Master.resource.cpu) {
+                    cliCommand += ` --cpu ${taskInfo.jobSpec.Master.resource.cpu}`;
+                }
+                if (taskInfo.jobSpec.Master.resource.memory) {
+                    cliCommand += ` --memory ${taskInfo.jobSpec.Master.resource.memory}`;
+                }
+            }
+
+            // 添加BCCL参数
+            cliCommand += ` --enable-bccl=${taskInfo.enableBccl || false}`;
+
+            // 添加容错参数
+            if (taskInfo.faultTolerance) {
+                cliCommand += ` --enable-fault-tolerance=true`;
+
+                // 添加容错详细参数
+                const ftArgs = [
+                    `--enable-replace=${taskInfo.enableReplace || false}`,
+                    `--enable-hang-detection=${taskInfo.enabledHangDetection || false}`,
+                    `--hang-detection-log-timeout-minutes=${taskInfo.hangDetectionTimeoutMinutes || 0}`,
+                    `--hang-detection-startup-toleration-minutes=${taskInfo.hangDetectionStartupTolerationMinutes || 0}`,
+                    `--hang-detection-stack-timeout-minutes=${taskInfo.hangDetectionStackTimeoutMinutes || 0}`,
+                    `--max-num-of-unconditional-retry=${taskInfo.unconditionalFaultToleranceLimit || 0}`,
+                    `--unconditional-retry-observe-seconds=${taskInfo.unconditionalFaultToleranceObserveSeconds || 0}`,
+                    `--enable-use-nodes-of-last-job=${taskInfo.enableUseNodesOfLastJob || false}`,
+                    `--enable-checkpoint-migration=${taskInfo.enableCheckpointMigration || false}`
+                ];
+
+                if (taskInfo.internalFaultToleranceAlarmPhone) {
+                    ftArgs.push(`--internal-fault-tolerance-alarm-phone=${taskInfo.internalFaultToleranceAlarmPhone}`);
+                }
+
+                if (taskInfo.customFaultTolerancePattern && Array.isArray(taskInfo.customFaultTolerancePattern)) {
+                    taskInfo.customFaultTolerancePattern.forEach((pattern: string) => {
+                        if (pattern) {
+                            ftArgs.push(`--custom-log-patterns=${pattern}`);
+                        }
+                    });
+                }
+
+                cliCommand += ` --fault-tolerance-args="${ftArgs.join(' ')}"`;
+            } else {
+                cliCommand += ` --enable-fault-tolerance=false`;
+            }
+
+            // 添加主机网络参数
+            if (taskInfo.hostNetwork) {
+                cliCommand += ` --host-network`;
+            }
+
+            // 添加特权模式参数
+            if (taskInfo.privileged) {
+                cliCommand += ` --privileged=true`;
+            }
+
+            // 添加优先级
+            cliCommand += ` --priority ${taskInfo.priority || 'normal'}`;
+
+            // 添加副本数
+            cliCommand += ` --replicas ${taskInfo.jobSpec.Master.replicas || 1}`;
+
+            // 添加环境变量
+            if (taskInfo.jobSpec.Master.env && typeof taskInfo.jobSpec.Master.env === 'object') {
+                Object.entries(taskInfo.jobSpec.Master.env).forEach(([key, value]) => {
+                    if (key && value !== undefined && value !== null) {
+                        cliCommand += ` --env "${key}=${value}"`;
+                    }
+                });
+            }
+
+            // 添加数据源
+            if (taskInfo.datasource && Array.isArray(taskInfo.datasource)) {
+                taskInfo.datasource.forEach((ds: any) => {
+                    if (ds && ds.mountPath) {
+                        // 处理数据源类型
+                        let dsType = ds.type;
+                        if (dsType === 'pfsl1') {
+                            dsType = 'pfs';
+                        } else if (dsType === 'emptydir') {
+                            dsType = 'empty';
+                        }
+
+                        cliCommand += ` --ds-type ${dsType}`;
+                        cliCommand += ` --ds-mountpath "${ds.mountPath}"`;
+
+                        if (ds.name) {
+                            cliCommand += ` --ds-name "${ds.name}"`;
+                        }
+                    }
+                });
+            }
+
+            // 添加代码路径参数
+            if (taskInfo.codeSource && taskInfo.codeSource.filePath) {
+                cliCommand += ` --local-code "${taskInfo.codeSource.filePath}"`;
+                if (taskInfo.codeSource.mountPath) {
+                    cliCommand += ` --code-dir "${taskInfo.codeSource.mountPath}"`;
+                } else {
+                    cliCommand += ` --code-dir "/workspace"`;
+                }
+            }
+
+            // 添加执行命令
+            let command = '';
+            if (taskInfo.command) {
+                command = taskInfo.command;
+            } else if (taskInfo.jobSpec.Master.command) {
+                command = taskInfo.jobSpec.Master.command;
+            }
+
+            if (command) {
+                if (taskInfo.jobSpec.Master.args) {
+                    command += ' ' + taskInfo.jobSpec.Master.args;
+                }
+                cliCommand += ` --command "${command}"`;
+            }
+
+            // 添加标签
+            if (taskInfo.labels && typeof taskInfo.labels === 'object') {
+                Object.entries(taskInfo.labels).forEach(([key, value]) => {
+                    if (key && value !== undefined && value !== null) {
+                        cliCommand += ` --label "${key}=${value}"`;
+                    }
+                });
+            }
+
+            taskParams.cliItems.push({
+                title: '创建任务',
+                text: cliCommand
+            })
+
+            taskParams.jsonItems.push({
+                title: '创建任务',
+                text: JSON.stringify(taskInfo, null, 2)
+            })
+
+            taskParams.yamlItems.push({
+                title: '创建任务',
+                text: generateYAML(taskInfo)
+            })
+        } catch (error) {
+            showMessage('error', error as string);
+        }
+
+        taskParams.apiDocs.push({
+            title: '获取任务详情',
+            text: 'https://cloud.baidu.com/doc/AIHC/s/rm56ipjsz'
+        })
+
+        taskParams.apiDocs.push({
+            title: '创建任务',
+            text: 'https://cloud.baidu.com/doc/AIHC/s/jm56inxn7'
+        })
+    }
+
+    if (curPage === '资源池列表') {
+        debugLog('资源池列表')
+        taskParams.cliItems = [{
+            title: '获取资源池列表',
+            text: 'aihc pool list'
+        }]
+
+        taskParams.apiDocs = [{
+            title: '获取资源池列表',
+            text: 'https://cloud.baidu.com/doc/AIHC/s/Km569l8xl'
+        }]
+    }
+
+    if (curPage === '任务列表') {
+        debugLog('任务列表')
+        // 解析currentUrl，获取参数 https://console.bce.baidu.com/aihc/tasks?clusters=cce-0a5oqsgp&keywordTypeAndKeyword[]=k8sName&keywordTypeAndKeyword[]=&pageNo=1&pageSize=10&queue=&showMyTask=false
+        const { url, params } = parseUrl(currentUrl)
+        debugLog('url', url)
+        debugLog('params', params)
+        taskParams.cliItems = [{
+            title: '获取任务列表',
+            text: `aihc job list -p ${params.clusters}`
+        }]
+
+        taskParams.apiDocs = [{
+            title: '获取任务列表',
+            text: 'https://cloud.baidu.com/doc/AIHC/s/rm56ipjsz'
+        }]
+    }
+}
+
 // 在组件挂载时启动URL监听
 onMounted(() => {
     debugLog('组件挂载')
-    checkConfiguration()
     checkCurPage()
     generateParams()
     observeUrlChanges()
 })
-
-const checkConfiguration = () => {
-    chrome.storage.sync.get(['ak', 'sk'], (result) => {
-        isConfigured.value = !!(result.ak && result.sk)
-    })
-}
 
 // 任务参数
 const taskParams = reactive({
@@ -180,13 +492,12 @@ const taskParams = reactive({
     dataSource: 'local',
     priority: 'medium',
     customParams: '',
-    generated: ''
+    generated: '',
+    jsonItems: [] as { title: string, text: string }[],
+    yamlItems: [] as { title: string, text: string }[],
+    cliItems: [] as { title: string, text: string }[],
+    apiDocs: [] as { title: string, text: string }[]
 })
-
-// 功能方法
-const openOptions = () => {
-    chrome.runtime.openOptionsPage()
-}
 
 const generateParams = () => {
     // 准备要发送的数据
@@ -260,15 +571,9 @@ const generateYAML = (data: any) => {
     return yamlLines.join('\n')
 }
 
-const copyToClipboard = () => {
-    navigator.clipboard.writeText(taskParams.generated)
-        .then(() => {
-            showMessage('success', '已复制到剪贴板')
-        })
-        .catch(err => {
-            console.error('无法复制文本: ', err)
-            showMessage('error', '复制失败')
-        })
+const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    showMessage('success', '已复制到剪贴板')
 }
 
 const showMessage = (type: 'success' | 'error', text: string) => {
@@ -291,7 +596,7 @@ const isSupportedPage = computed(() => {
 
 <style>
 .popup-container {
-    width: 380px;
+    width: 480px;
     max-height: 600px;
     padding: 16px;
     font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -305,12 +610,14 @@ const isSupportedPage = computed(() => {
 .header h1 {
     margin: 0 0 12px 0;
     font-size: 18px;
-    text-align: center;
+    text-align: left;
 }
 
 .tabs {
     display: flex;
     border-bottom: 1px solid #eee;
+    flex-wrap: wrap;
+    gap: 4px;
 }
 
 .tabs button {
@@ -318,9 +625,12 @@ const isSupportedPage = computed(() => {
     padding: 8px;
     background: none;
     border: none;
-    border-bottom: 2px solid transparent;
+    /* border-bottom: 2px solid transparent; */
     cursor: pointer;
     font-size: 14px;
+    min-width: 80px;
+    white-space: nowrap;
+    color: #666;
 }
 
 .tabs button.active {
@@ -330,7 +640,7 @@ const isSupportedPage = computed(() => {
 }
 
 .tab-content {
-    padding: 16px 0;
+    padding: 0px 0;
 }
 
 .form-group {
@@ -450,6 +760,8 @@ const isSupportedPage = computed(() => {
     border-radius: 4px;
     cursor: pointer;
     font-size: 12px;
+    min-width: 80px;
+    white-space: nowrap;
 }
 
 .task-list-actions {
@@ -659,5 +971,43 @@ const isSupportedPage = computed(() => {
 
 .supported-pages a:hover {
     text-decoration: underline;
+}
+
+.result-item {
+    margin-bottom: 12px;
+}
+
+.result-item h3 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.result-item pre {
+    margin: 0 0 8px 0;
+    white-space: pre-wrap;
+    font-size: 12px;
+    background: #fff;
+    border: 1px solid #eee;
+    padding: 8px;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.result-item button {
+    padding: 4px 8px;
+    background: #4285f4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 8px;
+    min-width: 80px;
+    white-space: nowrap;
 }
 </style>

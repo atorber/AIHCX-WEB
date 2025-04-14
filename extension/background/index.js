@@ -25,6 +25,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         
         // 返回 true 表示我们将异步发送响应
         return true;
+    } else if (request.type === 'openPopup') {
+        chrome.windows.create({
+            url: chrome.runtime.getURL('src/popup/index.html'),
+            type: 'popup',
+            width: 400,
+            height: 600
+        });
     }
     
     // 对于其他类型的消息，确保返回 false

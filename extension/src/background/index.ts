@@ -34,7 +34,7 @@ const defaultHelperConfig: AIHCXHelperConfig = {
 
 // 初始化
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('AIHCX 助手已安装')
+  console.log('AIHC 助手已安装')
   
   // 初始化存储空间
   chrome.storage.local.set({ 

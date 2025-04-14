@@ -1,15 +1,15 @@
 {
     "manifest_version": 3,
-    "name": "AIHCX 助手",
+    "name": "AIHC助手",
     "version": "1.0",
     "description": "AIHCX浏览器辅助工具 - 任务参数生成、任务管理与百度云API集成",
     
     "action": {
-      "default_popup": "src/popup/index.html",
+      "default_popup": "popup/index.html",
       "default_icon": "vite.svg"
     },
     
-    "options_page": "src/options/index.html",
+    "options_page": "options/index.html",
     
     "background": {
       "service_worker": "background/index.js",
@@ -19,7 +19,8 @@
     "content_scripts": [
       {
         "matches": ["<all_urls>"],
-        "js": ["content/index.js"]
+        "js": ["content/index.js"],
+        "css": ["content/style.css"]
       }
     ],
     
@@ -27,7 +28,7 @@
     
     "web_accessible_resources": [
       {
-        "resources": ["*.js"],
+        "resources": ["content/*.css", "content/*.js", "chunks/*.js"],
         "matches": ["<all_urls>"]
       }
     ]
