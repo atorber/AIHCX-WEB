@@ -177,7 +177,7 @@ console.log('AIHC CLI Button 脚本开始执行 - 直接控制台输出');
             }
             
             // 生成CLI命令
-            let cliCommand = `aihc job create --name "${taskInfo.name}" --framework ${(taskInfo.jobFramework || taskInfo.workloadType).toLowerCase()} --image "${taskInfo.jobSpec.Master.image}:${taskInfo.jobSpec.Master.tag}"`;
+            let cliCommand = `aihc job create --name "${taskInfo.name}" --framework ${taskInfo.workloadType.toLowerCase()} --image "${taskInfo.jobSpec.Master.image}:${taskInfo.jobSpec.Master.tag}"`;
             
             // 添加队列参数（如果有）
             if (taskInfo.queue && taskInfo.queue !== 'default') {
@@ -200,9 +200,6 @@ console.log('AIHC CLI Button 脚本开始执行 - 直接控制台输出');
                 }
                 if (taskInfo.jobSpec.Master.resource.memory) {
                     cliCommand += ` --memory ${taskInfo.jobSpec.Master.resource.memory}`;
-                }
-                if (taskInfo.jobSpec.Master.resource.shmSize) {
-                    cliCommand += ` --shm-size ${taskInfo.jobSpec.Master.resource.shmSize}`;
                 }
             }
             
@@ -286,19 +283,6 @@ console.log('AIHC CLI Button 脚本开始执行 - 直接控制台输出');
                         if (ds.name) {
                             cliCommand += ` --ds-name "${ds.name}"`;
                         }
-                        
-                        if (ds.options) {
-                            if (ds.options.readOnly) {
-                                cliCommand += ` --ds-readonly`;
-                            }
-                            if (ds.options.sizeLimit) {
-                                cliCommand += ` --ds-size-limit ${ds.options.sizeLimit}`;
-                            }
-                            if (ds.type === 'pfsl1' && ds.options.pfsL1ClusterIp && ds.options.pfsL1ClusterPort) {
-                                cliCommand += ` --ds-pfs-cluster-ip ${ds.options.pfsL1ClusterIp}`;
-                                cliCommand += ` --ds-pfs-cluster-port ${ds.options.pfsL1ClusterPort}`;
-                            }
-                        }
                     }
                 });
             }
@@ -333,23 +317,6 @@ console.log('AIHC CLI Button 脚本开始执行 - 直接控制台输出');
                 Object.entries(taskInfo.labels).forEach(([key, value]) => {
                     if (key && value !== undefined && value !== null) {
                         cliCommand += ` --label "${key}=${value}"`;
-                    }
-                });
-            }
-            
-            // 添加Tensorboard配置
-            if (taskInfo.tensorboard && taskInfo.tensorboard.enable) {
-                cliCommand += ` --enable-tensorboard=true`;
-                if (taskInfo.tensorboard.logPath) {
-                    cliCommand += ` --tensorboard-log-path "${taskInfo.tensorboard.logPath}"`;
-                }
-            }
-            
-            // 添加日志收集配置
-            if (taskInfo.logCollectionFilePatterns && Array.isArray(taskInfo.logCollectionFilePatterns)) {
-                taskInfo.logCollectionFilePatterns.forEach(pattern => {
-                    if (pattern) {
-                        cliCommand += ` --log-collection-pattern "${pattern}"`;
                     }
                 });
             }
