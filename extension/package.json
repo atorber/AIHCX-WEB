@@ -1,12 +1,13 @@
 {
-  "name": "extension",
-  "private": true,
-  "version": "0.0.0",
+  "name": "aihc-helper-extension",
+  "version": "1.0.0",
+  "description": "AIHC助手浏览器扩展",
   "type": "module",
   "scripts": {
     "dev": "vite build --watch --mode development",
-    "build": "vite build --mode production",
-    "preview": "vite preview"
+    "build": "vite build --mode production && npm run generate-icons",
+    "preview": "vite preview",
+    "generate-icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
     "@baiducloud/sdk": "^1.0.3",
@@ -22,6 +23,7 @@
     "@types/node": "^22.14.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/tsconfig": "^0.7.0",
+    "sharp": "^0.33.2",
     "typescript": "~5.7.2",
     "vite": "^6.2.0",
     "vue-tsc": "^2.2.4"

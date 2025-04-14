@@ -112,6 +112,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ success: true })
     return true
   }
+
+  // 打开设置页面
+  if (message.action === 'openOptionsPage') {
+    chrome.runtime.openOptionsPage();
+    sendResponse({ success: true });
+    return true;
+  }
 })
 
 // 获取凭证

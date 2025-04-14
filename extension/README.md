@@ -63,5 +63,15 @@ Learn more about the recommended Project Setup and IDE Support in the [Vue Docs 
 - `src/options`: 扩展选项页面相关代码
 - `src/background`: 后台脚本
 - `src/content`: 内容脚本（注入到页面中）
+- `src/components`: 公共组件
+- `src/utils`: 工具函数
+- `src/types`: TypeScript 类型定义
+- `src/assets`: 静态资源文件
+- `content/`: 内容脚本目录
+- `background/`: 后台脚本目录
+- `icons/`: 扩展图标资源
+- `scripts/`: 构建脚本
+- `public/`: 公共资源目录
 - `manifest.json`: 扩展配置文件
 - `vite.config.ts`: Vite构建配置
+- `tsconfig.json`: TypeScript 配置文件

@@ -22,7 +22,10 @@
                     <div v-for="item in taskParams.cliItems" :key="item.title" class="result-item">
                         <h3>
                             {{ item.title }}
-                            <button @click="copyToClipboard(item.text)">复制到剪贴板</button>
+                            <span style="margin-left: 10px;">
+                                <button @click="copyToClipboard(item.text)">复制到剪贴板</button>
+                                <button v-if="item.doc" @click="openUrl(item.doc)">CLI使用手册</button>
+                            </span>
                         </h3>
                         <pre>{{ item.text }}</pre>
                     </div>
@@ -61,7 +64,7 @@
                     <div v-for="item in taskParams.apiDocs" :key="item.title" class="result-item">
                         <h3>
                             {{ item.title }}
-                            <button @click="openUrl(item.text)">查看文档</button>
+                            <button @click="openUrl(item.text)">查看说明文档</button>
                         </h3>
                         <a :href="item.text" target="_blank">{{ item.text }}</a>
                     </div>
@@ -72,7 +75,7 @@
         <div v-else class="unsupported-page">
             <ul class="supported-pages">
                 <li v-for="(name, url) in urlList" :key="url">
-                    {{ name }}
+                    {{ name }}<span v-if="name == '任务列表'" style="color: #4285f4; font-size: 12px;">（需要下拉选中一个资源池）</span>
                 </li>
             </ul>
         </div>
@@ -117,12 +120,14 @@ const activeTab = ref('cli')
 const isConfigured = ref(false)
 const message = ref<{ type: string, text: string } | null>(null)
 
-const curPage = ref('不支持当前页面，支持的页面列表：')
+const curPage = ref('支持的页面列表：')
 
 const urlList = {
-    'https://console.bce.baidu.com/aihc/infoTaskIndex/detail?': '任务详情',
     'https://console.bce.baidu.com/aihc/resources': '资源池列表',
-    'https://console.bce.baidu.com/aihc/tasks?': '任务列表'
+    'https://console.bce.baidu.com/aihc/resource/info?': '资源池详情',
+    'https://console.bce.baidu.com/aihc/resource/queue?': '队列列表',
+    'https://console.bce.baidu.com/aihc/tasks?': '任务列表',
+    'https://console.bce.baidu.com/aihc/infoTaskIndex/detail?': '任务详情',
 }
 
 // 添加调试信息
@@ -138,7 +143,7 @@ const checkCurPage = () => {
     debugLog('开始检查当前页面')
 
     // 直接使用 chrome.tabs.query 获取当前标签页
-    chrome.tabs.query({ active: true, currentWindow: true },async (tabs) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
         if (chrome.runtime.lastError) {
             debugLog('获取标签页时出错:', chrome.runtime.lastError.message)
             curPage.value = chrome.runtime.lastError.message
@@ -175,7 +180,7 @@ const checkCurPage = () => {
 
         if (!matched) {
             debugLog('未找到匹配的URL模式')
-            curPage.value = '不支持当前页面，支持的页面列表：'
+            curPage.value = '支持的页面列表：'
         }
     });
 }
@@ -206,16 +211,27 @@ const parseUrl = (url: string) => {
 
 const handleFetchUrl = async (curPage: string, currentUrl: string) => {
     debugLog('当前页面', curPage)
+    const { url, params } = parseUrl(currentUrl)
+    debugLog('url', url)
+    debugLog('params', params)
     if (curPage === '任务详情') {
         debugLog('任务详情')
         // 解析currentUrl，获取任务参数 https://console.bce.baidu.com/aihc/infoTaskIndex/detail?clusterUuid=cce-0a5oqsgp&k8sNamespace=default&k8sName=sglang-r1-distill-qwen-14b-a10-2&kind=PyTorchJob&status=Running&name=sglang-r1-distill-qwen-14b-a10-2&jobId=pytorchjob-5c25f154-3104-4507-8259-fa7a357fd44c&queueID=default
-        const { url, params } = parseUrl(currentUrl)
-        debugLog('url', url)
-        debugLog('params', params)
+
+        taskParams.apiDocs.push({
+            title: '获取任务详情',
+            text: 'https://cloud.baidu.com/doc/AIHC/s/rm56ipjsz'
+        })
+
+        taskParams.apiDocs.push({
+            title: '创建任务',
+            text: 'https://cloud.baidu.com/doc/AIHC/s/jm56inxn7'
+        })
 
         taskParams.cliItems = [{
             title: '获取任务详情',
-            text: `aihc job get ${params.jobId} -p ${params.clusterUuid}`
+            text: `aihc job get ${params.jobId} -p ${params.clusterUuid}`,
+            doc: 'https://cloud.baidu.com/doc/AIHC/s/Tm7x702fo#%E8%8E%B7%E5%8F%96%E4%BB%BB%E5%8A%A1%E8%AF%A6%E6%83%85'
         }]
 
         // 获取GPU类型的简称
@@ -251,7 +267,7 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
         try {
             const url = `https://console.bce.baidu.com/api/cce/ai-service/v1/cluster/${params.clusterUuid}/aijob/${params.k8sName}?kind=${params.kind}&namespace=${params.k8sNamespace}&queueID=${params.queueID}&locale=zh-cn&_=${Date.now()}`
             debugLog('请求URL:', url)
-            showMessage('success', url)
+            // showMessage('success', url)
             const response = await fetch(url)
             const data = await response.json();
             debugLog('API响应数据:', data);
@@ -420,7 +436,8 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
 
             taskParams.cliItems.push({
                 title: '创建任务',
-                text: cliCommand
+                text: cliCommand,
+                doc: 'https://cloud.baidu.com/doc/AIHC/s/Tm7x702fo#%E7%9B%B4%E6%8E%A5%E4%BC%A0%E5%8F%82%E6%96%B9%E5%BC%8F%E5%88%9B%E5%BB%BA%E4%BB%BB%E5%8A%A1'
             })
 
             taskParams.jsonItems.push({
@@ -435,28 +452,47 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
         } catch (error) {
             showMessage('error', error as string);
         }
-
-        taskParams.apiDocs.push({
-            title: '获取任务详情',
-            text: 'https://cloud.baidu.com/doc/AIHC/s/rm56ipjsz'
-        })
-
-        taskParams.apiDocs.push({
-            title: '创建任务',
-            text: 'https://cloud.baidu.com/doc/AIHC/s/jm56inxn7'
-        })
     }
 
     if (curPage === '资源池列表') {
         debugLog('资源池列表')
         taskParams.cliItems = [{
             title: '获取资源池列表',
-            text: 'aihc pool list'
+            text: 'aihc pool list',
+            doc: 'https://cloud.baidu.com/doc/AIHC/s/Tm7x702fo#%E8%8E%B7%E5%8F%96%E8%B5%84%E6%BA%90%E6%B1%A0%E5%88%97%E8%A1%A8'
         }]
 
         taskParams.apiDocs = [{
             title: '获取资源池列表',
             text: 'https://cloud.baidu.com/doc/AIHC/s/Km569l8xl'
+        }]
+    }
+
+    if (curPage === '资源池详情') {
+        debugLog('资源池详情')
+        taskParams.cliItems = [{
+            title: '获取资源池详情',
+            text: `aihc pool get -p ${params.clusterUuid}`,
+            doc:'https://cloud.baidu.com/doc/AIHC/s/Tm7x702fo#%E8%8E%B7%E5%8F%96%E8%B5%84%E6%BA%90%E6%B1%A0%E8%AF%A6%E6%83%85'
+        }]
+
+        taskParams.apiDocs = [{
+            title: '获取资源池详情',
+            text: 'https://cloud.baidu.com/doc/AIHC/s/9m569kh7t'
+        }]
+    }
+
+    if (curPage === '队列列表') {
+        debugLog('队列列表')
+        taskParams.cliItems = [{
+            title: '获取队列列表',
+            text: `aihc queue list -p ${params.clusterUuid}`,
+            doc: 'https://cloud.baidu.com/doc/AIHC/s/Tm7x702fo#%E8%8E%B7%E5%8F%96%E9%98%9F%E5%88%97%E5%88%97%E8%A1%A8'
+        }]
+
+        taskParams.apiDocs = [{
+            title: '获取队列列表',
+            text: 'https://cloud.baidu.com/doc/AIHC/s/zm569o5xc'
         }]
     }
 
@@ -468,7 +504,8 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
         debugLog('params', params)
         taskParams.cliItems = [{
             title: '获取任务列表',
-            text: `aihc job list -p ${params.clusters}`
+            text: `aihc job list -p ${params.clusters}`,
+            doc: 'https://cloud.baidu.com/doc/AIHC/s/Tm7x702fo#%E8%8E%B7%E5%8F%96%E4%BB%BB%E5%8A%A1%E5%88%97%E8%A1%A8'
         }]
 
         taskParams.apiDocs = [{
@@ -495,7 +532,7 @@ const taskParams = reactive({
     generated: '',
     jsonItems: [] as { title: string, text: string }[],
     yamlItems: [] as { title: string, text: string }[],
-    cliItems: [] as { title: string, text: string }[],
+    cliItems: [] as { title: string, text: string, doc?: string }[],
     apiDocs: [] as { title: string, text: string }[]
 })
 
@@ -590,7 +627,7 @@ watch([() => taskParams.type, () => taskParams.dataSource, () => taskParams.prio
 
 // 计算属性：判断当前页面是否支持
 const isSupportedPage = computed(() => {
-    return curPage.value !== '不支持当前页面，支持的页面列表：' && curPage.value !== '无法获取页面信息' && curPage.value !== '无法获取当前标签页' && curPage.value !== '无法获取页面URL'
+    return curPage.value !== '支持的页面列表：' && curPage.value !== '无法获取页面信息' && curPage.value !== '无法获取当前标签页' && curPage.value !== '无法获取页面URL'
 })
 </script>
 

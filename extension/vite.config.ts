@@ -2,6 +2,24 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs'
+import fs from 'fs'
+
+// 复制 manifest.json 到 dist 目录
+function copyManifest() {
+  return {
+    name: 'copy-manifest',
+    buildEnd() {
+      const manifestContent = fs.readFileSync(
+        resolve(__dirname, 'src/manifest.json'),
+        'utf-8'
+      )
+      fs.writeFileSync(
+        resolve(__dirname, 'dist/manifest.json'),
+        manifestContent
+      )
+    }
+  }
+}
 
 export default defineConfig({
   base: './',
@@ -92,7 +110,8 @@ export default defineConfig({
           console.error('复制文件失败:', e)
         }
       }
-    }
+    },
+    copyManifest()
   ],
   build: {
     rollupOptions: {
