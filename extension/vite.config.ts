@@ -53,7 +53,7 @@ export default defineConfig({
       name: 'copy-manifest-and-resources',
       closeBundle() {
         // 复制manifest.json到dist目录
-        copyFileSync(resolve(__dirname, 'manifest.json'), resolve(__dirname, 'dist/manifest.json'))
+        copyFileSync(resolve(__dirname, 'src/manifest.json'), resolve(__dirname, 'dist/manifest.json'))
         
         // 复制vite.svg (作为图标使用)
         try {
@@ -62,14 +62,17 @@ export default defineConfig({
           console.error('复制vite.svg失败:', e)
         }
         
-        // 如果有图标文件夹，也复制图标
+        // 复制图标
         try {
-          if (!existsSync(resolve(__dirname, 'dist/icons'))) {
-            mkdirSync(resolve(__dirname, 'dist/icons'), { recursive: true })
+          if (!existsSync(resolve(__dirname, 'dist/assets/icons'))) {
+            mkdirSync(resolve(__dirname, 'dist/assets/icons'), { recursive: true })
           }
-          const icons = readdirSync(resolve(__dirname, 'icons'))
+          const icons = readdirSync(resolve(__dirname, 'src/assets/icons'))
           icons.forEach((icon: string) => {
-            copyFileSync(resolve(__dirname, 'icons', icon), resolve(__dirname, 'dist/icons', icon))
+            copyFileSync(
+              resolve(__dirname, 'src/assets/icons', icon),
+              resolve(__dirname, 'dist/assets/icons', icon)
+            )
           })
         } catch (e) {
           console.error('复制图标文件失败:', e)
