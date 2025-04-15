@@ -30,7 +30,7 @@ async function generateIcons() {
       .png()
       .toFile(outputPath);
     
-    console.log(`Generated ${size}x${size} icon: ${outputPath}`);
+    // console.log(`Generated ${size}x${size} icon: ${outputPath}`);
   }
 }
 

@@ -24,7 +24,8 @@
                             {{ item.title }}
                             <span style="margin-left: 10px;">
                                 <button style="margin-left: 10px;" @click="copyToClipboard(item.text)">复制到剪贴板</button>
-                                <button style="margin-left: 10px;" v-if="item.doc" @click="openUrl(item.doc)">CLI使用手册</button>
+                                <button style="margin-left: 10px;" v-if="item.doc"
+                                    @click="openUrl(item.doc)">CLI使用手册</button>
                             </span>
                         </h3>
                         <pre>{{ item.text }}</pre>
@@ -101,7 +102,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { formatRequestParams, generateYAML, generateCLICommand } from '../utils/common'
 
 // Chrome API 类型定义
 declare const chrome: {
@@ -248,36 +250,6 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
             doc: 'https://cloud.baidu.com/doc/AIHC/s/Tm7x702fo#%E8%8E%B7%E5%8F%96%E4%BB%BB%E5%8A%A1%E8%AF%A6%E6%83%85'
         }]
 
-        // 获取GPU类型的简称
-        const getGpuTypeShortName = (gpuType: string) => {
-            const gpuMapping: Record<string, string> = {
-                'nvidia-v100': 'v100',
-                'nvidia-a100': 'a100',
-                'nvidia-a800': 'a800',
-                'nvidia-a10': 'a10',
-                'nvidia-a30': 'a30',
-                'nvidia-a40': 'a40',
-                'nvidia-h800': 'h800',
-                'nvidia-h100': 'h100',
-                'nvidia-l4': 'l4',
-                'kunlunxin-p800': 'klx-p800',
-                'kunlunxin-p100': 'klx-p100',
-                'kunlunxin-p920': 'klx-p920',
-                'iluvatar-bi': 'bi',
-                'iluvatar-pigeon': 'pigeon'
-            };
-
-            const lowerType = gpuType.toLowerCase();
-
-            for (const [key, shortName] of Object.entries(gpuMapping)) {
-                if (lowerType.includes(key)) {
-                    return shortName;
-                }
-            }
-
-            return lowerType;
-        }
-
         try {
             const url = `https://console.bce.baidu.com/api/cce/ai-service/v1/cluster/${params.clusterUuid}/aijob/${params.k8sName}?kind=${params.kind}&namespace=${params.k8sNamespace}&queueID=${params.queueID}&locale=zh-cn&_=${Date.now()}`
             debugLog('请求URL:', url)
@@ -292,9 +264,12 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
             }
 
             let taskInfo;
+            let requestParams = {};
             try {
                 taskInfo = JSON.parse(data.result.rawRequest);
                 debugLog('解析后的任务信息:', taskInfo);
+                requestParams = formatRequestParams(taskInfo)
+                console.log('requestParams', requestParams)
             } catch (e) {
                 const error = e as Error;
                 debugLog('JSON解析错误:', error);
@@ -303,150 +278,7 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
                 return;
             }
 
-            // 生成CLI命令
-            let cliCommand = `aihc job create --name "${taskInfo.name}" --framework ${taskInfo.workloadType.toLowerCase()} --image "${taskInfo.jobSpec.Master.image}:${taskInfo.jobSpec.Master.tag}"`;
-
-            // 添加队列参数（如果有）
-            if (taskInfo.queue && taskInfo.queue !== 'default') {
-                cliCommand += ` --queue "${taskInfo.queue}"`;
-            }
-
-            // 添加RDMA参数
-            cliCommand += ` --enable-rdma=${taskInfo.enableRdma || false}`;
-
-            // 添加GPU资源（如果有）
-            if (taskInfo.jobSpec.Master.resource && taskInfo.jobSpec.Master.resource.gpu) {
-                const gpuType = getGpuTypeShortName(taskInfo.jobSpec.Master.resource.gpu.type);
-                cliCommand += ` --gpu ${gpuType}=${taskInfo.jobSpec.Master.resource.gpu.count}`;
-            }
-
-            // 添加CPU和内存资源（如果有）
-            if (taskInfo.jobSpec.Master.resource) {
-                if (taskInfo.jobSpec.Master.resource.cpu) {
-                    cliCommand += ` --cpu ${taskInfo.jobSpec.Master.resource.cpu}`;
-                }
-                if (taskInfo.jobSpec.Master.resource.memory) {
-                    cliCommand += ` --memory ${taskInfo.jobSpec.Master.resource.memory}`;
-                }
-            }
-
-            // 添加BCCL参数
-            cliCommand += ` --enable-bccl=${taskInfo.enableBccl || false}`;
-
-            // 添加容错参数
-            if (taskInfo.faultTolerance) {
-                cliCommand += ` --enable-fault-tolerance=true`;
-
-                // 添加容错详细参数
-                const ftArgs = [
-                    `--enable-replace=${taskInfo.enableReplace || false}`,
-                    `--enable-hang-detection=${taskInfo.enabledHangDetection || false}`,
-                    `--hang-detection-log-timeout-minutes=${taskInfo.hangDetectionTimeoutMinutes || 0}`,
-                    `--hang-detection-startup-toleration-minutes=${taskInfo.hangDetectionStartupTolerationMinutes || 0}`,
-                    `--hang-detection-stack-timeout-minutes=${taskInfo.hangDetectionStackTimeoutMinutes || 0}`,
-                    `--max-num-of-unconditional-retry=${taskInfo.unconditionalFaultToleranceLimit || 0}`,
-                    `--unconditional-retry-observe-seconds=${taskInfo.unconditionalFaultToleranceObserveSeconds || 0}`,
-                    `--enable-use-nodes-of-last-job=${taskInfo.enableUseNodesOfLastJob || false}`,
-                    `--enable-checkpoint-migration=${taskInfo.enableCheckpointMigration || false}`
-                ];
-
-                if (taskInfo.internalFaultToleranceAlarmPhone) {
-                    ftArgs.push(`--internal-fault-tolerance-alarm-phone=${taskInfo.internalFaultToleranceAlarmPhone}`);
-                }
-
-                if (taskInfo.customFaultTolerancePattern && Array.isArray(taskInfo.customFaultTolerancePattern)) {
-                    taskInfo.customFaultTolerancePattern.forEach((pattern: string) => {
-                        if (pattern) {
-                            ftArgs.push(`--custom-log-patterns=${pattern}`);
-                        }
-                    });
-                }
-
-                cliCommand += ` --fault-tolerance-args="${ftArgs.join(' ')}"`;
-            } else {
-                cliCommand += ` --enable-fault-tolerance=false`;
-            }
-
-            // 添加主机网络参数
-            if (taskInfo.hostNetwork) {
-                cliCommand += ` --host-network`;
-            }
-
-            // 添加特权模式参数
-            if (taskInfo.privileged) {
-                cliCommand += ` --privileged=true`;
-            }
-
-            // 添加优先级
-            cliCommand += ` --priority ${taskInfo.priority || 'normal'}`;
-
-            // 添加副本数
-            cliCommand += ` --replicas ${taskInfo.jobSpec.Master.replicas || 1}`;
-
-            // 添加环境变量
-            if (taskInfo.jobSpec.Master.env && typeof taskInfo.jobSpec.Master.env === 'object') {
-                Object.entries(taskInfo.jobSpec.Master.env).forEach(([key, value]) => {
-                    if (key && value !== undefined && value !== null) {
-                        cliCommand += ` --env "${key}=${value}"`;
-                    }
-                });
-            }
-
-            // 添加数据源
-            if (taskInfo.datasource && Array.isArray(taskInfo.datasource)) {
-                taskInfo.datasource.forEach((ds: any) => {
-                    if (ds && ds.mountPath) {
-                        // 处理数据源类型
-                        let dsType = ds.type;
-                        if (dsType === 'pfsl1') {
-                            dsType = 'pfs';
-                        } else if (dsType === 'emptydir') {
-                            dsType = 'empty';
-                        }
-
-                        cliCommand += ` --ds-type ${dsType}`;
-                        cliCommand += ` --ds-mountpath "${ds.mountPath}"`;
-
-                        if (ds.name) {
-                            cliCommand += ` --ds-name "${ds.name}"`;
-                        }
-                    }
-                });
-            }
-
-            // 添加代码路径参数
-            if (taskInfo.codeSource && taskInfo.codeSource.filePath) {
-                cliCommand += ` --local-code "${taskInfo.codeSource.filePath}"`;
-                if (taskInfo.codeSource.mountPath) {
-                    cliCommand += ` --code-dir "${taskInfo.codeSource.mountPath}"`;
-                } else {
-                    cliCommand += ` --code-dir "/workspace"`;
-                }
-            }
-
-            // 添加执行命令
-            let command = '';
-            if (taskInfo.command) {
-                command = taskInfo.command;
-            } else if (taskInfo.jobSpec.Master.command) {
-                command = taskInfo.jobSpec.Master.command;
-            }
-
-            if (command) {
-                if (taskInfo.jobSpec.Master.args) {
-                    command += ' ' + taskInfo.jobSpec.Master.args;
-                }
-                cliCommand += ` --command "${command}"`;
-            }
-
-            // 添加标签
-            if (taskInfo.labels && typeof taskInfo.labels === 'object') {
-                Object.entries(taskInfo.labels).forEach(([key, value]) => {
-                    if (key && value !== undefined && value !== null) {
-                        cliCommand += ` --label "${key}=${value}"`;
-                    }
-                });
-            }
+            const cliCommand = generateCLICommand(requestParams)
 
             taskParams.cliItems.push({
                 title: '创建任务',
@@ -456,12 +288,12 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
 
             taskParams.jsonItems.push({
                 title: '创建任务',
-                text: JSON.stringify(taskInfo, null, 2)
+                text: JSON.stringify(requestParams, null, 2)
             })
 
             taskParams.yamlItems.push({
                 title: '创建任务',
-                text: generateYAML(taskInfo)
+                text: generateYAML(requestParams)
             })
         } catch (error) {
             showMessage('error', error as string);
@@ -533,7 +365,6 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
 onMounted(() => {
     debugLog('组件挂载')
     checkCurPage()
-    generateParams()
     observeUrlChanges()
 })
 
@@ -550,78 +381,6 @@ const taskParams = reactive({
     apiDocs: [] as { title: string, text: string }[]
 })
 
-const generateParams = () => {
-    // 准备要发送的数据
-    const data = {
-        type: taskParams.type,
-        dataSource: taskParams.dataSource,
-        priority: taskParams.priority
-    }
-
-    if (taskParams.type === 'custom' && taskParams.customParams) {
-        try {
-            const customParams = JSON.parse(taskParams.customParams)
-            Object.assign(data, { custom: customParams })
-        } catch (e) {
-            showMessage('error', '自定义参数JSON格式不正确')
-            return
-        }
-    }
-
-    // 根据当前选中的标签页生成不同格式的参数
-    let generatedContent = ''
-    switch (activeTab.value) {
-        case 'cli':
-            generatedContent = generateCLICommand(data)
-            break
-        case 'json':
-            generatedContent = JSON.stringify(data, null, 2)
-            break
-        case 'yaml':
-            generatedContent = generateYAML(data)
-            break
-    }
-
-    taskParams.generated = generatedContent
-}
-
-const generateCLICommand = (data: any) => {
-    const command = ['aihcx']
-
-    // 添加基本参数
-    command.push(`--type ${data.type}`)
-    command.push(`--source ${data.dataSource}`)
-    command.push(`--priority ${data.priority}`)
-
-    // 添加自定义参数
-    if (data.custom) {
-        Object.entries(data.custom).forEach(([key, value]) => {
-            command.push(`--${key} ${value}`)
-        })
-    }
-
-    return command.join(' ')
-}
-
-const generateYAML = (data: any) => {
-    const yamlLines = []
-
-    // 添加基本参数
-    yamlLines.push(`type: ${data.type}`)
-    yamlLines.push(`source: ${data.dataSource}`)
-    yamlLines.push(`priority: ${data.priority}`)
-
-    // 添加自定义参数
-    if (data.custom) {
-        yamlLines.push('custom:')
-        Object.entries(data.custom).forEach(([key, value]) => {
-            yamlLines.push(`  ${key}: ${value}`)
-        })
-    }
-
-    return yamlLines.join('\n')
-}
-
 const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
     showMessage('success', '已复制到剪贴板')
@@ -633,11 +392,6 @@ const showMessage = (type: 'success' | 'error', text: string) => {
         message.value = null
     }, 3000)
 }
-
-// 添加 watch 监听参数变化
-watch([() => taskParams.type, () => taskParams.dataSource, () => taskParams.priority, () => taskParams.customParams], () => {
-    generateParams()
-})
 
 // 计算属性：判断当前页面是否支持
 const isSupportedPage = computed(() => {

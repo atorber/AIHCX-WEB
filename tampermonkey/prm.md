@@ -47,6 +47,64 @@ aihc job create --local-code Aihc   --name cli-codeupload-test   --image registr
   -p cce-cm1jjxrq
 ```
 
+# 格式化请求参数
+
+```
+{
+    "name": "test-api-llama2-7b-4",
+    "queue": "default",
+    "jobFramework": "PyTorchJob",
+    "jobSpec": {
+        "image": "registry.baidubce.com/aihc-aiak/aiak-megatron:ubuntu20.04-cu11.8-torch1.14.0-py38_v1.2.7.12_release",
+        "imageConfig": {
+            "username": "",
+            "password": ""
+        },
+        "replicas": 1,
+        "resources": [
+            {
+                "name": "baidu.com/a800_80g_cgpu",
+                "quantity": 8
+            }
+        ],
+        "command": "#! /bin/bash",
+        "envs": [
+            {
+                "name": "CUDA_DEVICE_MAX_CONNECTIONS",
+                "value": "1"
+            }
+        ],
+        "enableRDMA": true,
+        "hostNetwork": false
+    },
+    "faultTolerance": false,
+    "labels": [
+        {
+            "key": "123",
+            "value": "222"
+        }
+    ],
+    "priority": "normal",
+    "datasources": [
+        {
+            "type": "pfs",
+            "name": "pfs-7xWeAt",
+            "sourcePath": "/",
+            "mountPath": "/mnt/cluster"
+        }
+    ],
+    "enableBccl": false,
+    "faultToleranceConfig": {
+        "enabledHangDetection": false,
+        "hangDetectionTimeoutMinutes": 5
+    },
+    "tensorboardConfig": {
+        "enableTensorboard": false,
+        "logPath": "/"
+    }
+}
+```
+
 # 任务提交表单taskInfo示例
 
 ```
