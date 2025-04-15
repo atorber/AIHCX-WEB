@@ -26,3 +26,5 @@ dist-ssr
 # 打包文件的压缩文件,排除extension目录下“AIHC助手插件”开头的文件
 dist-*.zip
 release/AIHC助手插件v*.zip
+release/aihc-helper.pem
+release/WX20250415-102639.png

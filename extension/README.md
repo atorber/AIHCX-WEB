@@ -81,3 +81,11 @@ Learn more about the recommended Project Setup and IDE Support in the [Vue Docs 
 - `manifest.json`: 扩展配置文件
 - `vite.config.ts`: Vite构建配置
 - `tsconfig.json`: TypeScript 配置文件
+
+## 打包程.crx
+
+```
+/Users/luyuchao/Documents/GitHub/AIHCX-WEB/extension/dist.pem
+
+/Users/luyuchao/Documents/GitHub/AIHCX-WEB/extension/dist.crx
+```
