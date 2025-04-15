@@ -1,6 +1,6 @@
 {
   "name": "aihc-helper-extension",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "AIHC助手浏览器扩展",
   "type": "module",
   "scripts": {

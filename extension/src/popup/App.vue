@@ -39,7 +39,10 @@
                     <div v-for="item in taskParams.jsonItems" :key="item.title" class="result-item">
                         <h3 style="display: flex; justify-content: space-between;">
                             {{ item.title }}
-                            <button @click="copyToClipboard(item.text)">复制到剪贴板</button>
+                            <span style="margin-left: 10px;">
+                                <button @click="copyToClipboard(item.text)">复制到剪贴板</button>
+                                <button style="margin-left: 10px;" @click="saveToFile(item.text, 'json')">保存为文件</button>
+                            </span>
                         </h3>
                         <pre>{{ item.text }}</pre>
                     </div>
@@ -52,7 +55,10 @@
                     <div v-for="item in taskParams.yamlItems" :key="item.title" class="result-item">
                         <h3 style="display: flex; justify-content: space-between;">
                             {{ item.title }}
-                            <button @click="copyToClipboard(item.text)">复制到剪贴板</button>
+                            <span style="margin-left: 10px;">
+                                <button @click="copyToClipboard(item.text)">复制到剪贴板</button>
+                                <button style="margin-left: 10px;" @click="saveToFile(item.text, 'yaml')">保存为文件</button>
+                            </span>
                         </h3>
                         <pre>{{ item.text }}</pre>
                     </div>
@@ -230,6 +236,8 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
     const { url, params } = parseUrl(currentUrl)
     debugLog('url', url)
     debugLog('params', params)
+
+    taskParams.name = params.name
     if (curPage === '任务详情') {
         debugLog('任务详情')
         // 解析currentUrl，获取任务参数 https://console.bce.baidu.com/aihc/infoTaskIndex/detail?clusterUuid=cce-0a5oqsgp&k8sNamespace=default&k8sName=sglang-r1-distill-qwen-14b-a10-2&kind=PyTorchJob&status=Running&name=sglang-r1-distill-qwen-14b-a10-2&jobId=pytorchjob-5c25f154-3104-4507-8259-fa7a357fd44c&queueID=default
@@ -375,6 +383,7 @@ const taskParams = reactive({
     priority: 'medium',
     customParams: '',
     generated: '',
+    name: '',
     jsonItems: [] as { title: string, text: string }[],
     yamlItems: [] as { title: string, text: string }[],
     cliItems: [] as { title: string, text: string, doc?: string }[],
@@ -385,6 +394,24 @@ const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
     showMessage('success', '已复制到剪贴板')
 }
+
+const saveToFile = (content: string, type: 'json' | 'yaml') => {
+    const name = taskParams.name
+    try {
+        const fileName = `${name}.${type}`;
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('保存文件失败:', error);
+    }
+};
 
 const showMessage = (type: 'success' | 'error', text: string) => {
     message.value = { type, text }

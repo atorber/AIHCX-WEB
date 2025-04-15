@@ -92,6 +92,14 @@ Learn more about the recommended Project Setup and IDE Support in the [Vue Docs 
 
 ## 更新日志
 
+### 0.3.0
+
+- 新增JSON参数、YAML参数保存为文件
+
+### 0.2.0
+
+- 新增创建任务CLI命令生成
+
 ### 0.1.3
 
 - 修复样式影响其他网站问题
