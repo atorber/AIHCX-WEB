@@ -96,6 +96,10 @@ Learn more about the recommended Project Setup and IDE Support in the [Vue Docs 
 cd dist && zip -r ../aihc-helper-extension.zip . -x "*.DS_Store" "*.git*"
 ```
 
+## TODO
+
+- 增加CLI工具版本信息
+
 ## 更新日志
 
 ### 0.4.1
