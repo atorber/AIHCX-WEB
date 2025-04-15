@@ -89,3 +89,10 @@ Learn more about the recommended Project Setup and IDE Support in the [Vue Docs 
 
 /Users/luyuchao/Documents/GitHub/AIHCX-WEB/extension/dist.crx
 ```
+
+## 更新日志
+
+### 0.1.3
+
+- 修复样式影响其他网站问题
+- 限定插件仅在百度云控制台生效

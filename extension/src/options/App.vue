@@ -92,7 +92,7 @@ const saveSettings = () => {
 }
 </script>
 
-<style>
+<style scoped>
 .options-container {
   max-width: 800px;
   margin: 0 auto;
@@ -122,7 +122,7 @@ const saveSettings = () => {
   box-sizing: border-box;
 }
 
-button {
+.options-form button {
   padding: 10px 20px;
   background-color: #4285f4;
   color: white;
@@ -132,8 +132,9 @@ button {
   font-size: 14px;
 }
 
-button:hover {
+.options-form button:hover {
   background-color: #3367d6;
+  color: white;
 }
 
 .status-message {
