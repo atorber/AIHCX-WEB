@@ -9,6 +9,8 @@
             <div v-if="isSupportedPage" class="tabs">
                 <button v-if="taskParams.cliItems.length > 0" :class="{ active: activeTab === 'cli' }"
                     @click="activeTab = 'cli'">CLI命令</button>
+                <button v-if="taskParams.commandScript" :class="{ active: activeTab === 'commandScript' }"
+                    @click="activeTab = 'commandScript'">启动命令</button>
                 <button v-if="taskParams.jsonItems.length > 0" :class="{ active: activeTab === 'json' }"
                     @click="activeTab = 'json'">JSON参数</button>
                 <button v-if="taskParams.yamlItems.length > 0" :class="{ active: activeTab === 'yaml' }"
@@ -32,6 +34,23 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 启动命令选项卡 -->
+            <div v-if="activeTab === 'commandScript'" class="tab-content">
+                <div v-if="taskParams.commandScript" class="result-container">
+                    <div class="result-item">
+                        <h3 style="display: flex; justify-content: space-between;">
+                            任务启动命令
+                            <span style="margin-left: 10px;">
+                                <button @click="copyToClipboard(taskParams.commandScript)">复制到剪贴板</button>
+                                <button style="margin-left: 10px;" @click="saveToFile(taskParams.commandScript, 'txt')">保存为文件</button>
+                            </span>
+                        </h3>
+                        <pre>{{ taskParams.commandScript }}</pre>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- JSON格式选项卡 -->
             <div v-if="activeTab === 'json'" class="tab-content">
@@ -272,11 +291,12 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
             }
 
             let taskInfo;
-            let requestParams = {};
+            let requestParams:any = {};
             try {
                 taskInfo = JSON.parse(data.result.rawRequest);
                 debugLog('解析后的任务信息:', taskInfo);
                 requestParams = formatRequestParams(taskInfo)
+                taskParams.commandScript = requestParams.jobSpec.command
                 console.log('requestParams', requestParams)
             } catch (e) {
                 const error = e as Error;
@@ -384,6 +404,7 @@ const taskParams = reactive({
     customParams: '',
     generated: '',
     name: '',
+    commandScript: '',
     jsonItems: [] as { title: string, text: string }[],
     yamlItems: [] as { title: string, text: string }[],
     cliItems: [] as { title: string, text: string, doc?: string }[],
@@ -395,7 +416,7 @@ const copyToClipboard = (text: string) => {
     showMessage('success', '已复制到剪贴板')
 }
 
-const saveToFile = (content: string, type: 'json' | 'yaml') => {
+const saveToFile = (content: string, type: 'json' | 'yaml' | 'txt') => {
     const name = taskParams.name
     try {
         const fileName = `${name}.${type}`;

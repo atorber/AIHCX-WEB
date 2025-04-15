@@ -401,8 +401,7 @@ export const generateCLICommand = (taskInfo: any) => {
     if (taskInfo.jobSpec.command.length < 100) {
       cliCommand += `    --command "$(printf "${taskInfo.jobSpec.command}")"`;
     } else {
-      cliCommand += `    --command "sleep 3d" \\\n`;
-      cliCommand += `    --script-file command.txt`;
+      cliCommand += `    --script-file command.txt(启动命令过长，请保存为文件，并使用--script-file指定文件路径)`;
     }
   }
 

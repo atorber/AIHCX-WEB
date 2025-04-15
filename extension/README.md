@@ -90,7 +90,17 @@ Learn more about the recommended Project Setup and IDE Support in the [Vue Docs 
 /Users/luyuchao/Documents/GitHub/AIHCX-WEB/extension/dist.crx
 ```
 
+## 打包zip文件
+
+```
+cd dist && zip -r ../aihc-helper-extension.zip . -x "*.DS_Store" "*.git*"
+```
+
 ## 更新日志
+
+### 0.4.0
+
+- 新增保存启动命令为文件操作，启动命令大于100个字符时生成命令默认使用--script-file
 
 ### 0.3.0
 
