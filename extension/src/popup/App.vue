@@ -25,7 +25,7 @@
                         <h3 style="display: flex; justify-content: space-between;">
                             {{ item.title }}
                             <span style="margin-left: 10px;">
-                                <button style="margin-left: 10px;" @click="copyToClipboard(item.text)">复制到剪贴板</button>
+                                <button style="margin-left: 10px;" @click="copyToClipboard(item.text)">复制命令到剪贴板</button>
                                 <button style="margin-left: 10px;" v-if="item.doc"
                                     @click="openUrl(item.doc)">CLI使用手册</button>
                             </span>
@@ -114,6 +114,10 @@
                         <span v-if="name == '任务列表'" class="item-hint">
                             <i class="hint-icon">ℹ️</i>
                             需要下拉选中一个资源池
+                        </span>
+                        <span v-if="name == '任务详情'" class="item-hint">
+                            <i class="hint-icon">ℹ️</i>
+                            生成创建任务CLI命令、保存参数为文件
                         </span>
                     </li>
                 </ul>
@@ -213,6 +217,10 @@ const checkCurPage = () => {
             if (currentUrl.startsWith(key)) {
                 debugLog(`匹配成功`, { pattern: key, page: value })
                 curPage.value = value
+                if (value == '任务列表' && currentUrl.includes('?clusters=all')) {
+                    matched = false
+                    break
+                }
                 matched = true
                 await handleFetchUrl(value, currentUrl)
                 break
@@ -315,12 +323,12 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
             })
 
             taskParams.jsonItems.push({
-                title: '创建任务',
+                title: '创建任务Body参数',
                 text: JSON.stringify(requestParams, null, 2)
             })
 
             taskParams.yamlItems.push({
-                title: '创建任务',
+                title: '创建任务Body参数',
                 text: generateYAML(requestParams)
             })
         } catch (error) {

@@ -278,36 +278,6 @@ export const generateYAML = (data: any) => {
   });
 }
 
-// 获取GPU类型的简称
-const getGpuTypeShortName = (gpuType: string) => {
-  const gpuMapping: Record<string, string> = {
-    'nvidia-v100': 'v100',
-    'nvidia-a100': 'a100',
-    'nvidia-a800': 'a800',
-    'nvidia-a10': 'a10',
-    'nvidia-a30': 'a30',
-    'nvidia-a40': 'a40',
-    'nvidia-h800': 'h800',
-    'nvidia-h100': 'h100',
-    'nvidia-l4': 'l4',
-    'kunlunxin-p800': 'klx-p800',
-    'kunlunxin-p100': 'klx-p100',
-    'kunlunxin-p920': 'klx-p920',
-    'iluvatar-bi': 'bi',
-    'iluvatar-pigeon': 'pigeon'
-  };
-
-  const lowerType = gpuType.toLowerCase();
-
-  for (const [key, shortName] of Object.entries(gpuMapping)) {
-    if (lowerType.includes(key)) {
-      return shortName;
-    }
-  }
-
-  return lowerType;
-}
-
 export const generateCLICommand = (taskInfo: any) => {
   // 生成CLI命令
   let cliCommand = `aihc job create --name ${taskInfo.name} \\
@@ -401,7 +371,7 @@ export const generateCLICommand = (taskInfo: any) => {
     if (taskInfo.jobSpec.command.length < 100) {
       cliCommand += `    --command "$(printf "${taskInfo.jobSpec.command}")"`;
     } else {
-      cliCommand += `    --script-file command.txt(启动命令过长，请保存为文件，并使用--script-file指定文件路径)`;
+      cliCommand += `    --script-file ${taskInfo.name}.txt(启动命令过长，请保存为文件，并使用--script-file指定文件路径)`;
     }
   }
 
