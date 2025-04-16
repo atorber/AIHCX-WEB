@@ -63,6 +63,6 @@ export default defineConfig({
     }),
   ],
   build: {
-    outDir: 'backend/dist', // 将编译输出目录设置为 'custom-dist'
+    outDir: 'dist', // 将编译输出目录设置为 'custom-dist'
   },
 })
