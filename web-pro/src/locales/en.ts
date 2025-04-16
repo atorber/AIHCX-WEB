@@ -44,7 +44,8 @@ export default {
     refresh: 'Refresh',
     fullscreen: 'Fullscreen',
     size: 'Size',
-    columnSetting: 'Column setting'
+    columnSetting: 'Column setting',
+    comingSoon: 'Coming soon'
   },
   lock: {
     lockScreen: 'Lock screen',
@@ -118,7 +119,9 @@ export default {
   },
   router: {
     login: 'Login',
+    appMarket: 'App market',
     devTool: 'Developer tool',
+    jobCommand: 'Job command',
     level: 'Multi level menu',
     menu: 'Menu',
     menu1: 'Menu1',

@@ -44,7 +44,8 @@ export default {
     refresh: '刷新',
     fullscreen: '全屏',
     size: '尺寸',
-    columnSetting: '列设置'
+    columnSetting: '列设置',
+    comingSoon: '敬请期待'
   },
   lock: {
     lockScreen: '锁定屏幕',
@@ -118,7 +119,9 @@ export default {
   },
   router: {
     login: '登录',
+    appMarket: '应用市场',
     devTool: '开发者工具',
+    jobCommand: '任务命令',
     level: '多级菜单',
     menu: '菜单',
     menu1: '菜单1',

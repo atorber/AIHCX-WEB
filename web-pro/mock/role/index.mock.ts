@@ -4,6 +4,62 @@ import { SUCCESS_CODE } from '@/constants'
 const timeout = 1000
 
 const adminList = [
+  // {
+  //   path: '/app',
+  //   component: 'views/Level/Menu2',
+  //   redirect: '/app',
+  //   name: 'AppMarket',
+  //   meta: {
+  //     title: 'router.appMarket',
+  //     icon: 'carbon:skill-level-advanced'
+  //   }
+  // },
+  {
+    path: '/app',
+    component: '#',
+    redirect: '/app/index',
+    name: 'AppMarket',
+    meta: {},
+    children: [
+      {
+        path: 'index',
+        component: 'views/AppMarket/Index',
+        name: 'AppMarketHome',
+        meta: {
+          title: 'router.appMarket',
+          icon: 'carbon:skill-level-advanced'
+        }
+      }
+    ]
+  },
+  {
+    path: '/dev',
+    component: '#',
+    redirect: '/dev/menu2',
+    name: 'DevTool',
+    meta: {
+      title: 'router.devTool',
+      icon: 'carbon:skill-level-advanced'
+    },
+    children: [
+      {
+        path: 'menu22',
+        name: 'Menu22Demo',
+        component: 'views/DevTool/Index',
+        meta: {
+          title: 'router.jobCommand'
+        }
+      },
+      {
+        path: 'menu33',
+        name: 'Menu33Demo',
+        component: 'views/DevTool/Index',
+        meta: {
+          title: 'router.menu11'
+        }
+      }
+    ]
+  },
   {
     path: '/level',
     component: '#',

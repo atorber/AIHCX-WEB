@@ -70,6 +70,7 @@
     "@types/qrcode": "^1.5.5",
     "@types/qs": "^6.9.11",
     "@types/sortablejs": "^1.15.7",
+    "@types/vue-router": "^2.0.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "@unocss/transformer-variant-group": "^0.58.5",

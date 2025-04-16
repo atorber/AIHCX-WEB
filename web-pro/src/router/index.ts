@@ -1,6 +1,6 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
-import type { RouteRecordRaw } from 'vue-router'
-import type { App } from 'vue'
+import { createRouter, createWebHashHistory } from 'vue-router/dist/vue-router.esm-bundler'
+import type { RouteRecordRaw } from 'vue-router/dist/vue-router.esm-bundler'
+import type { App } from 'vue/dist/vue.esm-bundler'
 import { Layout, getParentLayout } from '@/utils/routerHelper'
 import { useI18n } from '@/hooks/web/useI18n'
 

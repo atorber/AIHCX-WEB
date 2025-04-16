@@ -1,4 +1,4 @@
-import type { App } from 'vue'
+import type { App } from 'vue/dist/vue.esm-bundler'
 import { Icon } from './Icon'
 import { BaseButton } from './Button'
 
