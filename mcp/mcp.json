@@ -1,0 +1,10 @@
+{
+    "mcpServers": {
+        "aihc-job": {
+            "command": "/Users/luyuchao/miniconda3/envs/aihc_env/bin/python",
+            "args": [
+                "/Users/luyuchao/Documents/GitHub/AIHCX-WEB/mcp/job.py"
+            ]
+        }
+    }
+}

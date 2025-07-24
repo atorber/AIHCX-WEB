@@ -1,0 +1,41 @@
+{
+    "name": "qwen2-vl-test-4-copy11",
+    "queue": "default",
+    "jobFramework": "PyTorchJob",
+    "jobSpec": {
+      "image": "ccr-2ccrtest-vpc.cnc.bj.baidubce.com/yetao04-ca-test/qwen2vl_p800_image:v1.0",
+      "replicas": 4,
+      "resources": [
+        {
+          "name": "kunlunxin.com/xpu",
+          "quantity": 8
+        }
+      ],
+      "command": "cd /data && mkdir qwen2-vl\n\ncp /mnt/ca-p800-poc/llava-en-zh-300k.tar.gz /data/qwen2-vl/\n#cp /mnt/ca-p800-poc/llava-en-zh-2k.tar.gz /data/qwen2-vl/\ncd /data/qwen2-vl\n\ntar -zxvf llava-en-zh-300k.tar.gz && rm llava-en-zh-300k.tar.gz\n#tar -zxvf llava-en-zh-2k.tar.gz && rm llava-en-zh-2k.tar.gz\n\n# code\ncp /mnt/ca-p800-poc/models/qwen2-vl.tar.gz /home/\ncd /home/\ntar -zxvf qwen2-vl.tar.gz && rm qwen2-vl.tar.gz\n\n# model weights\ncp /mnt/ca-p800-poc/Qwen2-VL-7B-Instruct.tar.gz .\ntar -zxvf Qwen2-VL-7B-Instruct.tar.gz && rm Qwen2-VL-7B-Instruct.tar.gz\n\n#train lora\ncd /home/qwen2-vl/\nconda activate llamafactory_env\nexport PATH=/root/miniconda/envs/llamafactory_env/bin:$PATH\nexport PYTHONPATH=$PYTHONPATH:/home/qwen2-vl/\n\napt-get install dnsutils -y\npip install deepspeed==0.14.5\n\nsource env.sh\nnohup bash dist_train.sh lora &\n\nsleep 100000",
+      "envs": [],
+      "enableRDMA": true,
+      "hostNetwork": true,
+      "imageConfig": {
+        "username": "yetao04",
+        "password": "P800@caTest828"
+      }
+    },
+    "faultTolerance": false,
+    "labels": [],
+    "priority": "high",
+    "datasources": [
+      {
+        "type": "pfsl1",
+        "name": "pfs-zesqWP",
+        "sourcePath": "/yetao04",
+        "mountPath": "/mnt"
+      },
+      {
+        "type": "hostpath",
+        "name": "hostpath-1",
+        "sourcePath": "/ssd1",
+        "mountPath": "/data"
+      }
+    ],
+    "enableBccl": false
+  }

@@ -1,0 +1,2 @@
+mcp[cli]>=1.2.0
+bce-python-sdk-next>=100.9.25.19

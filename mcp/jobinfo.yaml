@@ -1,0 +1,60 @@
+name: qwen2-vl-test-4-copy14
+queue: default
+jobFramework: PyTorchJob
+jobSpec:
+  image: ccr-2ccrtest-vpc.cnc.bj.baidubce.com/yetao04-ca-test/qwen2vl_p800_image:v1.0
+  replicas: 4
+  resources:
+    - name: kunlunxin.com/xpu
+      quantity: 8
+  command: |-
+    cd /data && mkdir qwen2-vl
+
+    cp /mnt/ca-p800-poc/llava-en-zh-300k.tar.gz /data/qwen2-vl/
+    #cp /mnt/ca-p800-poc/llava-en-zh-2k.tar.gz /data/qwen2-vl/
+    cd /data/qwen2-vl
+
+    tar -zxvf llava-en-zh-300k.tar.gz && rm llava-en-zh-300k.tar.gz
+    #tar -zxvf llava-en-zh-2k.tar.gz && rm llava-en-zh-2k.tar.gz
+
+    # code
+    cp /mnt/ca-p800-poc/models/qwen2-vl.tar.gz /home/
+    cd /home/
+    tar -zxvf qwen2-vl.tar.gz && rm qwen2-vl.tar.gz
+
+    # model weights
+    cp /mnt/ca-p800-poc/Qwen2-VL-7B-Instruct.tar.gz .
+    tar -zxvf Qwen2-VL-7B-Instruct.tar.gz && rm Qwen2-VL-7B-Instruct.tar.gz
+
+    #train lora
+    cd /home/qwen2-vl/
+    conda activate llamafactory_env
+    export PATH=/root/miniconda/envs/llamafactory_env/bin:$PATH
+    export PYTHONPATH=$PYTHONPATH:/home/qwen2-vl/
+
+    apt-get install dnsutils -y
+    pip install deepspeed==0.14.5
+
+    source env.sh
+    nohup bash dist_train.sh lora &
+
+    sleep 100000
+  envs: []
+  enableRDMA: true
+  hostNetwork: true
+  imageConfig:
+    username: yetao04
+    password: P800@caTest828
+faultTolerance: false
+labels: []
+priority: high
+datasources:
+  - type: pfsl1
+    name: pfs-zesqWP
+    sourcePath: /yetao04
+    mountPath: /mnt
+  - type: hostpath
+    name: hostpath-1
+    sourcePath: /ssd1
+    mountPath: /data
+enableBccl: false
