@@ -1,0 +1,607 @@
+{
+  "matchedCards": 22,
+  "changedCards": 22,
+  "onlyInJoined": 2,
+  "onlyInNew": 49,
+  "changes": [
+    {
+      "cardId": 16021911,
+      "cardName": "Qwen2.5-VL-72B-Instruct",
+      "changes": [
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "关键词(选填)",
+          "oldValue": "",
+          "newValue": "昆仑芯",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "新增昆仑芯",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 5770021,
+      "cardName": "Qwen2.5-VL-32B-Instruct",
+      "changes": [
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "关键词(选填)",
+          "oldValue": "",
+          "newValue": "昆仑芯",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "新增昆仑芯",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 7187764,
+      "cardName": "Qwen2.5-VL-7B-Instruct",
+      "changes": [
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "关键词(选填)",
+          "oldValue": "",
+          "newValue": "昆仑芯",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "新增昆仑芯",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 7837704,
+      "cardName": "Qwen2.5-14B-Instruct",
+      "changes": [
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "关键词(选填)",
+          "oldValue": "",
+          "newValue": "昆仑芯",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "新增昆仑芯",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 12420722,
+      "cardName": "Qwen2.5-7B-Instruct",
+      "changes": [
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "关键词(选填)",
+          "oldValue": "",
+          "newValue": "昆仑芯",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "新增昆仑芯",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 4217404,
+      "cardName": "Qwen2.5-72B-Instruct",
+      "changes": [
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "关键词(选填)",
+          "oldValue": "",
+          "newValue": "昆仑芯",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "新增昆仑芯",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 4856713,
+      "cardName": "Qwen2.5-32B-Instruct",
+      "changes": [
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "关键词(选填)",
+          "oldValue": "",
+          "newValue": "昆仑芯",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "新增昆仑芯",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 4651335,
+      "cardName": "SparseDrive-加速版",
+      "changes": [
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "在开发机中打开",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 4746026,
+      "cardName": "SparseDrive",
+      "changes": [
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "在开发机中打开",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 10983140,
+      "cardName": "ERNIE-4.5-0.3B",
+      "changes": [
+        {
+          "field": "关键词(选填)",
+          "oldValue": "MoE",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "热度(选填)",
+          "oldValue": "NEW",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "官网文档链接(必填)",
+          "oldValue": "https://cloud.baidu.com/doc/AIHC/s/rmccrn9ly",
+          "newValue": "https://cloud.baidu.com/doc/AIHC/s/pmcshm3tn",
+          "type": "changed"
+        },
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "取消NEW",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 8772552,
+      "cardName": "ERNIE-4.5-0.3B-Base",
+      "changes": [
+        {
+          "field": "关键词(选填)",
+          "oldValue": "MoE",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "热度(选填)",
+          "oldValue": "NEW",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "官网文档链接(必填)",
+          "oldValue": "https://cloud.baidu.com/doc/AIHC/s/rmccrn9ly",
+          "newValue": "https://cloud.baidu.com/doc/AIHC/s/6mcsi4ppk",
+          "type": "changed"
+        },
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "取消NEW",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 12366030,
+      "cardName": "ERNIE-4.5-21B-A3B",
+      "changes": [
+        {
+          "field": "关键词(选填)",
+          "oldValue": "MoE",
+          "newValue": "MOE",
+          "type": "changed"
+        },
+        {
+          "field": "热度(选填)",
+          "oldValue": "NEW",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "官网文档链接(必填)",
+          "oldValue": "https://cloud.baidu.com/doc/AIHC/s/rmccrn9ly",
+          "newValue": "https://cloud.baidu.com/doc/AIHC/s/7mcsifypr",
+          "type": "changed"
+        },
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "取消NEW",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 7341658,
+      "cardName": "ERNIE-4.5-21B-A3B-Base",
+      "changes": [
+        {
+          "field": "关键词(选填)",
+          "oldValue": "MoE",
+          "newValue": "MOE",
+          "type": "changed"
+        },
+        {
+          "field": "热度(选填)",
+          "oldValue": "NEW",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "官网文档链接(必填)",
+          "oldValue": "https://cloud.baidu.com/doc/AIHC/s/rmccrn9ly",
+          "newValue": "https://cloud.baidu.com/doc/AIHC/s/Dmcsi528y",
+          "type": "changed"
+        },
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "取消NEW",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 12419158,
+      "cardName": "ERNIE-4.5-VL-28B-A3B",
+      "changes": [
+        {
+          "field": "关键词(选填)",
+          "oldValue": "MoE",
+          "newValue": "MOE",
+          "type": "changed"
+        },
+        {
+          "field": "热度(选填)",
+          "oldValue": "NEW",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "官网文档链接(必填)",
+          "oldValue": "https://cloud.baidu.com/doc/AIHC/s/rmccrn9ly",
+          "newValue": "https://cloud.baidu.com/doc/AIHC/s/bmcsj10gj",
+          "type": "changed"
+        },
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "取消NEW",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 3019400,
+      "cardName": "ERNIE-4.5-VL-28B-A3B-Base",
+      "changes": [
+        {
+          "field": "关键词(选填)",
+          "oldValue": "MoE",
+          "newValue": "MOE",
+          "type": "changed"
+        },
+        {
+          "field": "热度(选填)",
+          "oldValue": "NEW",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "官网文档链接(必填)",
+          "oldValue": "https://cloud.baidu.com/doc/AIHC/s/rmccrn9ly",
+          "newValue": "https://cloud.baidu.com/doc/AIHC/s/Ymcsj1dxp",
+          "type": "changed"
+        },
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "取消NEW",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 8768990,
+      "cardName": "ERNIE-4.5-300B-A47B",
+      "changes": [
+        {
+          "field": "关键词(选填)",
+          "oldValue": "MoE",
+          "newValue": "MOE",
+          "type": "changed"
+        },
+        {
+          "field": "热度(选填)",
+          "oldValue": "NEW",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "取消NEW",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 65500,
+      "cardName": "ERNIE-4.5-VL-424B-A47B",
+      "changes": [
+        {
+          "field": "关键词(选填)",
+          "oldValue": "MoE",
+          "newValue": "MOE",
+          "type": "changed"
+        },
+        {
+          "field": "热度(选填)",
+          "oldValue": "NEW",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 13959977,
+      "cardName": "ERNIE-4.5-300B-A47B-Base",
+      "changes": [
+        {
+          "field": "关键词(选填)",
+          "oldValue": "MoE",
+          "newValue": "MOE",
+          "type": "changed"
+        },
+        {
+          "field": "热度(选填)",
+          "oldValue": "NEW",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "取消NEW",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 9209499,
+      "cardName": "ERNIE-4.5-VL-424B-A47B-Base",
+      "changes": [
+        {
+          "field": "关键词(选填)",
+          "oldValue": "MoE",
+          "newValue": "MOE",
+          "type": "changed"
+        },
+        {
+          "field": "热度(选填)",
+          "oldValue": "NEW",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "取消NEW",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 7545606,
+      "cardName": "RDT-Maniskill",
+      "changes": [
+        {
+          "field": "热度(选填)",
+          "oldValue": "NEW",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "取消NEW",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 6603873,
+      "cardName": "π₀-ALOHA",
+      "changes": [
+        {
+          "field": "热度(选填)",
+          "oldValue": "NEW",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "取消NEW",
+          "type": "added"
+        }
+      ]
+    },
+    {
+      "cardId": 15624936,
+      "cardName": "π₀-FAST-LIBERO ",
+      "changes": [
+        {
+          "field": "热度(选填)",
+          "oldValue": "NEW",
+          "newValue": "",
+          "type": "removed"
+        },
+        {
+          "field": "操作方式(必填)",
+          "oldValue": "",
+          "newValue": "部署",
+          "type": "added"
+        },
+        {
+          "field": "变更说明",
+          "oldValue": "",
+          "newValue": "取消NEW",
+          "type": "added"
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "added": 48,
+    "removed": 15,
+    "changed": 14
+  }
+}

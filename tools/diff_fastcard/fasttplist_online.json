@@ -1,0 +1,779 @@
+{
+    "data": {
+        "count": 64,
+        "list": [
+            {
+                "templateID": 11045562,
+                "templateName": "GPT-OSS-20B",
+                "shortDesc": "GPT OSS 是 OpenAI 推出的 重量级开放模型，面向强推理、智能体任务以及多样化开发场景。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/Vme16q22e",
+                "tags": [
+                    {
+                        "tagId": 100001,
+                        "value": "LLM"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 100006,
+                        "value": "OpenAI"
+                    },
+                    {
+                        "tagId": 100002,
+                        "value": "MoE"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 800002
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1754623288,
+                "mtime": 1754623289
+            },
+            {
+                "templateID": 7950328,
+                "templateName": "GPT-OSS-120B",
+                "shortDesc": "GPT OSS 是 OpenAI 推出的 重量级开放模型，面向强推理、智能体任务以及多样化开发场景。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/Ame19ud38",
+                "tags": [
+                    {
+                        "tagId": 100001,
+                        "value": "LLM"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 100006,
+                        "value": "OpenAI"
+                    },
+                    {
+                        "tagId": 100002,
+                        "value": "MoE"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 800001
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1754623287,
+                "mtime": 1754623287
+            },
+            {
+                "templateID": 16021911,
+                "templateName": "Qwen2.5-VL-72B-Instruct",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-qwen.png",
+                "shortDesc": "Qwen2.5-VL 是通义千问推出的多模态大模型，在 Qwen-VL 的基础上进行了升级，增强了图像理解、文本理解和多模态交互能力，能够处理更复杂的视觉-语言任务。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/Lmdskrfll",
+                "tags": [
+                    {
+                        "tagId": 200005,
+                        "value": "VLM"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 100003,
+                        "value": "通义千问"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 700007
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1754039352,
+                "mtime": 1754039353
+            },
+            {
+                "templateID": 5770021,
+                "templateName": "Qwen2.5-VL-32B-Instruct",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-qwen.png",
+                "shortDesc": "Qwen2.5-VL 是通义千问推出的多模态大模型，在 Qwen-VL 的基础上进行了升级，增强了图像理解、文本理解和多模态交互能力，能够处理更复杂的视觉-语言任务。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/tmdskpi4r",
+                "tags": [
+                    {
+                        "tagId": 200005,
+                        "value": "VLM"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 100003,
+                        "value": "通义千问"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 700006
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1754039351,
+                "mtime": 1754039351
+            },
+            {
+                "templateID": 7187764,
+                "templateName": "Qwen2.5-VL-7B-Instruct",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-qwen.png",
+                "shortDesc": "Qwen2.5-VL 是通义千问推出的多模态大模型，在 Qwen-VL 的基础上进行了升级，增强了图像理解、文本理解和多模态交互能力，能够处理更复杂的视觉-语言任务。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/fmdsjsrvz",
+                "tags": [
+                    {
+                        "tagId": 200005,
+                        "value": "VLM"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 100003,
+                        "value": "通义千问"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 700005
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1754039349,
+                "mtime": 1754039350
+            },
+            {
+                "templateID": 7837704,
+                "templateName": "Qwen2.5-14B-Instruct",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-qwen.png",
+                "shortDesc": "Qwen2.5 是通义千问发布的大模型系列，包含多个基础语言模型和指令微调模型，参数量范围从 0.5B 到 720 亿。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/Rmdh1z7c6",
+                "tags": [
+                    {
+                        "tagId": 100001,
+                        "value": "LLM"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 100003,
+                        "value": "通义千问"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 700003
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1753774470,
+                "mtime": 1753774470
+            },
+            {
+                "templateID": 12420722,
+                "templateName": "Qwen2.5-7B-Instruct",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-qwen.png",
+                "shortDesc": "Qwen2.5 是通义千问发布的大模型系列，包含多个基础语言模型和指令微调模型，参数量范围从 0.5B 到 720 亿。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/Qmdgrom4j",
+                "tags": [
+                    {
+                        "tagId": 100001,
+                        "value": "LLM"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 100003,
+                        "value": "通义千问"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 700004
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1753774468,
+                "mtime": 1753774469
+            },
+            {
+                "templateID": 4217404,
+                "templateName": "Qwen2.5-72B-Instruct",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-qwen.png",
+                "shortDesc": "Qwen2.5 是通义千问发布的大模型系列，包含多个基础语言模型和指令微调模型，参数量范围从 0.5B 到 720 亿。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/xmdh24giw",
+                "tags": [
+                    {
+                        "tagId": 100001,
+                        "value": "LLM"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 100003,
+                        "value": "通义千问"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 700001
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1753774420,
+                "mtime": 1753774420
+            },
+            {
+                "templateID": 4856713,
+                "templateName": "Qwen2.5-32B-Instruct",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-qwen.png",
+                "shortDesc": "Qwen2.5 是通义千问发布的大模型系列，包含多个基础语言模型和指令微调模型，参数量范围从 0.5B 到 720 亿。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/smdh22ui3",
+                "tags": [
+                    {
+                        "tagId": 100001,
+                        "value": "LLM"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 100003,
+                        "value": "通义千问"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 700002
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1753774418,
+                "mtime": 1753774419
+            },
+            {
+                "templateID": 4651335,
+                "templateName": "SparseDrive-加速版",
+                "shortDesc": "通过稀疏场景表示来实现端到端自动驾驶新范式，兼具SOTA的性能和易于部署的优点，加速版比原版性能在部分环境中有50%以上的提升",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/Hmcn9ozss",
+                "tags": [
+                    {
+                        "tagId": 200003,
+                        "value": "智驾端到端"
+                    },
+                    {
+                        "tagId": 400003,
+                        "value": "Python"
+                    },
+                    {
+                        "tagId": 500002,
+                        "value": "HOT"
+                    },
+                    {
+                        "tagId": 300002,
+                        "value": "自动驾驶"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10003,
+                        "linkID": 100003
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1753173182,
+                "mtime": 1753173182
+            },
+            {
+                "templateID": 4746026,
+                "templateName": "SparseDrive",
+                "shortDesc": "通过稀疏场景表示来实现端到端自动驾驶新范式，兼具SOTA的性能和易于部署的优点",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/7mcna186l",
+                "tags": [
+                    {
+                        "tagId": 200003,
+                        "value": "智驾端到端"
+                    },
+                    {
+                        "tagId": 400003,
+                        "value": "Python"
+                    },
+                    {
+                        "tagId": 500002,
+                        "value": "HOT"
+                    },
+                    {
+                        "tagId": 300002,
+                        "value": "自动驾驶"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10003,
+                        "linkID": 100002
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1753173180,
+                "mtime": 1753704837
+            },
+            {
+                "templateID": 10983140,
+                "templateName": "ERNIE-4.5-0.3B",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-ernie.png",
+                "shortDesc": "ERNIE 4.5 是一个全新的大规模多模态模型系列，包含 10 个不同的变体。该系列由拥有 470 亿和 30 亿激活参数的混合专家 (MoE) 模型组成，其中最大的模型总参数量达到 4280 亿，此外还有一个包含 3 亿参数的稠密模型。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/rmccrn9ly",
+                "tags": [
+                    {
+                        "tagId": 100005,
+                        "value": "文心大模型"
+                    },
+                    {
+                        "tagId": 100002,
+                        "value": "MoE"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 100001,
+                        "value": "LLM"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 600010
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1752221812,
+                "mtime": 1752221813
+            },
+            {
+                "templateID": 8772552,
+                "templateName": "ERNIE-4.5-0.3B-Base",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-ernie.png",
+                "shortDesc": "ERNIE 4.5 是一个全新的大规模多模态模型系列，包含 10 个不同的变体。该系列由拥有 470 亿和 30 亿激活参数的混合专家 (MoE) 模型组成，其中最大的模型总参数量达到 4280 亿，此外还有一个包含 3 亿参数的稠密模型。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/rmccrn9ly",
+                "tags": [
+                    {
+                        "tagId": 100005,
+                        "value": "文心大模型"
+                    },
+                    {
+                        "tagId": 100002,
+                        "value": "MoE"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 100001,
+                        "value": "LLM"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 600009
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1752221811,
+                "mtime": 1752221811
+            },
+            {
+                "templateID": 12366030,
+                "templateName": "ERNIE-4.5-21B-A3B",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-ernie.png",
+                "shortDesc": "ERNIE 4.5 是一个全新的大规模多模态模型系列，包含 10 个不同的变体。该系列由拥有 470 亿和 30 亿激活参数的混合专家 (MoE) 模型组成，其中最大的模型总参数量达到 4280 亿，此外还有一个包含 3 亿参数的稠密模型。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/rmccrn9ly",
+                "tags": [
+                    {
+                        "tagId": 100005,
+                        "value": "文心大模型"
+                    },
+                    {
+                        "tagId": 100002,
+                        "value": "MoE"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 100001,
+                        "value": "LLM"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 600008
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1752221809,
+                "mtime": 1752221810
+            },
+            {
+                "templateID": 7341658,
+                "templateName": "ERNIE-4.5-21B-A3B-Base",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-ernie.png",
+                "shortDesc": "ERNIE 4.5 是一个全新的大规模多模态模型系列，包含 10 个不同的变体。该系列由拥有 470 亿和 30 亿激活参数的混合专家 (MoE) 模型组成，其中最大的模型总参数量达到 4280 亿，此外还有一个包含 3 亿参数的稠密模型。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/rmccrn9ly",
+                "tags": [
+                    {
+                        "tagId": 100005,
+                        "value": "文心大模型"
+                    },
+                    {
+                        "tagId": 100002,
+                        "value": "MoE"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 100001,
+                        "value": "LLM"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 600007
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1752221808,
+                "mtime": 1752221808
+            },
+            {
+                "templateID": 12419158,
+                "templateName": "ERNIE-4.5-VL-28B-A3B",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-ernie.png",
+                "shortDesc": "ERNIE 4.5 是一个全新的大规模多模态模型系列，包含 10 个不同的变体。该系列由拥有 470 亿和 30 亿激活参数的混合专家 (MoE) 模型组成，其中最大的模型总参数量达到 4280 亿，此外还有一个包含 3 亿参数的稠密模型。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/rmccrn9ly",
+                "tags": [
+                    {
+                        "tagId": 100005,
+                        "value": "文心大模型"
+                    },
+                    {
+                        "tagId": 100002,
+                        "value": "MoE"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 200005,
+                        "value": "VLM"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 600006
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1752221806,
+                "mtime": 1752221807
+            },
+            {
+                "templateID": 3019400,
+                "templateName": "ERNIE-4.5-VL-28B-A3B-Base",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-ernie.png",
+                "shortDesc": "ERNIE 4.5 是一个全新的大规模多模态模型系列，包含 10 个不同的变体。该系列由拥有 470 亿和 30 亿激活参数的混合专家 (MoE) 模型组成，其中最大的模型总参数量达到 4280 亿，此外还有一个包含 3 亿参数的稠密模型。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/rmccrn9ly",
+                "tags": [
+                    {
+                        "tagId": 100005,
+                        "value": "文心大模型"
+                    },
+                    {
+                        "tagId": 100002,
+                        "value": "MoE"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 200005,
+                        "value": "VLM"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 600005
+                    }
+                ],
+                "weight": 15,
+                "ctime": 1752221804,
+                "mtime": 1752221805
+            },
+            {
+                "templateID": 8768990,
+                "templateName": "ERNIE-4.5-300B-A47B",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-ernie.png",
+                "shortDesc": "ERNIE 4.5 是一个全新的大规模多模态模型系列，包含 10 个不同的变体。该系列由拥有 470 亿和 30 亿激活参数的混合专家 (MoE) 模型组成，其中最大的模型总参数量达到 4280 亿，此外还有一个包含 3 亿参数的稠密模型。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/rmccrn9ly",
+                "tags": [
+                    {
+                        "tagId": 100005,
+                        "value": "文心大模型"
+                    },
+                    {
+                        "tagId": 100001,
+                        "value": "LLM"
+                    },
+                    {
+                        "tagId": 100002,
+                        "value": "MoE"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 600004
+                    }
+                ],
+                "weight": 14,
+                "ctime": 1751264089,
+                "mtime": 1751340614
+            },
+            {
+                "templateID": 65500,
+                "templateName": "ERNIE-4.5-VL-424B-A47B",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-ernie.png",
+                "shortDesc": "ERNIE 4.5 是一个全新的大规模多模态模型系列，包含 10 个不同的变体。该系列由拥有 470 亿和 30 亿激活参数的混合专家 (MoE) 模型组成，其中最大的模型总参数量达到 4280 亿，此外还有一个包含 3 亿参数的稠密模型。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/Bmch6945x",
+                "tags": [
+                    {
+                        "tagId": 100005,
+                        "value": "文心大模型"
+                    },
+                    {
+                        "tagId": 100002,
+                        "value": "MoE"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 200005,
+                        "value": "VLM"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 600002
+                    }
+                ],
+                "weight": 13,
+                "ctime": 1751266306,
+                "mtime": 1751340624
+            },
+            {
+                "templateID": 13959977,
+                "templateName": "ERNIE-4.5-300B-A47B-Base",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-ernie.png",
+                "shortDesc": "ERNIE 4.5 是一个全新的大规模多模态模型系列，包含 10 个不同的变体。该系列由拥有 470 亿和 30 亿激活参数的混合专家 (MoE) 模型组成，其中最大的模型总参数量达到 4280 亿，此外还有一个包含 3 亿参数的稠密模型。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/Umccruta1",
+                "tags": [
+                    {
+                        "tagId": 100005,
+                        "value": "文心大模型"
+                    },
+                    {
+                        "tagId": 100001,
+                        "value": "LLM"
+                    },
+                    {
+                        "tagId": 100002,
+                        "value": "MoE"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 600003
+                    }
+                ],
+                "weight": 12,
+                "ctime": 1751263997,
+                "mtime": 1751340630
+            },
+            {
+                "templateID": 9209499,
+                "templateName": "ERNIE-4.5-VL-424B-A47B-Base",
+                "thumb": "https://aihclite-pub.cdn.bcebos.com/icon/tpl-ernie.png",
+                "shortDesc": "ERNIE 4.5 是一个全新的大规模多模态模型系列，包含 10 个不同的变体。该系列由拥有 470 亿和 30 亿激活参数的混合专家 (MoE) 模型组成，其中最大的模型总参数量达到 4280 亿，此外还有一个包含 3 亿参数的稠密模型。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/Dmccrxboc",
+                "tags": [
+                    {
+                        "tagId": 100005,
+                        "value": "文心大模型"
+                    },
+                    {
+                        "tagId": 100002,
+                        "value": "MoE"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 200005,
+                        "value": "VLM"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 600001
+                    }
+                ],
+                "weight": 11,
+                "ctime": 1751266287,
+                "mtime": 1751340637
+            },
+            {
+                "templateID": 7545606,
+                "templateName": "RDT-Maniskill",
+                "shortDesc": "RDT是由清华大学TSAIL小组研究开发的模仿学习模型 ，已在超过 100 万个多机器人场景上进行预训练。给定语言指令和最多三个视角的 RGB 图像，RDT 可以预测 64 个机器人动作。RDT 几乎兼容所有现代移动机械手，从单臂到双臂、从关节到 EEF、从位置到速度，甚至轮式运动。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/Kmbru9pgr",
+                "tags": [
+                    {
+                        "tagId": 200001,
+                        "value": "VLA"
+                    },
+                    {
+                        "tagId": 300001,
+                        "value": "具身智能"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 300001
+                    }
+                ],
+                "weight": 10,
+                "ctime": 1751421103,
+                "mtime": 1751421103
+            },
+            {
+                "templateID": 6603873,
+                "templateName": "π₀-ALOHA",
+                "shortDesc": "π₀-ALOHA 是由 Physical Intelligence 团队开发的开源视觉-语言-动作（VLA） 模型，旨在实现通用机器人控制。能根据语言指令和多视角 RGB 图像 预测 64 个机器人动作，适用于ALOHA机器人。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/7mbrufvy1",
+                "tags": [
+                    {
+                        "tagId": 200001,
+                        "value": "VLA"
+                    },
+                    {
+                        "tagId": 300001,
+                        "value": "具身智能"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 300002
+                    }
+                ],
+                "weight": 9,
+                "ctime": 1751421105,
+                "mtime": 1751421105
+            },
+            {
+                "templateID": 15624936,
+                "templateName": "π₀-FAST-LIBERO ",
+                "shortDesc": "π₀- FAST-LIBERO 是由 Physical Intelligence 团队开发的开源视觉-语言-动作（VLA） 模型，旨在实现通用机器人控制。采用自回归预测 + FAST（Frequency-space Action Sequence Tokenization）动作分词器，将连续动作离散化为 token 序列，能根据语言指令和多视角 RGB 图像 预测 64 个机器人动作，适用于libero机器人仿真平台。",
+                "document": "https://cloud.baidu.com/doc/AIHC/s/fmbrulnzl",
+                "tags": [
+                    {
+                        "tagId": 200001,
+                        "value": "VLA"
+                    },
+                    {
+                        "tagId": 300001,
+                        "value": "具身智能"
+                    },
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    }
+                ],
+                "linkInfo": [
+                    {
+                        "linkType": 10001,
+                        "linkID": 300004
+                    }
+                ],
+                "weight": 8,
+                "ctime": 1751421107,
+                "mtime": 1751421107
+            }
+        ]
+    },
+    "errno": 0,
+    "requestId": "ff5bb590-8fbc-7e56-fb40-72f0b7a114a0",
+    "request_id": "ff5bb590-8fbc-7e56-fb40-72f0b7a114a0"
+}

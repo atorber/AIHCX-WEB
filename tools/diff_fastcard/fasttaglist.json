@@ -1,0 +1,224 @@
+{
+    "data": {
+        "count": 22,
+        "list": [
+            {
+                "tagId": 10001,
+                "value": "部署"
+            },
+            {
+                "tagId": 10003,
+                "value": "在开发机中打开"
+            },
+            {
+                "tagId": 100000,
+                "value": "DeepSeek"
+            },
+            {
+                "tagId": 100001,
+                "value": "LLM"
+            },
+            {
+                "tagId": 100002,
+                "value": "MoE"
+            },
+            {
+                "tagId": 100003,
+                "value": "通义千问"
+            },
+            {
+                "tagId": 100004,
+                "value": "Embedding"
+            },
+            {
+                "tagId": 100005,
+                "value": "文心大模型"
+            },
+            {
+                "tagId": 100006,
+                "value": "OpenAI"
+            },
+            {
+                "tagId": 200001,
+                "value": "VLA"
+            },
+            {
+                "tagId": 200002,
+                "value": "MLLM"
+            },
+            {
+                "tagId": 200003,
+                "value": "智驾端到端"
+            },
+            {
+                "tagId": 200004,
+                "value": "智驾感知模型"
+            },
+            {
+                "tagId": 200005,
+                "value": "VLM"
+            },
+            {
+                "tagId": 300001,
+                "value": "具身智能"
+            },
+            {
+                "tagId": 300002,
+                "value": "自动驾驶"
+            },
+            {
+                "tagId": 400001,
+                "value": "Ray"
+            },
+            {
+                "tagId": 400002,
+                "value": "量化"
+            },
+            {
+                "tagId": 400003,
+                "value": "Python"
+            },
+            {
+                "tagId": 400004,
+                "value": "昆仑芯"
+            },
+            {
+                "tagId": 500001,
+                "value": "NEW"
+            },
+            {
+                "tagId": 500002,
+                "value": "HOT"
+            }
+        ],
+        "tagTypes": [
+            {
+                "tagType": "operationWay",
+                "tagTypeName": "操作方式",
+                "tagList": [
+                    {
+                        "tagId": 10001,
+                        "value": "部署"
+                    },
+                    {
+                        "tagId": 10003,
+                        "value": "在开发机中打开"
+                    }
+                ]
+            },
+            {
+                "tagType": "modelSeries",
+                "tagTypeName": "模型系列",
+                "tagList": [
+                    {
+                        "tagId": 100000,
+                        "value": "DeepSeek"
+                    },
+                    {
+                        "tagId": 100003,
+                        "value": "通义千问"
+                    },
+                    {
+                        "tagId": 100005,
+                        "value": "文心大模型"
+                    },
+                    {
+                        "tagId": 100006,
+                        "value": "OpenAI"
+                    }
+                ]
+            },
+            {
+                "tagType": "modelCategory",
+                "tagTypeName": "模型类别",
+                "tagList": [
+                    {
+                        "tagId": 100001,
+                        "value": "LLM"
+                    },
+                    {
+                        "tagId": 100004,
+                        "value": "Embedding"
+                    },
+                    {
+                        "tagId": 200001,
+                        "value": "VLA"
+                    },
+                    {
+                        "tagId": 200002,
+                        "value": "MLLM"
+                    },
+                    {
+                        "tagId": 200003,
+                        "value": "智驾端到端"
+                    },
+                    {
+                        "tagId": 200004,
+                        "value": "智驾感知模型"
+                    },
+                    {
+                        "tagId": 200005,
+                        "value": "VLM"
+                    }
+                ]
+            },
+            {
+                "tagType": "useScene",
+                "tagTypeName": "使用场景",
+                "tagList": [
+                    {
+                        "tagId": 300001,
+                        "value": "具身智能"
+                    },
+                    {
+                        "tagId": 300002,
+                        "value": "自动驾驶"
+                    }
+                ]
+            },
+            {
+                "tagType": "Keywords",
+                "tagTypeName": "关键词",
+                "tagList": [
+                    {
+                        "tagId": 400001,
+                        "value": "Ray"
+                    },
+                    {
+                        "tagId": 400002,
+                        "value": "量化"
+                    },
+                    {
+                        "tagId": 100002,
+                        "value": "MoE"
+                    },
+                    {
+                        "tagId": 400003,
+                        "value": "Python"
+                    },
+                    {
+                        "tagId": 400004,
+                        "value": "昆仑芯"
+                    }
+                ]
+            },
+            {
+                "tagType": "heat",
+                "tagTypeName": "热度",
+                "tagList": [
+                    {
+                        "tagId": 500001,
+                        "value": "NEW"
+                    },
+                    {
+                        "tagId": 500002,
+                        "value": "HOT"
+                    }
+                ]
+            }
+        ]
+    },
+    "errno": 0,
+    "requestId": "82291db2-45ce-60b1-cffe-9604e47a3aab",
+    "request_id": "82291db2-45ce-60b1-cffe-9604e47a3aab"
+}
