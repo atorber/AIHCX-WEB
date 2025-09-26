@@ -11,6 +11,16 @@ export const urlPatterns = {
 
 // 检测当前页面类型
 export const detectPageType = (url: string): PageInfo => {
+  // 首先检查是否在AIHC控制台域名下
+  if (!isAIHCConsolePage(url)) {
+    return {
+      isSupported: false,
+      pageName: '请在百舸AIHC控制台页面使用',
+      url,
+      params: {}
+    };
+  }
+
   let matched = false;
   let pageName = '支持的页面列表：';
 
@@ -31,7 +41,7 @@ export const detectPageType = (url: string): PageInfo => {
 
   return {
     isSupported: matched,
-    pageName,
+    pageName: matched ? pageName : '请在支持的AIHC功能页面使用',
     url,
     params
   };

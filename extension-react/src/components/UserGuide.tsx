@@ -65,7 +65,7 @@ const UserGuide: React.FC = () => {
           <div className="header-content">
             <div className="header-icon">🎉</div>
             <h3>欢迎使用 AIHC助手</h3>
-            <p className="version-tag">v0.4.1</p>
+            <p className="version-tag">v0.5.0</p>
           </div>
           <button className="close-btn" onClick={closeGuide} title="关闭">
             <span>×</span>
@@ -74,7 +74,7 @@ const UserGuide: React.FC = () => {
         
         <div className="guide-content">
           <div className="welcome-message">
-            <p>为您的AIHC工作流程提供强大的CLI命令生成和参数管理功能</p>
+            <p>为AIHC用户提供便捷的CLI命令生成和参数管理功能</p>
           </div>
           
           {guideSteps.map((step, index) => (
@@ -89,21 +89,6 @@ const UserGuide: React.FC = () => {
               </div>
             </div>
           ))}
-          
-          <div className="feature-highlight">
-            <div className="highlight-item">
-              <span className="highlight-icon">⚡</span>
-              <span>实时API数据获取</span>
-            </div>
-            <div className="highlight-item">
-              <span className="highlight-icon">🔄</span>
-              <span>多格式参数导出</span>
-            </div>
-            <div className="highlight-item">
-              <span className="highlight-icon">📋</span>
-              <span>一键复制功能</span>
-            </div>
-          </div>
         </div>
         
         <div className="guide-footer">

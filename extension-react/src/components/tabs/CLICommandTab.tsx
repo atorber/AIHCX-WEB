@@ -47,7 +47,7 @@ const CLICommandTab: React.FC<CLICommandTabProps> = ({
                 className={copyingItems.has(item.title) ? 'copying' : ''}
                 onClick={() => handleCopy(item.text, item.title)}
               >
-                {copyingItems.has(item.title) ? '已复制' : '复制命令'}
+                {copyingItems.has(item.title) ? '已复制' : '一键复制'}
               </button>
               {item.doc && (
                 <button onClick={() => onOpenUrl(item.doc!)}>

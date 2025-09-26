@@ -369,7 +369,7 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
           )}
         </>
       ) : (
-        <UnsupportedPage />
+        <UnsupportedPage currentUrl={pageInfo.url} />
       )}
       
       {message && (
