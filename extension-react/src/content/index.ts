@@ -136,44 +136,37 @@ const createToggleButton = () => {
 
 // 按钮交互逻辑
 const addButtonInteractions = (toggleButton: HTMLElement) => {
+  let sidebarOpen = false; // 跟踪侧边栏状态
+  
   // 悬停效果，参考Vue版本
   toggleButton.addEventListener('mouseenter', () => {
     toggleButton.style.width = '50px';
     toggleButton.style.boxShadow = '-4px 0 12px rgba(66, 133, 244, 0.4)';
-    toggleButton.textContent = '助手';
+    toggleButton.textContent = sidebarOpen ? '关闭' : '助手';
     toggleButton.style.fontSize = '11px';
   });
   
   toggleButton.addEventListener('mouseleave', () => {
     toggleButton.style.width = '40px';
     toggleButton.style.boxShadow = '-2px 0 8px rgba(66, 133, 244, 0.3)';
-    toggleButton.textContent = 'AIHC';
+    toggleButton.textContent = sidebarOpen ? '已开' : 'AIHC';
     toggleButton.style.fontSize = '10px';
   });
 
-  // 点击事件 - 尝试打开侧边栏
+  // 点击事件 - 参考Vue版本的成功实现
   toggleButton.addEventListener('click', () => {
-    // 尝试直接打开侧边栏
+    // 发送消息给background script，打开浏览器侧边栏
     chrome.runtime.sendMessage({ action: 'openSidePanel' }, (response) => {
       if (response && response.success) {
         log('成功打开浏览器侧边栏');
-        // 更新按钮状态
+        sidebarOpen = true;
         toggleButton.classList.add('active');
-        toggleButton.textContent = '打开';
+        toggleButton.style.background = 'linear-gradient(135deg, #34a853 0%, #4285f4 100%)';
+        toggleButton.textContent = '已开';
       } else {
-        log('无法打开侧边栏，显示引导提示', response?.error, 'warn');
-        // 显示引导提示
-        showToast('📡 请点击浏览器工具栏中的 AIHC助手 图标来打开侧边栏', 'info');
-        
-        // 添加视觉反馈
-        toggleButton.style.background = '#ff9800';
-        toggleButton.style.transform = 'translateY(-50%) scale(1.05)';
-        
-        // 3秒后恢复原始状态
-        setTimeout(() => {
-          toggleButton.style.background = 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)';
-          toggleButton.style.transform = 'translateY(-50%)';
-        }, 3000);
+        log('无法打开侧边栏:', response?.error || '未知错误');
+        // 参考Vue版本的简单提示
+        showToast('请手动点击浏览器工具栏中的插件图标来使用AIHC助手', 'warning');
       }
     });
   });

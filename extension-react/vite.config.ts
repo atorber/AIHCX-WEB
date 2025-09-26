@@ -138,7 +138,7 @@ export default defineConfig({
       input: {
         popup: './src/popup/index.html',
         options: './src/options/index.html',
-        background: './src/background/index-simple.ts',
+        background: './src/background/index.ts',
         content: './src/content/index.ts'
       },
       output: {

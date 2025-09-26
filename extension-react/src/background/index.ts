@@ -1,7 +1,5 @@
 /// <reference types="chrome" />
 
-import { formatRequestParams, generateYAML, generateCLICommand } from '../utils/common';
-
 // 接口定义
 interface BaiduCredentials {
   ak: string;
@@ -80,99 +78,92 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   console.log('收到消息:', message);
   
-  const handleAsync = async () => {
-    try {
-      switch (message.action) {
-        case 'getCredentials':
-          return await getCredentials();
-        case 'generateParams':
-          return await generateTaskParams(message.data);
-        case 'createTask':
-          return await createTask(message.data);
-        case 'getTasks':
-          return await getTasks();
-        case 'cancelTask':
-          return await cancelTask(message.taskId);
-        case 'getHelperConfig':
-          return await getHelperConfig();
-        case 'updateHelperConfig':
-          return await updateHelperConfig(message.config);
-        case 'processImage':
-          return await processImage(message.imageInfo);
-        case 'addImageToTask':
-          return await addImageToTask(message.imageInfo);
-        case 'getTempImageData':
-          return await getTempImageData();
-        case 'clearTempImageData':
-          return await clearTempImageData();
-        case 'openSidePanel':
-          return await openSidePanel();
-        case 'openPopup':
-          return openPopup();
-        case 'getPopupContent':
-          return await getPopupContent();
-        case 'loadTaskDetails':
-          return await loadTaskDetails(message.url);
-        case 'openOptionsPage':
-          chrome.runtime.openOptionsPage();
-          return { success: true };
-        default:
-          return { success: false, error: '未知操作' };
-      }
-    } catch (error) {
-      console.error('处理消息失败:', error);
-      return { success: false, error: error instanceof Error ? error.message : String(error) };
-    }
-  };
-
-  handleAsync().then(sendResponse);
-  return true; // 异步响应
-});
-
-// 打开侧边栏
-async function openSidePanel(): Promise<{ success: boolean; error?: string }> {
-  try {
-    console.log('[AIHC助手] openSidePanel函数被调用');
-    
-    // 检查权限
-    const hasPermission = await chrome.permissions.contains({ permissions: ['sidePanel'] });
-    console.log('[AIHC助手] sidePanel权限检查:', hasPermission);
-    
-    if (!hasPermission) {
-      console.error('[AIHC助手] 缺少sidePanel权限');
-      return { success: false, error: '缺少sidePanel权限' };
-    }
-    
-    // 获取当前活动标签页
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    console.log('[AIHC助手] 当前活动标签页:', tabs);
-    
-    if (tabs && tabs.length > 0 && tabs[0].windowId) {
-      const tab = tabs[0];
-      console.log('[AIHC助手] 准备打开侧边栏，窗口ID:', tab.windowId);
-      
-      await chrome.sidePanel.open({ windowId: tab.windowId });
-      console.log('[AIHC助手] 侧边栏已成功打开');
-      return { success: true };
-    } else {
-      console.error('[AIHC助手] 无法获取当前窗口信息，tabs:', tabs);
-      return { success: false, error: '无法获取当前窗口信息' };
-    }
-  } catch (error) {
-    console.error('[AIHC助手] 打开侧边栏失败:', error);
-    if (error instanceof Error) {
-      console.error('[AIHC助手] 错误详情:', error.message, error.stack);
-      return { success: false, error: `打开侧边栏失败: ${error.message}` };
-    }
-    return { success: false, error: '打开侧边栏失败' };
+  // 处理各种消息类型
+  if (message.action === 'getCredentials') {
+    getCredentials().then(sendResponse);
+    return true;
   }
-}
-
-// 打开弹出窗口
-function openPopup(): { success: boolean } {
-  chrome.action.openPopup();
-  return { success: true };
-}
+  
+  if (message.action === 'generateParams') {
+    generateTaskParams(message.data).then(sendResponse);
+    return true;
+  }
+  
+  if (message.action === 'createTask') {
+    createTask(message.data).then(sendResponse);
+    return true;
+  }
+  
+  if (message.action === 'getTasks') {
+    getTasks().then(sendResponse);
+    return true;
+  }
+  
+  if (message.action === 'cancelTask') {
+    cancelTask(message.taskId).then(sendResponse);
+    return true;
+  }
+  
+  if (message.action === 'getHelperConfig') {
+    getHelperConfig().then(sendResponse);
+    return true;
+  }
+  
+  if (message.action === 'updateHelperConfig') {
+    updateHelperConfig(message.config).then(sendResponse);
+    return true;
+  }
+  
+  if (message.action === 'processImage') {
+    processImage(message.imageInfo).then(sendResponse);
+    return true;
+  }
+  
+  if (message.action === 'addImageToTask') {
+    addImageToTask(message.imageInfo).then(sendResponse);
+    return true;
+  }
+  
+  if (message.action === 'getTempImageData') {
+    getTempImageData().then(sendResponse);
+    return true;
+  }
+  
+  if (message.action === 'clearTempImageData') {
+    clearTempImageData().then(sendResponse);
+    return true;
+  }
+  
+  // 打开侧边栏 - 与Vue版本完全一致的实现
+  if (message.action === 'openSidePanel') {
+    try {
+      // 获取当前活动标签页
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs && tabs.length > 0 && tabs[0].windowId) {
+          chrome.sidePanel.open({ windowId: tabs[0].windowId }, () => {
+            if (chrome.runtime.lastError) {
+              sendResponse({ success: false, error: chrome.runtime.lastError.message });
+            } else {
+              sendResponse({ success: true });
+            }
+          });
+        } else {
+          sendResponse({ success: false, error: '无法获取当前窗口信息' });
+        }
+      });
+    } catch (error) {
+      console.error('打开侧边栏失败:', error);
+      sendResponse({ success: false, error: '打开侧边栏失败' });
+    }
+    return true;
+  }
+  
+  if (message.action === 'openPopup') {
+    chrome.action.openPopup();
+    sendResponse({ success: true });
+    return true;
+  }
+});
 
 // 获取凭证
 async function getCredentials(): Promise<BaiduCredentials | null> {
@@ -402,134 +393,6 @@ async function cancelTask(taskId: string): Promise<{ success: boolean; message?:
     return { 
       success: false, 
       error: '取消任务失败: ' + (error instanceof Error ? error.message : String(error))
-    };
-  }
-}
-
-// 获取popup内容
-async function getPopupContent(): Promise<{ success: boolean; content?: string }> {
-  try {
-    // 获取当前活动标签页
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tabs || tabs.length === 0) {
-      return { success: false };
-    }
-
-    const currentTab = tabs[0];
-    if (!currentTab.url) {
-      return { success: false };
-    }
-
-    // 检查是否为支持的页面
-    const supportedUrls = [
-      'https://console.bce.baidu.com/aihc/resources',
-      'https://console.bce.baidu.com/aihc/resource/info',
-      'https://console.bce.baidu.com/aihc/resource/queue',
-      'https://console.bce.baidu.com/aihc/tasks',
-      'https://console.bce.baidu.com/aihc/infoTaskIndex/detail'
-    ];
-
-    const isSupported = supportedUrls.some(url => currentTab.url!.startsWith(url));
-    
-    if (!isSupported) {
-      return {
-        success: true,
-        content: '请在百舸AIHC控制台页面使用'
-      };
-    }
-
-    return {
-      success: true,
-      content: '支持的页面'
-    };
-  } catch (error) {
-    console.error('获取popup内容失败:', error);
-    return { success: false };
-  }
-}
-
-// 加载任务详情
-async function loadTaskDetails(url: string): Promise<{ success: boolean; data?: any; error?: string }> {
-  try {
-    console.log('[AIHC助手] loadTaskDetails 开始执行，URL:', url);
-    
-    // 解析URL参数
-    const urlParams = new URLSearchParams(url.split('?')[1] || '');
-    const clusterUuid = urlParams.get('clusterUuid') || '';
-    const k8sName = urlParams.get('k8sName') || '';
-    const kind = urlParams.get('kind') || '';
-    const k8sNamespace = urlParams.get('k8sNamespace') || '';
-    const queueID = urlParams.get('queueID') || '';
-
-    console.log('[AIHC助手] 解析的URL参数:', { clusterUuid, k8sName, kind, k8sNamespace, queueID });
-
-    // 检查是否缺少必要参数
-    if (!clusterUuid) {
-      console.error('[AIHC助手] 缺少clusterUuid参数');
-      return { success: false, error: '缺少clusterUuid参数' };
-    }
-    
-    if (!k8sName) {
-      console.error('[AIHC助手] 缺少k8sName参数');
-      return { success: false, error: '缺少k8sName参数' };
-    }
-
-    // 构建API请求URL
-    const apiUrl = `https://console.bce.baidu.com/api/cce/ai-service/v1/cluster/${clusterUuid}/aijob/${k8sName}?kind=${kind}&namespace=${k8sNamespace}&queueID=${queueID}&locale=zh-cn&_=${Date.now()}`;
-    
-    console.log('[AIHC助手] 请求任务详情API:', apiUrl);
-    
-    // 发送API请求
-    const response = await fetch(apiUrl);
-    const data = await response.json();
-    
-    console.log('[AIHC助手] API响应状态:', response.status);
-    console.log('[AIHC助手] API响应数据:', data);
-    
-    if (!data.result || !data.result.rawRequest) {
-      console.error('[AIHC助手] API响应中缺少必要的数据字段');
-      return { success: false, error: 'API响应中缺少必要的数据字段' };
-    }
-
-    // 解析任务信息
-    let taskInfo;
-    let requestParams: any = {};
-    
-    try {
-      taskInfo = JSON.parse(data.result.rawRequest);
-      console.log('解析后的任务信息:', taskInfo);
-      
-      // 格式化请求参数
-      requestParams = formatRequestParams(taskInfo);
-      
-    } catch (e) {
-      const error = e as Error;
-      console.error('JSON解析错误:', error);
-      return { success: false, error: '解析任务信息失败: ' + error.message };
-    }
-
-    // 生成CLI命令
-    const cliCommand = generateCLICommand(requestParams);
-    
-    // 生成JSON和YAML参数
-    const jsonParams = JSON.stringify(requestParams, null, 2);
-    const yamlParams = generateYAML(requestParams);
-
-    return {
-      success: true,
-      data: {
-        cliCommand,
-        jsonParams,
-        yamlParams,
-        commandScript: requestParams.jobSpec?.command || ''
-      }
-    };
-
-  } catch (error) {
-    console.error('加载任务详情失败:', error);
-    return { 
-      success: false, 
-      error: '加载任务详情失败: ' + (error instanceof Error ? error.message : String(error))
     };
   }
 }
