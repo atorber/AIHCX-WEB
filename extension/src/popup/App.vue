@@ -125,7 +125,12 @@
         </div>
 
         <div v-if="message" class="message" :class="message.type">
-            {{ message.text }}
+            <div class="message-content">
+                <span class="message-text">{{ message.text }}</span>
+                <button class="message-close" @click="dismissMessage()" title="关闭">
+                    <span>×</span>
+                </button>
+            </div>
         </div>
     </div>
 </template>
@@ -442,11 +447,17 @@ const saveToFile = (content: string, type: 'json' | 'yaml' | 'txt') => {
     }
 };
 
-const showMessage = (type: 'success' | 'error', text: string) => {
+const showMessage = (type: 'success' | 'error' | 'warning' | 'info', text: string, duration: number = 3000) => {
     message.value = { type, text }
-    setTimeout(() => {
-        message.value = null
-    }, 3000)
+    if (duration > 0) {
+        setTimeout(() => {
+            message.value = null
+        }, duration)
+    }
+}
+
+const dismissMessage = () => {
+    message.value = null
 }
 
 // 计算属性：判断当前页面是否支持

@@ -4,7 +4,12 @@
             "command": "/Users/luyuchao/miniconda3/envs/aihc_env/bin/python",
             "args": [
                 "/Users/luyuchao/Documents/GitHub/AIHCX-WEB/mcp/job.py"
-            ]
+            ],
+            "env": {
+                "AK": "",
+                "SK": "",
+                "resourcePoolId": ""
+            }
         }
     }
 }
