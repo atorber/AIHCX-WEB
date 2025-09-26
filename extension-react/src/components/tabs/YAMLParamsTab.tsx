@@ -50,7 +50,7 @@ const YAMLParamsTab: React.FC<YAMLParamsTabProps> = ({
                 className={copyingItems.has(item.title) ? 'copying' : ''}
                 onClick={() => handleCopy(item.text, item.title)}
               >
-                {copyingItems.has(item.title) ? '已复制' : '复制到剪贴板'}
+                {copyingItems.has(item.title) ? '已复制' : '复制命令'}
               </button>
               <button onClick={() => handleSave(item.text)}>
                 保存为文件

@@ -4,7 +4,7 @@
 .popup-container, #root {
     width: 100% !important;
     min-height: 100vh !important;
-    padding: 20px !important;
+    padding: 5px 2.5px !important;
     font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
     color: #333 !important;
     background: #ffffff !important;
@@ -13,76 +13,185 @@
 
 /* 头部样式增强 */
 .header {
-    margin-bottom: 20px !important;
+    margin-bottom: 5px !important;
 }
 
 .header h1 {
-    margin: 0 0 16px 0 !important;
+    margin: 0 0 4px 0 !important;
     font-size: 20px !important;
     text-align: left !important;
     color: #333 !important;
     font-weight: 600 !important;
 }
 
-/* 标签页样式增强 */
-.tabs {
+/* 标签页样式增强 - 紧凑模式 */
+.tabs-compact {
     display: flex !important;
     border-bottom: 2px solid #e9ecef !important;
-    flex-wrap: wrap !important;
-    gap: 8px !important;
-    margin-bottom: 20px !important;
+    gap: 1px !important;
+    margin-bottom: 16px !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
 }
 
-.tabs button {
+.tabs-compact::-webkit-scrollbar {
+    display: none !important;
+}
+
+.tab-btn {
     flex: 1 !important;
-    padding: 12px 16px !important;
+    padding: 6px 3px !important;
     background: none !important;
     border: none !important;
     border-bottom: 3px solid transparent !important;
     cursor: pointer !important;
-    font-size: 14px !important;
-    min-width: 90px !important;
+    font-size: 11px !important;
+    min-width: 45px !important;
+    max-width: 75px !important;
     white-space: nowrap !important;
     color: #666 !important;
     transition: all 0.2s ease !important;
-    border-radius: 6px 6px 0 0 !important;
+    border-radius: 4px 4px 0 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 1px !important;
+    overflow: hidden !important;
 }
 
-.tabs button.active {
-    color: #4285f4 !important;
-    border-bottom-color: #4285f4 !important;
+.tab-btn .tab-icon {
+    font-size: 16px !important;
+    line-height: 1 !important;
+    flex-shrink: 0 !important;
+}
+
+.tab-btn .tab-text {
+    font-size: 10px !important;
+    line-height: 1.2 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
     font-weight: 500 !important;
 }
 
-.tabs button:hover {
+.tab-btn.active {
+    color: #4285f4 !important;
+    border-bottom-color: #4285f4 !important;
+    font-weight: 600 !important;
+    background: rgba(66, 133, 244, 0.08) !important;
+}
+
+.tab-btn:hover {
     color: #4285f4 !important;
     background-color: rgba(66, 133, 244, 0.05) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* 响应式设计 */
+@media (max-width: 320px) {
+    .tabs-compact {
+        gap: 0px !important;
+    }
+    
+    .tab-btn {
+        min-width: 38px !important;
+        max-width: 45px !important;
+        padding: 4px 1px !important;
+        gap: 1px !important;
+    }
+    
+    .tab-btn .tab-icon {
+        font-size: 14px !important;
+    }
+    
+    .tab-btn .tab-text {
+        font-size: 9px !important;
+    }
+}
+
+@media (max-width: 280px) {
+    .tabs-compact {
+        gap: 0px !important;
+    }
+    
+    .tab-btn {
+        min-width: 35px !important;
+        max-width: 40px !important;
+        padding: 3px 1px !important;
+        gap: 0px !important;
+    }
+    
+    .tab-btn .tab-text {
+        font-size: 8px !important;
+    }
+}
+
+@media (min-width: 400px) {
+    .tab-btn {
+        min-width: 60px !important;
+        max-width: 90px !important;
+        padding: 8px 6px !important;
+    }
+    
+    .tab-btn .tab-icon {
+        font-size: 18px !important;
+    }
+    
+    .tab-btn .tab-text {
+        font-size: 11px !important;
+    }
 }
 
 /* 结果容器样式增强 */
 .result-container {
-    margin-top: 16px !important;
-    padding: 16px !important;
+    margin-top: 8px !important;
+    padding: 8px !important;
     background: #f8f9fa !important;
     border-radius: 8px !important;
     border: 1px solid #e9ecef !important;
 }
 
+.result-item {
+    margin-bottom: 10px !important;
+}
+
+.result-item:last-child {
+    margin-bottom: 0 !important;
+}
+
+.result-item h3 {
+    margin: 0 0 4px 0 !important;
+    font-size: 14px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+    font-weight: 500 !important;
+    color: #333 !important;
+}
+
+.action-buttons {
+    display: flex !important;
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+}
+
 .result-container h3 {
-    margin: 0 0 12px 0 !important;
+    margin: 0 0 6px 0 !important;
     font-size: 14px !important;
     font-weight: 600 !important;
     color: #333 !important;
 }
 
 .result-container pre {
-    margin: 0 0 12px 0 !important;
+    margin: 0 0 6px 0 !important;
     white-space: pre-wrap !important;
     font-size: 12px !important;
     font-family: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace !important;
     background: #ffffff !important;
     border: 1px solid #e9ecef !important;
-    padding: 16px !important;
+    padding: 8px !important;
     border-radius: 6px !important;
     overflow-x: auto !important;
     line-height: 1.6 !important;
@@ -411,8 +520,10 @@
     border-radius: 16px !important;
     width: 90% !important;
     max-width: 480px !important;
-    max-height: 80vh !important;
-    overflow-y: auto !important;
+    max-height: 70vh !important;
+    min-height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1) !important;
     margin: 20px !important;
     transform: translateY(20px) scale(0.95) !important;
@@ -523,13 +634,16 @@
 }
 
 .guide-content {
-    padding: 32px 24px 24px !important;
+    padding: 20px 24px 16px !important;
+    flex: 1 !important;
+    overflow-y: auto !important;
+    min-height: 0 !important;
 }
 
 .welcome-message {
     text-align: center !important;
-    margin-bottom: 24px !important;
-    padding: 16px !important;
+    margin-bottom: 20px !important;
+    padding: 12px !important;
     background: linear-gradient(45deg, #f8faff 0%, #f0f4ff 100%) !important;
     border-radius: 12px !important;
     border: 1px solid #e8f0ff !important;
@@ -545,10 +659,10 @@
 
 .guide-step {
     display: flex !important;
-    margin-bottom: 24px !important;
+    margin-bottom: 16px !important;
     align-items: flex-start !important;
     gap: 16px !important;
-    padding: 16px !important;
+    padding: 12px !important;
     border-radius: 12px !important;
     transition: all 0.3s ease !important;
     background: #fafbfc !important;
@@ -568,15 +682,15 @@
 
 .step-number {
     position: relative !important;
-    width: 36px !important;
-    height: 36px !important;
+    width: 32px !important;
+    height: 32px !important;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     color: white !important;
     border-radius: 50% !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    font-size: 14px !important;
+    font-size: 13px !important;
     font-weight: bold !important;
     flex-shrink: 0 !important;
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
@@ -607,9 +721,9 @@
 }
 
 .step-content h4 {
-    margin: 0 0 8px 0 !important;
+    margin: 0 0 6px 0 !important;
     color: #2d3748 !important;
-    font-size: 16px !important;
+    font-size: 15px !important;
     font-weight: 600 !important;
     line-height: 1.4 !important;
 }
@@ -617,14 +731,14 @@
 .step-content p {
     margin: 0 !important;
     color: #718096 !important;
-    font-size: 13px !important;
-    line-height: 1.6 !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
     font-weight: 400 !important;
 }
 
 .feature-highlight {
-    margin-top: 24px !important;
-    padding: 16px !important;
+    margin-top: 16px !important;
+    padding: 12px !important;
     background: linear-gradient(45deg, #f7fafc 0%, #edf2f7 100%) !important;
     border-radius: 12px !important;
     border: 1px solid #e2e8f0 !important;
@@ -649,13 +763,14 @@
 }
 
 .guide-footer {
-    padding: 20px 24px !important;
+    padding: 16px 24px !important;
     border-top: 1px solid #e8eef5 !important;
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
     background: linear-gradient(45deg, #f8faff 0%, #f0f4ff 100%) !important;
     border-radius: 0 0 16px 16px !important;
+    flex-shrink: 0 !important;
 }
 
 .checkbox-label {
@@ -730,35 +845,58 @@
         width: 95% !important;
         max-width: none !important;
         margin: 10px !important;
+        max-height: 75vh !important;
     }
     
     .guide-header {
-        padding: 20px 20px 12px !important;
+        padding: 16px 16px 10px !important;
     }
     
     .guide-content {
-        padding: 24px 20px 20px !important;
+        padding: 16px 16px 12px !important;
     }
     
     .guide-step {
-        padding: 12px !important;
+        padding: 10px !important;
         gap: 12px !important;
+        margin-bottom: 12px !important;
     }
     
     .step-number {
-        width: 32px !important;
-        height: 32px !important;
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 12px !important;
+    }
+    
+    .step-content h4 {
+        font-size: 14px !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .step-content p {
+        font-size: 11px !important;
+    }
+    
+    .welcome-message {
+        padding: 10px !important;
+        margin-bottom: 16px !important;
+    }
+    
+    .feature-highlight {
+        margin-top: 12px !important;
+        padding: 10px !important;
     }
     
     .guide-footer {
-        padding: 16px 20px !important;
+        padding: 12px 16px !important;
         flex-direction: column !important;
-        gap: 12px !important;
+        gap: 10px !important;
     }
     
     .guide-btn {
         width: 100% !important;
         justify-content: center !important;
+        padding: 10px 20px !important;
     }
 }
 
@@ -779,4 +917,37 @@
 
 .user-guide::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+}
+
+/* 侧边栏小屏幕特别优化 */
+@media (max-width: 350px) {
+    .popup-container, #root {
+        padding: 6px 1.5px !important;
+    }
+    
+    .header {
+        margin-bottom: 6px !important;
+    }
+    
+    .header h1 {
+        margin: 0 0 4px 0 !important;
+        font-size: 18px !important;
+    }
+    
+    .result-container {
+        margin-top: 4px !important;
+        padding: 6px !important;
+    }
+    
+    .result-container pre {
+        padding: 6px !important;
+    }
+    
+    .result-item {
+        margin-bottom: 8px !important;
+    }
+    
+    .action-buttons {
+        gap: 2px !important;
+    }
 }

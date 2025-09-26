@@ -40,7 +40,7 @@ const CommandScriptTab: React.FC<CommandScriptTabProps> = ({
               className={isCopying ? 'copying' : ''}
               onClick={handleCopy}
             >
-              {isCopying ? '已复制' : '复制到剪贴板'}
+              {isCopying ? '已复制' : '复制命令'}
             </button>
             <button onClick={handleSave}>
               保存为文件

@@ -13,24 +13,56 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   taskParams
 }) => {
   const tabs = [
-    { key: 'cli' as TabType, label: 'CLI命令', condition: taskParams.cliItems.length > 0 },
-    { key: 'commandScript' as TabType, label: '启动命令', condition: !!taskParams.commandScript },
-    { key: 'json' as TabType, label: 'JSON参数', condition: taskParams.jsonItems.length > 0 },
-    { key: 'yaml' as TabType, label: 'YAML参数', condition: taskParams.yamlItems.length > 0 },
-    { key: 'apiDocs' as TabType, label: 'API文档', condition: taskParams.apiDocs.length > 0 }
+    { 
+      key: 'cli' as TabType, 
+      label: 'CLI命令', 
+      shortLabel: 'CLI',
+      icon: '⚡',
+      condition: taskParams.cliItems.length > 0 
+    },
+    { 
+      key: 'commandScript' as TabType, 
+      label: '启动命令', 
+      shortLabel: '启动',
+      icon: '🚀',
+      condition: !!taskParams.commandScript 
+    },
+    { 
+      key: 'json' as TabType, 
+      label: 'JSON参数', 
+      shortLabel: 'JSON',
+      icon: '📄',
+      condition: taskParams.jsonItems.length > 0 
+    },
+    { 
+      key: 'yaml' as TabType, 
+      label: 'YAML参数', 
+      shortLabel: 'YAML',
+      icon: '📋',
+      condition: taskParams.yamlItems.length > 0 
+    },
+    { 
+      key: 'apiDocs' as TabType, 
+      label: 'API文档', 
+      shortLabel: 'API',
+      icon: '📚',
+      condition: taskParams.apiDocs.length > 0 
+    }
   ];
 
   const visibleTabs = tabs.filter(tab => tab.condition);
 
   return (
-    <div className="tabs">
+    <div className="tabs-compact">
       {visibleTabs.map(tab => (
         <button
           key={tab.key}
-          className={activeTab === tab.key ? 'active' : ''}
+          className={`tab-btn ${activeTab === tab.key ? 'active' : ''}`}
           onClick={() => onTabChange(tab.key)}
+          title={tab.label}
         >
-          {tab.label}
+          <span className="tab-icon">{tab.icon}</span>
+          <span className="tab-text">{tab.shortLabel}</span>
         </button>
       ))}
     </div>
