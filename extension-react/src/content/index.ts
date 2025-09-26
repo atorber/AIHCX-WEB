@@ -70,27 +70,30 @@ const openOptionsPage = () => {
   });
 };
 
+// 全局变量跟踪侧边栏状态
+let sidebarOpen = false;
+
 // 主要组件注入
 const injectComponent = () => {
   // 检查当前页面是否在禁用列表中
   chrome.storage.local.get(['aihcx-helper-disabled-pages'], (result) => {
     const disabledPages = result['aihcx-helper-disabled-pages'] || [];
     const currentPage = window.location.pathname;
-    
+
     if (disabledPages.includes(currentPage)) {
       if (isDevelopment) {
         log('当前页面已被禁用，跳过注入');
       }
       return; // 当前页面已被禁用，不注入组件
     }
-    
+
     // 创建右侧边缘切换按钮
     const toggleButton = createToggleButton();
     document.body.appendChild(toggleButton);
-    
+
     // 添加悬停效果和点击交互
     addButtonInteractions(toggleButton);
-    
+
     log('切换按钮已添加到DOM');
   });
 };
@@ -136,39 +139,63 @@ const createToggleButton = () => {
 
 // 按钮交互逻辑
 const addButtonInteractions = (toggleButton: HTMLElement) => {
-  let sidebarOpen = false; // 跟踪侧边栏状态
   
   // 悬停效果，参考Vue版本
   toggleButton.addEventListener('mouseenter', () => {
     toggleButton.style.width = '50px';
     toggleButton.style.boxShadow = '-4px 0 12px rgba(66, 133, 244, 0.4)';
-    toggleButton.textContent = sidebarOpen ? '关闭' : '助手';
+    toggleButton.textContent = '助手';
     toggleButton.style.fontSize = '11px';
   });
-  
+
   toggleButton.addEventListener('mouseleave', () => {
     toggleButton.style.width = '40px';
     toggleButton.style.boxShadow = '-2px 0 8px rgba(66, 133, 244, 0.3)';
-    toggleButton.textContent = sidebarOpen ? '已开' : 'AIHC';
+    toggleButton.textContent = 'AIHC';
     toggleButton.style.fontSize = '10px';
   });
 
-  // 点击事件 - 参考Vue版本的成功实现
+  // 点击事件 - toggle侧边栏
   toggleButton.addEventListener('click', () => {
-    // 发送消息给background script，打开浏览器侧边栏
-    chrome.runtime.sendMessage({ action: 'openSidePanel' }, (response) => {
-      if (response && response.success) {
-        log('成功打开浏览器侧边栏');
-        sidebarOpen = true;
-        toggleButton.classList.add('active');
-        toggleButton.style.background = 'linear-gradient(135deg, #34a853 0%, #4285f4 100%)';
-        toggleButton.textContent = '已开';
-      } else {
-        log('无法打开侧边栏:', response?.error || '未知错误');
-        // 参考Vue版本的简单提示
-        showToast('请手动点击浏览器工具栏中的插件图标来使用AIHC助手', 'warning');
-      }
-    });
+    if (sidebarOpen) {
+      // 用户点击按钮但侧边栏可能已经关闭了
+      // 重置状态并尝试重新打开
+      log('检测到侧边栏状态不一致，尝试重新打开');
+
+      // 重置状态为 false（因为用户可能已经手动关闭了）
+      sidebarOpen = false;
+      toggleButton.classList.remove('active');
+      toggleButton.style.background = 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)';
+      // 保持显示 'AIHC'，不切换文案
+
+      // 尝试重新打开侧边栏
+      chrome.runtime.sendMessage({ action: 'openSidePanel' }, (response) => {
+        if (response && response.success) {
+          log('成功重新打开浏览器侧边栏');
+          sidebarOpen = true;
+          toggleButton.classList.add('active');
+          toggleButton.style.background = 'linear-gradient(135deg, #34a853 0%, #4285f4 100%)';
+          // 保持显示 'AIHC'，不切换文案
+        } else {
+          log('重新打开侧边栏失败:', response?.error || '未知错误');
+          showToast('请手动点击浏览器工具栏中的插件图标打开AIHC助手', 'warning');
+        }
+      });
+    } else {
+      // 打开侧边栏
+      chrome.runtime.sendMessage({ action: 'openSidePanel' }, (response) => {
+        if (response && response.success) {
+          log('成功打开浏览器侧边栏');
+          sidebarOpen = true;
+          toggleButton.classList.add('active');
+          toggleButton.style.background = 'linear-gradient(135deg, #34a853 0%, #4285f4 100%)';
+          // 保持显示 'AIHC'，不切换文案
+        } else {
+          log('无法打开侧边栏:', response?.error || '未知错误');
+          showToast('请手动点击浏览器工具栏中的插件图标来使用AIHC助手', 'warning');
+        }
+      });
+    }
   });
 
   // 长按切换按钮显示关闭对话框
@@ -596,6 +623,28 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     }
     sendResponse({ success: true });
   }
-  
+
+  if (message.action === 'updateSidebarState') {
+    const toggleButton = document.getElementById('aihcx-helper-toggle') as HTMLElement;
+    if (toggleButton) {
+      if (message.state) {
+        // 侧边栏已打开
+        sidebarOpen = true;
+        toggleButton.classList.add('active');
+        toggleButton.style.background = 'linear-gradient(135deg, #34a853 0%, #4285f4 100%)';
+        toggleButton.textContent = '已开';
+        log('侧边栏状态更新为已打开');
+      } else {
+        // 侧边栏已关闭
+        sidebarOpen = false;
+        toggleButton.classList.remove('active');
+        toggleButton.style.background = 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)';
+        toggleButton.textContent = 'AIHC';
+        log('侧边栏状态更新为已关闭');
+      }
+    }
+    sendResponse({ success: true });
+  }
+
   return true;
 })

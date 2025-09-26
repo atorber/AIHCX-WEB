@@ -33,24 +33,15 @@ const defaultHelperConfig: AIHCXHelperConfig = {
 // 监听扩展图标点击事件，打开侧边栏
 chrome.action.onClicked.addListener(async (tab) => {
   console.log('[AIHC助手] 扩展图标被点击，当前标签页ID:', tab.id, '窗口ID:', tab.windowId);
-  
+
   try {
-    // 检查权限
-    const hasPermission = await chrome.permissions.contains({ permissions: ['sidePanel'] });
-    console.log('[AIHC助手] sidePanel权限检查:', hasPermission);
-    
-    if (!hasPermission) {
-      console.error('[AIHC助手] 缺少sidePanel权限');
-      return;
-    }
-    
     // 打开侧边栏
-    if (tab.id && tab.windowId) {
+    if (tab.windowId) {
       console.log('[AIHC助手] 尝试打开侧边栏...');
       await chrome.sidePanel.open({ windowId: tab.windowId });
       console.log('[AIHC助手] 侧边栏已成功打开');
     } else {
-      console.error('[AIHC助手] 无效的标签页或窗口ID');
+      console.error('[AIHC助手] 无效的窗口ID');
     }
   } catch (error) {
     console.error('[AIHC助手] 打开侧边栏失败:', error);
@@ -157,10 +148,109 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     }
     return true;
   }
+
+  // 关闭侧边栏
+  if (message.action === 'closeSidePanel') {
+    try {
+      // Chrome sidePanel API没有直接关闭的方法
+      // 可以尝试重新打开（可能覆盖当前实例）或提示用户手动关闭
+      // 或者通过其他方式实现关闭效果
+
+      // 方案1：尝试使用其他API方法（如果有的话）
+      // 方案2：提示用户手动关闭
+      // 方案3：隐藏侧边栏（如果API支持）
+
+      console.log('[AIHC助手] 尝试关闭侧边栏');
+
+      // 目前Chrome sidePanel API没有直接关闭方法
+      // 我们可以返回成功，让content script更新UI状态
+      // 用户可以手动关闭侧边栏或通过其他方式
+
+      // 尝试通过重新打开来切换状态（这可能不会关闭）
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs && tabs.length > 0 && tabs[0].windowId) {
+          // 尝试获取侧边栏状态
+          chrome.sidePanel.getOptions({}, (options) => {
+            if (chrome.runtime.lastError) {
+              console.log('[AIHC助手] 无法获取侧边栏状态，可能是因为没有打开');
+              sendResponse({ success: true, message: '侧边栏已关闭或未打开' });
+            } else {
+              console.log('[AIHC助手] 侧边栏状态:', options);
+              sendResponse({ success: true, message: '请手动关闭侧边栏' });
+            }
+          });
+        } else {
+          sendResponse({ success: false, error: '无法获取当前窗口信息' });
+        }
+      });
+    } catch (error) {
+      console.error('关闭侧边栏失败:', error);
+      sendResponse({ success: false, error: '关闭侧边栏失败' });
+    }
+    return true;
+  }
   
   if (message.action === 'openPopup') {
     chrome.action.openPopup();
     sendResponse({ success: true });
+    return true;
+  }
+
+  // 关闭侧边栏
+  if (message.action === 'closeSidebar') {
+    try {
+      // Chrome sidePanel API没有直接关闭的方法
+      // 但是我们可以尝试以下方法：
+      // 1. 重新打开侧边栏（可能会覆盖当前内容）
+      // 2. 或者提示用户手动关闭
+      // 3. 或者使用其他API方法
+
+      console.log('[AIHC助手] 尝试关闭侧边栏');
+
+      // 方案：尝试重新打开侧边栏，可能会刷新或覆盖当前内容
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs && tabs.length > 0 && tabs[0].windowId) {
+          chrome.sidePanel.open({ windowId: tabs[0].windowId }, () => {
+            if (chrome.runtime.lastError) {
+              console.log('[AIHC助手] 无法重新打开侧边栏，可能是因为没有权限');
+              sendResponse({ success: false, error: '无法关闭侧边栏' });
+            } else {
+              console.log('[AIHC助手] 尝试重新打开侧边栏');
+              // 重新打开可能会刷新侧边栏内容，用户可能需要手动关闭
+              sendResponse({ success: true, message: '侧边栏已刷新，请手动关闭' });
+            }
+          });
+        } else {
+          sendResponse({ success: false, error: '无法获取当前窗口信息' });
+        }
+      });
+    } catch (error) {
+      console.error('关闭侧边栏失败:', error);
+      sendResponse({ success: false, error: '关闭侧边栏失败' });
+    }
+    return true;
+  }
+
+  // 更新侧边栏状态
+  if (message.action === 'updateSidebarState') {
+    try {
+      // 向所有content scripts发送状态更新消息
+      chrome.tabs.query({}, (tabs) => {
+        tabs.forEach(tab => {
+          if (tab.id) {
+            chrome.tabs.sendMessage(tab.id, {
+              action: 'updateSidebarState',
+              state: message.state
+            });
+          }
+        });
+      });
+
+      sendResponse({ success: true });
+    } catch (error) {
+      console.error('更新侧边栏状态失败:', error);
+      sendResponse({ success: false, error: '更新侧边栏状态失败' });
+    }
     return true;
   }
 });

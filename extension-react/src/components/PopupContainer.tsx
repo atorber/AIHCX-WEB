@@ -305,6 +305,27 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
     openUrl(url);
   };
 
+  // 关闭侧边栏处理
+  const handleCloseSidebar = () => {
+    try {
+      // 向content script发送消息更新状态
+      chrome.runtime.sendMessage({ action: 'updateSidebarState', state: false }, (response) => {
+        if (response && response.success) {
+          console.log('[AIHC助手] 侧边栏状态已更新');
+        }
+      });
+
+      // 尝试关闭窗口
+      setTimeout(() => {
+        window.close();
+      }, 100);
+    } catch (error) {
+      console.error('[AIHC助手] 关闭侧边栏时出错:', error);
+      // 尝试直接关闭窗口
+      window.close();
+    }
+  };
+
   // 初始化
   useEffect(() => {
     checkCurrentPage();
@@ -344,7 +365,7 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
   return (
     <div className="popup-container">
       <UserGuide />
-      <Header pageName={pageInfo.pageName} />
+      <Header pageName={pageInfo.pageName} onClose={handleCloseSidebar} />
       
       {pageInfo.isSupported ? (
         <>
