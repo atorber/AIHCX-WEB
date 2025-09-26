@@ -1,4 +1,5 @@
 /// <reference types="chrome" />
+import '../utils/errorFilter'; // 导入错误过滤器，自动启用过滤
 
 // 检查是否为开发环境
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -32,22 +33,6 @@ const log = (message: string, data?: any, level: 'info' | 'warn' | 'error' = 'in
     console.error(`${logPrefix} ${message}`, data || '');
   }
 };
-
-// 过滤第三方库的警告信息
-if (!isDevelopment) {
-  const originalConsoleWarn = console.warn;
-  console.warn = function(...args: any[]) {
-    const message = args.join(' ');
-    // 过滤掉TrackRoute嵌套警告和其他第三方库警告
-    if (message.includes('TrackRoute') && message.includes('nested') ||
-        message.includes('Tracert before fns') ||
-        message.includes('stop propagation') ||
-        message.includes('Portal Assistant loaded')) {
-      return; // 静默处理这些警告
-    }
-    originalConsoleWarn.apply(console, args);
-  };
-}
 
 // 确保Chrome API类型可用
 

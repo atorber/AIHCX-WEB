@@ -12,9 +12,14 @@
   },
   "dependencies": {
     "@baiducloud/sdk": "^1.0.3",
+    "@types/request": "^2.48.12",
+    "@types/request-promise": "^4.1.51",
+    "axios": "^1.8.4",
     "js-yaml": "^4.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.313",

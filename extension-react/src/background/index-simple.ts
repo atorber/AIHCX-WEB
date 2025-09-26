@@ -38,4 +38,22 @@ chrome.runtime.onInstalled.addListener(() => {
   console.log('[AIHC助手] 插件已安装');
 });
 
+// 添加消息监听器，防止runtime.lastError错误
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  // 静默处理消息，避免控制台噪音
+  try {
+    if (message && message.action) {
+      sendResponse({ success: true, message: '消息已收到' });
+    } else {
+      sendResponse({ success: false, message: '未知消息格式' });
+    }
+  } catch (error) {
+    // 静默处理消息处理错误
+    sendResponse({ success: false, message: '消息处理失败' });
+  }
+  
+  // 返回true表示异步响应
+  return true;
+});
+
 console.log('[AIHC助手] 极简Background Script 初始化完成');

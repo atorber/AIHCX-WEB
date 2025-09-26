@@ -35,12 +35,28 @@ export const storage = {
 export const runtime = {
   sendMessage: (message: any): Promise<any> => {
     return new Promise((resolve) => {
-      chrome.runtime.sendMessage(message, resolve);
+      try {
+        chrome.runtime.sendMessage(message, (response) => {
+          if (chrome.runtime.lastError) {
+            // 完全静默处理runtime错误，避免控制台噪音
+            resolve(null);
+          } else {
+            resolve(response);
+          }
+        });
+      } catch (error) {
+        // 静默处理API调用异常
+        resolve(null);
+      }
     });
   },
   
   openOptionsPage: (): void => {
-    chrome.runtime.openOptionsPage();
+    try {
+      chrome.runtime.openOptionsPage();
+    } catch (error) {
+      // 静默处理选项页面打开失败
+    }
   }
 };
 

@@ -72,7 +72,7 @@ export const getCurrentTabInfo = (): Promise<PageInfo> => {
     if (typeof chrome !== 'undefined' && chrome.tabs) {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (chrome.runtime.lastError) {
-          console.error('获取标签页时出错:', chrome.runtime.lastError.message);
+          console.error('[AIHC助手] 获取标签页时出错:', chrome.runtime.lastError.message);
           resolve({
             isSupported: false,
             pageName: chrome.runtime.lastError.message || '获取页面信息失败',
@@ -83,6 +83,7 @@ export const getCurrentTabInfo = (): Promise<PageInfo> => {
         }
 
         if (!tabs || tabs.length === 0) {
+          console.error('[AIHC助手] 未找到活动标签页');
           resolve({
             isSupported: false,
             pageName: '未找到活动标签页',
@@ -93,7 +94,10 @@ export const getCurrentTabInfo = (): Promise<PageInfo> => {
         }
 
         const currentUrl = tabs[0].url;
+        console.log('[AIHC助手] 当前URL:', currentUrl);
+        
         if (!currentUrl) {
+          console.error('[AIHC助手] 无法获取页面URL');
           resolve({
             isSupported: false,
             pageName: '无法获取页面URL',
@@ -103,11 +107,15 @@ export const getCurrentTabInfo = (): Promise<PageInfo> => {
           return;
         }
 
-        resolve(detectPageType(currentUrl));
+        const pageInfo = detectPageType(currentUrl);
+        console.log('[AIHC助手] 页面检测结果:', pageInfo);
+        resolve(pageInfo);
       });
     } else {
       // 在content script中直接使用window.location
-      resolve(detectPageType(window.location.href));
+      const pageInfo = detectPageType(window.location.href);
+      console.log('[AIHC助手] Content Script页面检测结果:', pageInfo);
+      resolve(pageInfo);
     }
   });
 };

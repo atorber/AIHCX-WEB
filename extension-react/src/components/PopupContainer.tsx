@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { TaskParams, Message, PageInfo, TabType } from '../types';
 import { getCurrentTabInfo } from '../utils/pageDetection';
-import { runtime } from '../utils/chromeApi';
 import { copyToClipboard, saveToFile, openUrl, createMessage } from '../utils/helpers';
+import { formatRequestParams, generateCLICommand, generateYAML } from '../utils/common';
 
 // 导入组件
 import Header from './Header';
@@ -111,6 +111,8 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
 
   // 处理任务详情页面
   const handleTaskDetail = async (params: Record<string, string>) => {
+    console.log('[AIHC助手] 开始处理任务详情页面');
+    
     setTaskParams(prev => ({
       ...prev,
       apiDocs: [
@@ -133,41 +135,67 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
     }));
 
     try {
-      const response = await runtime.sendMessage({
-        action: 'loadTaskDetails',
-        url: pageInfo.url
-      });
+      // 构建API请求URL，与Vue版本完全一致
+      const url = `https://console.bce.baidu.com/api/cce/ai-service/v1/cluster/${params.clusterUuid}/aijob/${params.k8sName}?kind=${params.kind}&namespace=${params.k8sNamespace}&queueID=${params.queueID}&locale=zh-cn&_=${Date.now()}`;
+      console.log('[AIHC助手] 请求URL:', url);
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      console.log('[AIHC助手] API响应数据:', data);
 
-      if (response && response.success) {
-        setTaskParams(prev => ({
-          ...prev,
-          commandScript: response.data.commandScript,
-          cliItems: [
-            ...prev.cliItems,
-            {
-              title: '创建任务',
-              text: response.data.cliCommand,
-              doc: 'https://cloud.baidu.com/doc/AIHC/s/Tm7x702fo#%E7%9B%B4%E6%8E%A5%E4%BC%A0%E5%8F%82%E6%96%B9%E5%BC%8F%E5%88%9B%E5%BB%BA%E4%BB%BB%E5%8A%A1'
-            }
-          ],
-          jsonItems: [
-            {
-              title: '创建任务Body参数',
-              text: response.data.jsonParams
-            }
-          ],
-          yamlItems: [
-            {
-              title: '创建任务Body参数',
-              text: response.data.yamlParams
-            }
-          ]
-        }));
-      } else {
-        showMessage('error', response?.error || '加载任务详情失败');
+      if (!data.result || !data.result.rawRequest) {
+        showMessage('error', 'API响应中缺少必要的数据字段');
+        return;
       }
+
+      let taskInfo;
+      let requestParams: any = {};
+      try {
+        taskInfo = JSON.parse(data.result.rawRequest);
+        console.log('[AIHC助手] 解析后的任务信息:', taskInfo);
+        requestParams = formatRequestParams(taskInfo);
+        console.log('[AIHC助手] 格式化后的请求参数:', requestParams);
+      } catch (e) {
+        const error = e as Error;
+        console.error('[AIHC助手] JSON解析错误:', error);
+        showMessage('error', '解析任务信息失败: ' + error.message);
+        return;
+      }
+
+      const cliCommand = generateCLICommand(requestParams);
+      const jsonParams = JSON.stringify(requestParams, null, 2);
+      const yamlParams = generateYAML(requestParams);
+
+      setTaskParams(prev => ({
+        ...prev,
+        commandScript: requestParams.jobSpec?.command || '',
+        cliItems: [
+          ...prev.cliItems,
+          {
+            title: '创建任务',
+            text: cliCommand,
+            doc: 'https://cloud.baidu.com/doc/AIHC/s/Tm7x702fo#%E7%9B%B4%E6%8E%A5%E4%BC%A0%E5%8F%82%E6%96%B9%E5%BC%8F%E5%88%9B%E5%BB%BA%E4%BB%BB%E5%8A%A1'
+          }
+        ],
+        jsonItems: [
+          {
+            title: '创建任务Body参数',
+            text: jsonParams
+          }
+        ],
+        yamlItems: [
+          {
+            title: '创建任务Body参数',
+            text: yamlParams
+          }
+        ]
+      }));
+
+      showMessage('success', '任务详情加载成功');
+      
     } catch (error) {
-      showMessage('error', '获取任务详情失败');
+      console.error('[AIHC助手] 获取任务详情失败:', error);
+      showMessage('error', '获取任务详情失败: ' + (error instanceof Error ? error.message : String(error)));
     }
   };
 
@@ -281,18 +309,35 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
   useEffect(() => {
     checkCurrentPage();
     
-    // 监听URL变化
-    const handleUrlChange = () => {
-      checkCurrentPage();
+    // 监听URL变化 - 与Vue版本保持一致
+    const handleUrlChange = (_tabId: number, changeInfo: chrome.tabs.TabChangeInfo, _tab: chrome.tabs.Tab) => {
+      if (changeInfo.url) {
+        console.log('[AIHC助手] 检测到URL变化:', changeInfo.url);
+        checkCurrentPage();
+      }
     };
     
-    // 监听Chrome tabs API
+    // 监听Chrome tabs API，添加错误处理
     if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.onUpdated) {
-      chrome.tabs.onUpdated.addListener(handleUrlChange);
-      
-      return () => {
-        chrome.tabs.onUpdated.removeListener(handleUrlChange);
-      };
+      try {
+        chrome.tabs.onUpdated.addListener(handleUrlChange);
+        console.log('[AIHC助手] URL变化监听器已添加');
+        
+        return () => {
+          try {
+            if (chrome.tabs && chrome.tabs.onUpdated) {
+              chrome.tabs.onUpdated.removeListener(handleUrlChange);
+              console.log('[AIHC助手] URL变化监听器已移除');
+            }
+          } catch (error) {
+            console.warn('[AIHC助手] 移除URL监听器失败:', error);
+          }
+        };
+      } catch (error) {
+        console.warn('[AIHC助手] 添加URL监听器失败:', error);
+      }
+    } else {
+      console.log('[AIHC助手] Chrome tabs API不可用，跳过URL监听');
     }
   }, [checkCurrentPage]);
 

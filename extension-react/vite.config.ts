@@ -17,14 +17,28 @@ export default defineConfig({
           if (chunk.type === 'asset' && fileName.endsWith('.html')) {
             let html = chunk.source.toString()
             
-            // 修复脚本路径
+            // 修复脚本路径并确保有type="module"
             html = html.replace(/src="[^"]*\/([^/]+)\/index\.js"/, 'src="./index.js"')
+            
+            // 确保script标签有且仅有一个type="module"
+            html = html.replace(/<script([^>]*)>/g, (match, attrs) => {
+              // 移除所有现有的type属性
+              attrs = attrs.replace(/\s*type="[^"]*"/g, '')
+              // 添加type="module"
+              return `<script${attrs} type="module">`
+            })
             
             // 修复模块预加载路径
             html = html.replace(/href="[^"]*\/chunks\/([^"]+)"/, 'href="../chunks/$1"')
             
-            // 修复样式表路径
-            html = html.replace(/href="[^"]*\/content\/([^"]+)"/, 'href="../content/$1"')
+            // 修复样式表路径，并添加sidebar.css
+            if (fileName.includes('popup')) {
+              html = html.replace(/href="[^"]*\/content\/([^"]+)"/, 'href="../content/$1"')
+              // 添加sidebar.css引用
+              html = html.replace('</head>', '  <link rel="stylesheet" href="./sidebar.css">\n</head>')
+            } else {
+              html = html.replace(/href="[^"]*\/content\/([^"]+)"/, 'href="../content/$1"')
+            }
             
             chunk.source = html
           }
@@ -143,25 +157,22 @@ export default defineConfig({
             return 'content/[name][extname]'
           }
           return 'assets/[name]-[hash][extname]'
-        }
-      },
-      // 为background script排除外部依赖
-      external: (id) => {
-        // 对于background script，排除大型依赖
-        if (id.includes('@baiducloud/sdk') || 
-            id.includes('bn.js') || 
-            id.includes('asn1.js')) {
-          return true
-        }
-        return false
+        },
+        format: 'es'
       }
     },
     outDir: 'dist',
     emptyOutDir: true,
+    target: 'esnext', // Chrome扩展支持现代ES特性
+    minify: false, // 关闭压缩以便调试
     // 禁用CSS代码分割
     cssCodeSplit: false,
     // 减小chunk大小警告阈值
-    chunkSizeWarningLimit: 600
+    chunkSizeWarningLimit: 600,
+    // 确保所有依赖都被打包
+    commonjsOptions: {
+      include: [/node_modules/]
+    }
   },
   resolve: {
     alias: {
