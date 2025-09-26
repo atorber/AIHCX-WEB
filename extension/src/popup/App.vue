@@ -1,12 +1,22 @@
 <template>
     <div class="popup-container">
+        <!-- 用户引导 -->
+        <UserGuide />
+        
         <div class="header">
             <h1 style="text-align: left;">AIHC助手</h1>
         </div>
 
         <template v-if="isSupportedPage">
             <p style="text-align: left;">{{ curPage }}</p>
-            <div v-if="isSupportedPage" class="tabs">
+            
+            <!-- 加载指示器 -->
+            <div v-if="isLoading" class="loading-indicator">
+                <div class="loading-spinner"></div>
+                <span>正在加载...</span>
+            </div>
+            
+            <div v-if="isSupportedPage && !isLoading" class="tabs">
                 <button v-if="taskParams.cliItems.length > 0" :class="{ active: activeTab === 'cli' }"
                     @click="activeTab = 'cli'">CLI命令</button>
                 <button v-if="taskParams.commandScript" :class="{ active: activeTab === 'commandScript' }"
@@ -18,6 +28,7 @@
                 <button v-if="taskParams.apiDocs.length > 0" :class="{ active: activeTab === 'apiDocs' }"
                     @click="activeTab = 'apiDocs'">API文档</button>
             </div>
+            
             <!-- CLI命令选项卡 -->
             <div v-if="activeTab === 'cli'" class="tab-content">
                 <div v-if="taskParams.cliItems.length > 0" class="result-container">
@@ -25,7 +36,7 @@
                         <h3 style="display: flex; justify-content: space-between;">
                             {{ item.title }}
                             <span style="margin-left: 10px;">
-                                <button style="margin-left: 10px;" @click="copyToClipboard(item.text)">复制命令到剪贴板</button>
+                                <button @click="(e) => copyToClipboard(item.text, e.target as HTMLElement)">复制命令到剪贴板</button>
                                 <button style="margin-left: 10px;" v-if="item.doc"
                                     @click="openUrl(item.doc)">CLI使用手册</button>
                             </span>
@@ -42,7 +53,7 @@
                         <h3 style="display: flex; justify-content: space-between;">
                             任务启动命令
                             <span style="margin-left: 10px;">
-                                <button @click="copyToClipboard(taskParams.commandScript)">复制到剪贴板</button>
+                                <button @click="(e) => copyToClipboard(taskParams.commandScript, e.target as HTMLElement)">复制到剪贴板</button>
                                 <button style="margin-left: 10px;" @click="saveToFile(taskParams.commandScript, 'txt')">保存为文件</button>
                             </span>
                         </h3>
@@ -51,7 +62,6 @@
                 </div>
             </div>
 
-
             <!-- JSON格式选项卡 -->
             <div v-if="activeTab === 'json'" class="tab-content">
                 <div v-if="taskParams.jsonItems.length > 0" class="result-container">
@@ -59,7 +69,7 @@
                         <h3 style="display: flex; justify-content: space-between;">
                             {{ item.title }}
                             <span style="margin-left: 10px;">
-                                <button @click="copyToClipboard(item.text)">复制到剪贴板</button>
+                                <button @click="(e) => copyToClipboard(item.text, e.target as HTMLElement)">复制到剪贴板</button>
                                 <button style="margin-left: 10px;" @click="saveToFile(item.text, 'json')">保存为文件</button>
                             </span>
                         </h3>
@@ -75,7 +85,7 @@
                         <h3 style="display: flex; justify-content: space-between;">
                             {{ item.title }}
                             <span style="margin-left: 10px;">
-                                <button @click="copyToClipboard(item.text)">复制到剪贴板</button>
+                                <button @click="(e) => copyToClipboard(item.text, e.target as HTMLElement)">复制到剪贴板</button>
                                 <button style="margin-left: 10px;" @click="saveToFile(item.text, 'yaml')">保存为文件</button>
                             </span>
                         </h3>
@@ -138,6 +148,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { formatRequestParams, generateYAML, generateCLICommand } from '../utils/common'
+import UserGuide from '../components/UserGuide.vue'
 
 // Chrome API 类型定义
 declare const chrome: {
@@ -168,6 +179,7 @@ declare const chrome: {
 // 状态
 const activeTab = ref('cli')
 const isConfigured = ref(false)
+const isLoading = ref(false)
 const message = ref<{ type: string, text: string } | null>(null)
 
 const curPage = ref('支持的页面列表：')
@@ -179,6 +191,21 @@ const urlList = {
     'https://console.bce.baidu.com/aihc/tasks?': '任务列表',
     'https://console.bce.baidu.com/aihc/infoTaskIndex/detail?': '任务详情',
 }
+
+// 任务参数
+const taskParams = reactive({
+    type: 'ocr',
+    dataSource: 'local',
+    priority: 'medium',
+    customParams: '',
+    generated: '',
+    name: '',
+    commandScript: '',
+    jsonItems: [] as { title: string, text: string }[],
+    yamlItems: [] as { title: string, text: string }[],
+    cliItems: [] as { title: string, text: string, doc?: string }[],
+    apiDocs: [] as { title: string, text: string }[]
+})
 
 // 添加调试信息
 const debugLog = (message: string, data?: any) => {
@@ -249,7 +276,7 @@ const observeUrlChanges = () => {
     })
 }
 
-// 解析Url，获取url和query参数 https://console.bce.baidu.com/aihc/tasks?clusters=cce-0a5oqsgp&keywordTypeAndKeyword[]=k8sName&keywordTypeAndKeyword[]=&pageNo=1&pageSize=10&queue=&showMyTask=false
+// 解析Url，获取url和query参数
 const parseUrl = (url: string) => {
     const urlObj = new URL(url)
     const queryParams = urlObj.searchParams
@@ -269,11 +296,12 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
     debugLog('url', url)
     debugLog('params', params)
 
+    isLoading.value = true
     taskParams.name = params.name
+    
     if (curPage === '任务详情') {
         debugLog('任务详情')
-        // 解析currentUrl，获取任务参数 https://console.bce.baidu.com/aihc/infoTaskIndex/detail?clusterUuid=cce-0a5oqsgp&k8sNamespace=default&k8sName=sglang-r1-distill-qwen-14b-a10-2&kind=PyTorchJob&status=Running&name=sglang-r1-distill-qwen-14b-a10-2&jobId=pytorchjob-5c25f154-3104-4507-8259-fa7a357fd44c&queueID=default
-
+        
         taskParams.apiDocs.push({
             title: '获取任务详情',
             text: 'https://cloud.baidu.com/doc/AIHC/s/rm56ipjsz'
@@ -293,7 +321,6 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
         try {
             const url = `https://console.bce.baidu.com/api/cce/ai-service/v1/cluster/${params.clusterUuid}/aijob/${params.k8sName}?kind=${params.kind}&namespace=${params.k8sNamespace}&queueID=${params.queueID}&locale=zh-cn&_=${Date.now()}`
             debugLog('请求URL:', url)
-            // showMessage('success', url)
             const response = await fetch(url)
             const data = await response.json();
             debugLog('API响应数据:', data);
@@ -338,6 +365,8 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
             })
         } catch (error) {
             showMessage('error', error as string);
+        } finally {
+            isLoading.value = false
         }
     }
 
@@ -353,6 +382,7 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
             title: '获取资源池列表',
             text: 'https://cloud.baidu.com/doc/AIHC/s/Km569l8xl'
         }]
+        isLoading.value = false
     }
 
     if (curPage === '资源池详情') {
@@ -367,6 +397,7 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
             title: '获取资源池详情',
             text: 'https://cloud.baidu.com/doc/AIHC/s/9m569kh7t'
         }]
+        isLoading.value = false
     }
 
     if (curPage === '队列列表') {
@@ -381,11 +412,11 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
             title: '获取队列列表',
             text: 'https://cloud.baidu.com/doc/AIHC/s/zm569o5xc'
         }]
+        isLoading.value = false
     }
 
     if (curPage === '任务列表') {
         debugLog('任务列表')
-        // 解析currentUrl，获取参数 https://console.bce.baidu.com/aihc/tasks?clusters=cce-0a5oqsgp&keywordTypeAndKeyword[]=k8sName&keywordTypeAndKeyword[]=&pageNo=1&pageSize=10&queue=&showMyTask=false
         const { url, params } = parseUrl(currentUrl)
         debugLog('url', url)
         debugLog('params', params)
@@ -399,6 +430,7 @@ const handleFetchUrl = async (curPage: string, currentUrl: string) => {
             title: '获取任务列表',
             text: 'https://cloud.baidu.com/doc/AIHC/s/rm56ipjsz'
         }]
+        isLoading.value = false
     }
 }
 
@@ -409,24 +441,27 @@ onMounted(() => {
     observeUrlChanges()
 })
 
-// 任务参数
-const taskParams = reactive({
-    type: 'ocr',
-    dataSource: 'local',
-    priority: 'medium',
-    customParams: '',
-    generated: '',
-    name: '',
-    commandScript: '',
-    jsonItems: [] as { title: string, text: string }[],
-    yamlItems: [] as { title: string, text: string }[],
-    cliItems: [] as { title: string, text: string, doc?: string }[],
-    apiDocs: [] as { title: string, text: string }[]
-})
-
-const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    showMessage('success', '已复制到剪贴板')
+const copyToClipboard = async (text: string, buttonElement?: HTMLElement) => {
+    try {
+        await navigator.clipboard.writeText(text)
+        
+        // 添加按钮视觉反馈
+        if (buttonElement) {
+            const originalText = buttonElement.textContent
+            buttonElement.classList.add('copying')
+            buttonElement.textContent = '已复制'
+            
+            setTimeout(() => {
+                buttonElement.classList.remove('copying')
+                buttonElement.textContent = originalText || '复制到剪贴板'
+            }, 1500)
+        }
+        
+        showMessage('success', '已复制到剪贴板', 2000)
+    } catch (error) {
+        console.error('复制失败:', error)
+        showMessage('error', '复制失败，请手动复制', 3000)
+    }
 }
 
 const saveToFile = (content: string, type: 'json' | 'yaml' | 'txt') => {
@@ -468,11 +503,14 @@ const isSupportedPage = computed(() => {
 
 <style>
 .popup-container {
-    width: 480px;
-    max-height: 600px;
-    padding: 16px;
+    width: 100%;
+    min-height: 100vh;
+    padding: 20px;
     font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
     color: #333;
+    background: #ffffff;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .header {
@@ -480,29 +518,34 @@ const isSupportedPage = computed(() => {
 }
 
 .header h1 {
-    margin: 0 0 12px 0;
-    font-size: 18px;
+    margin: 0 0 16px 0;
+    font-size: 20px;
     text-align: left;
+    color: #333;
+    font-weight: 600;
 }
 
 .tabs {
     display: flex;
-    border-bottom: 1px solid #eee;
+    border-bottom: 2px solid #e9ecef;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 8px;
+    margin-bottom: 20px;
 }
 
 .tabs button {
     flex: 1;
-    padding: 8px;
+    padding: 12px 16px;
     background: none;
     border: none;
-    /* border-bottom: 2px solid transparent; */
+    border-bottom: 3px solid transparent;
     cursor: pointer;
     font-size: 14px;
-    min-width: 80px;
+    min-width: 90px;
     white-space: nowrap;
     color: #666;
+    transition: all 0.2s ease;
+    border-radius: 6px 6px 0 0;
 }
 
 .tabs button.active {
@@ -574,21 +617,87 @@ const isSupportedPage = computed(() => {
 
 .message {
     margin: 16px 0;
-    padding: 10px;
-    border-radius: 4px;
+    padding: 12px 16px;
+    border-radius: 6px;
     font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    border-left: 4px solid;
+    animation: slideInDown 0.3s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message-content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+}
+
+.message-text {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.message-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+
+.message-close:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.message-close span {
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1;
 }
 
 .message.success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background-color: #f0f9ff;
+    color: #065f46;
+    border-left-color: #10b981;
 }
 
 .message.error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background-color: #fef2f2;
+    color: #991b1b;
+    border-left-color: #ef4444;
+}
+
+.message.warning {
+    background-color: #fffbeb;
+    color: #92400e;
+    border-left-color: #f59e0b;
+}
+
+.message.info {
+    background-color: #eff6ff;
+    color: #1e40af;
+    border-left-color: #3b82f6;
 }
 
 .link-button {
@@ -603,9 +712,10 @@ const isSupportedPage = computed(() => {
 
 .result-container {
     margin-top: 16px;
-    padding: 12px;
+    padding: 16px;
     background: #f8f9fa;
-    border-radius: 4px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
 }
 
 .result-container h3 {
@@ -614,18 +724,45 @@ const isSupportedPage = computed(() => {
 }
 
 .result-container pre {
-    margin: 0 0 8px 0;
+    margin: 0 0 12px 0;
     white-space: pre-wrap;
     font-size: 12px;
-    background: #fff;
-    border: 1px solid #eee;
-    padding: 8px;
-    border-radius: 4px;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    padding: 16px;
+    border-radius: 6px;
     overflow-x: auto;
+    line-height: 1.6;
+    color: #333;
+    position: relative;
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.result-container pre:hover {
+    border-color: #dee2e6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* 代码语法高亮基本样式 */
+.result-container pre .keyword {
+    color: #0066cc;
+    font-weight: bold;
+}
+
+.result-container pre .string {
+    color: #009900;
+}
+
+.result-container pre .comment {
+    color: #999999;
+    font-style: italic;
 }
 
 .result-container button {
-    padding: 6px 12px;
+    padding: 8px 12px;
     background: #4285f4;
     color: white;
     border: none;
@@ -634,6 +771,39 @@ const isSupportedPage = computed(() => {
     font-size: 12px;
     min-width: 80px;
     white-space: nowrap;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.result-container button:hover {
+    background: #3367d6;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(66, 133, 244, 0.3);
+}
+
+.result-container button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(66, 133, 244, 0.3);
+}
+
+.result-container button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 按钮动画效果 */
+.result-container button.copying {
+    background: #28a745;
+    pointer-events: none;
+}
+
+.result-container button.copying::after {
+    content: '✓';
+    margin-left: 4px;
 }
 
 .task-list-actions {
@@ -886,6 +1056,31 @@ const isSupportedPage = computed(() => {
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+/* 加载指示器 */
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+.loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #4285f4;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .hint-icon {

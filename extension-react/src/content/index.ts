@@ -1,31 +1,8 @@
+/// <reference types="chrome" />
+
+/// <reference types="chrome" />
+
 // 确保Chrome API类型可用
-declare const chrome: {
-  runtime: {
-    onMessage: {
-      addListener: (
-        callback: (
-          message: any, 
-          sender: any, 
-          sendResponse: (response?: any) => void
-        ) => boolean | void
-      ) => void
-    },
-    sendMessage: (message: any, callback?: (response: any) => void) => void,
-    getURL: (path: string) => string
-  },
-  storage: {
-    local: {
-      get: (keys: string[], callback: (result: any) => void) => void,
-      set: (items: { [key: string]: any }, callback?: () => void) => void
-    }
-  },
-  action?: {
-    openPopup: () => void
-  },
-  tabs?: {
-    create: (createProperties: { url: string }) => void
-  }
-}
 
 interface AIHCXHelperConfig {
   enabled: boolean;
@@ -82,8 +59,45 @@ const injectComponent = () => {
     console.log('[AIHC助手] 创建切换按钮');
     const toggleButton = document.createElement('button');
     toggleButton.id = 'aihcx-helper-toggle';
+    toggleButton.innerHTML = '🔧';
+    toggleButton.title = 'AIHC助手';
+    
+    // 设置按钮样式
+    toggleButton.style.cssText = `
+      position: fixed !important;
+      top: 50% !important;
+      right: 0 !important;
+      transform: translateY(-50%) !important;
+      width: 48px !important;
+      height: 48px !important;
+      background: #4285f4 !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 8px 0 0 8px !important;
+      cursor: pointer !important;
+      z-index: 10000 !important;
+      font-size: 18px !important;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.2) !important;
+      transition: all 0.3s ease !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+    `;
+    
     document.body.appendChild(toggleButton);
     console.log('[AIHC助手] 切换按钮已添加到DOM');
+    
+    // 悬停效果
+    toggleButton.addEventListener('mouseenter', () => {
+      toggleButton.style.transform = 'translateY(-50%) translateX(-8px)';
+      toggleButton.style.background = '#3367d6';
+    });
+    
+    toggleButton.addEventListener('mouseleave', () => {
+      toggleButton.style.transform = 'translateY(-50%)';
+      toggleButton.style.background = '#4285f4';
+    });
     
     // 检查按钮是否可见
     setTimeout(() => {
@@ -109,10 +123,17 @@ const injectComponent = () => {
         if (response && response.success) {
           console.log('[AIHC助手] 成功打开浏览器侧边栏');
           toggleButton.classList.add('active');
+          toggleButton.style.background = '#34a853';
+          
+          // 3秒后恢复原始颜色
+          setTimeout(() => {
+            toggleButton.classList.remove('active');
+            toggleButton.style.background = '#4285f4';
+          }, 3000);
         } else {
           console.log('[AIHC助手] 无法打开侧边栏:', response?.error || '未知错误');
           // 可以显示提示消息给用户
-          alert('请手动点击浏览器工具栏中的插件图标来使用AIHC助手');
+          showToast('请手动点击浏览器工具栏中的插件图标来使用AIHC助手', 'warning');
         }
       });
     });
@@ -120,7 +141,7 @@ const injectComponent = () => {
     // 长按切换按钮显示关闭对话框
     let longPressTimer: number;
     toggleButton.addEventListener('mousedown', () => {
-      longPressTimer = setTimeout(() => {
+      longPressTimer = window.setTimeout(() => {
         createCloseDialog(toggleButton);
       }, 1000);
     });
@@ -135,69 +156,122 @@ const injectComponent = () => {
   });
 }
 
+// 显示提示消息
+const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    padding: 12px 20px !important;
+    background: ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#2196f3'} !important;
+    color: white !important;
+    border-radius: 4px !important;
+    z-index: 10001 !important;
+    font-size: 14px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    max-width: 300px !important;
+    word-wrap: break-word !important;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+    animation: slideInRight 0.3s ease !important;
+  `;
+  
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  // 3秒后自动移除
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.style.animation = 'slideOutRight 0.3s ease';
+      setTimeout(() => {
+        document.body.removeChild(toast);
+      }, 300);
+    }
+  }, 3000);
+};
+
 // 添加关闭确认对话框
 const createCloseDialog = (toggleButton: HTMLElement) => {
   const dialog = document.createElement('div');
   dialog.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    z-index: 10001;
-    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    min-width: 400px;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    background: white !important;
+    padding: 20px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
+    z-index: 10001 !important;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+    min-width: 400px !important;
+    max-width: 90vw !important;
   `;
 
   dialog.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <span style="font-size: 16px; color: #333;">关闭AIHC助手</span>
-      <button id="close-dialog" style="border: none; background: none; cursor: pointer; font-size: 18px; color: #999;">×</button>
+      <span style="font-size: 16px; color: #333; font-weight: 500;">关闭AIHC助手</span>
+      <button id="close-dialog" style="border: none; background: none; cursor: pointer; font-size: 18px; color: #999; padding: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">×</button>
     </div>
-    <div style="display: flex; flex-direction: column; gap: 12px;">
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-        <input type="radio" name="close-option" value="current-visit" checked>
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px; border-radius: 4px; transition: background-color 0.2s;">
+        <input type="radio" name="close-option" value="current-visit" checked style="margin: 0;">
         <span style="color: #333;">在本次访问关闭</span>
       </label>
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-        <input type="radio" name="close-option" value="current-page">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px; border-radius: 4px; transition: background-color 0.2s;">
+        <input type="radio" name="close-option" value="current-page" style="margin: 0;">
         <span style="color: #333;">在本页关闭</span>
       </label>
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-        <input type="radio" name="close-option" value="all">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px; border-radius: 4px; transition: background-color 0.2s;">
+        <input type="radio" name="close-option" value="all" style="margin: 0;">
         <span style="color: #333;">全部关闭</span>
       </label>
       <div style="color: #999; font-size: 12px; margin-left: 24px;">
-        可在 <a href="#" id="settings-link" style="color: #4285f4; text-decoration: none;">设置</a> 中开启
+        可在 <a href="#" id="settings-link" style="color: #4285f4; text-decoration: none;">设置</a> 中重新开启
       </div>
     </div>
-    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+    <div style="display: flex; justify-content: flex-end; gap: 12px;">
       <button id="cancel-close" style="
-        padding: 6px 16px;
+        padding: 8px 16px;
         border: 1px solid #ddd;
         background: white;
         border-radius: 4px;
         cursor: pointer;
         color: #333;
+        font-size: 14px;
+        transition: all 0.2s;
       ">取消</button>
       <button id="confirm-close" style="
-        padding: 6px 16px;
+        padding: 8px 16px;
         border: none;
         background: #4285f4;
         border-radius: 4px;
         cursor: pointer;
         color: white;
+        font-size: 14px;
+        transition: all 0.2s;
       ">确定</button>
     </div>
   `;
 
+  // 添加遮罩层
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(0,0,0,0.5) !important;
+    z-index: 10000 !important;
+  `;
+  
+  document.body.appendChild(overlay);
   document.body.appendChild(dialog);
 
   // 事件处理
   const closeDialog = () => {
+    document.body.removeChild(overlay);
     document.body.removeChild(dialog);
   };
 
@@ -206,6 +280,9 @@ const createCloseDialog = (toggleButton: HTMLElement) => {
   
   // 取消按钮
   dialog.querySelector('#cancel-close')?.addEventListener('click', closeDialog);
+  
+  // 点击遮罩层关闭
+  overlay.addEventListener('click', closeDialog);
 
   // 设置链接点击事件
   dialog.querySelector('#settings-link')?.addEventListener('click', (e: Event) => {
@@ -222,6 +299,7 @@ const createCloseDialog = (toggleButton: HTMLElement) => {
       case 'current-visit':
         // 仅本次访问关闭，直接移除DOM
         toggleButton.remove();
+        showToast('AIHC助手已在本次访问中关闭', 'info');
         break;
       
       case 'current-page':
@@ -233,9 +311,11 @@ const createCloseDialog = (toggleButton: HTMLElement) => {
             disabledPages.push(currentPage);
             chrome.storage.local.set({ 'aihcx-helper-disabled-pages': disabledPages }, () => {
               toggleButton.remove();
+              showToast('AIHC助手已在当前页面关闭', 'info');
             });
           } else {
             toggleButton.remove();
+            showToast('AIHC助手已在当前页面关闭', 'info');
           }
         });
         break;
@@ -244,6 +324,7 @@ const createCloseDialog = (toggleButton: HTMLElement) => {
         // 全部关闭，设置全局禁用标志
         chrome.storage.local.set({ 'aihcx-helper-disabled': true }, () => {
           toggleButton.remove();
+          showToast('AIHC助手已全部关闭，可在设置中重新开启', 'info');
         });
         break;
     }
@@ -319,17 +400,17 @@ const showImageInfoPopup = (imageInfo: any) => {
   const popup = document.createElement('div');
   popup.className = 'aihcx-image-info-popup';
   popup.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    z-index: 10000;
-    max-width: 80%;
-    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    background: white !important;
+    padding: 20px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
+    z-index: 10000 !important;
+    max-width: 80% !important;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
   `;
   
   // 弹出层内容
@@ -376,6 +457,35 @@ const isAIHCConsolePage = () => {
   return window.location.href.startsWith('https://console.bce.baidu.com/aihc');
 };
 
+// 添加CSS动画样式
+const addAnimationStyles = () => {
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes slideOutRight {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+};
+
 // 初始化内容脚本
 console.log('[AIHC助手] 内容脚本已加载，当前URL:', window.location.href);
 
@@ -388,6 +498,7 @@ if (document.readyState === 'complete') {
       console.log('[AIHC助手] 禁用状态检查结果:', result);
       if (!result['aihcx-helper-disabled']) {
         console.log('[AIHC助手] 开始注入组件');
+        addAnimationStyles();
         injectComponent();
         loadConfig();
       } else {
@@ -408,6 +519,7 @@ if (document.readyState === 'complete') {
         console.log('[AIHC助手] 禁用状态检查结果:', result);
         if (!result['aihcx-helper-disabled']) {
           console.log('[AIHC助手] 开始注入组件');
+          addAnimationStyles();
           injectComponent();
           loadConfig();
         } else {

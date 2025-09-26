@@ -1,13 +1,12 @@
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs'
-import fs from 'fs'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'fs'
 
 export default defineConfig({
   base: './',
   plugins: [
-    vue(),
+    react(),
     {
       name: 'fix-html-paths',
       enforce: 'post',
@@ -43,25 +42,23 @@ export default defineConfig({
         // 复制manifest.json到dist目录
         copyFileSync(resolve(__dirname, 'src/manifest.json'), resolve(__dirname, 'dist/manifest.json'))
         
-        // 复制vite.svg (作为图标使用)
-        try {
-          copyFileSync(resolve(__dirname, 'public/vite.svg'), resolve(__dirname, 'dist/vite.svg'))
-        } catch (e) {
-          console.error('复制vite.svg失败:', e)
-        }
-        
         // 复制图标
         try {
           if (!existsSync(resolve(__dirname, 'dist/assets/icons'))) {
             mkdirSync(resolve(__dirname, 'dist/assets/icons'), { recursive: true })
           }
-          const icons = readdirSync(resolve(__dirname, 'src/assets/icons'))
-          icons.forEach((icon: string) => {
-            copyFileSync(
-              resolve(__dirname, 'src/assets/icons', icon),
-              resolve(__dirname, 'dist/assets/icons', icon)
-            )
-          })
+          
+          // 复制来源图标文件 - 从Vue版本复制
+          const sourceIconPath = resolve(__dirname, '../extension/src/assets/icons')
+          if (existsSync(sourceIconPath)) {
+            const icons = readdirSync(sourceIconPath)
+            icons.forEach((icon: string) => {
+              copyFileSync(
+                resolve(sourceIconPath, icon),
+                resolve(__dirname, 'dist/assets/icons', icon)
+              )
+            })
+          }
         } catch (e) {
           console.error('复制图标文件失败:', e)
         }
@@ -87,17 +84,6 @@ export default defineConfig({
             copyFileSync(
               resolve(__dirname, 'dist/src/popup/index.html'),
               resolve(__dirname, 'dist/popup/index.html')
-            )
-          }
-
-          // 复制sidebar.css文件到popup目录
-          if (existsSync(resolve(__dirname, 'src/popup/sidebar.css'))) {
-            if (!existsSync(resolve(__dirname, 'dist/popup'))) {
-              mkdirSync(resolve(__dirname, 'dist/popup'), { recursive: true })
-            }
-            copyFileSync(
-              resolve(__dirname, 'src/popup/sidebar.css'),
-              resolve(__dirname, 'dist/popup/sidebar.css')
             )
           }
 

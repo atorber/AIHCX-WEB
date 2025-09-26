@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIHC助手插件测试 - console.bce.baidu.com</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-info {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            color: #2e7d32;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #4285f4;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 10px 5px;
+            transition: background-color 0.2s;
+        }
+        .button:hover {
+            background: #3367d6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AIHC助手插件测试页面</h1>
+        
+        <div class="test-info">
+            <strong>🔍 测试说明：</strong><br>
+            这个页面模拟了AIHC控制台的URL结构，用于测试插件的右侧边缘按钮功能。<br>
+            如果插件正常工作，你应该能在页面右侧边缘看到"AIHC"按钮。
+        </div>
+
+        <div class="debug-info">
+            <strong>调试信息：</strong><br>
+            1. 打开浏览器开发者工具 (F12)<br>
+            2. 查看Console标签页<br>
+            3. 寻找以"[AIHC助手]"开头的日志信息<br>
+            4. 检查是否有错误信息
+        </div>
+
+        <div style="text-align: center;">
+            <a href="https://console.bce.baidu.com/aihc" target="_blank" class="button">
+                前往真实AIHC控制台
+            </a>
+            <button onclick="location.reload()" class="button">
+                刷新页面
+            </button>
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 6px; color: #856404;">
+            <strong>📝 故障排除步骤：</strong><br>
+            1. 确认插件已正确安装并启用<br>
+            2. 检查插件权限是否包含"storage"、"activeTab"、"tabs"、"sidePanel"<br>
+            3. 确认当前页面URL包含"console.bce.baidu.com/aihc"<br>
+            4. 查看控制台是否有JavaScript错误<br>
+            5. 尝试重新加载插件或重启浏览器
+        </div>
+    </div>
+
+    <script>
+        // 模拟AIHC控制台页面的URL
+        if (!window.location.href.includes('console.bce.baidu.com/aihc')) {
+            console.log('当前页面不是AIHC控制台页面，插件可能不会加载');
+        } else {
+            console.log('检测到AIHC控制台页面，插件应该会加载');
+        }
+        
+        // 检查是否有AIHC助手按钮
+        setTimeout(() => {
+            const button = document.getElementById('aihcx-helper-toggle');
+            if (button) {
+                console.log('✅ AIHC助手按钮已找到:', button);
+            } else {
+                console.log('❌ 未找到AIHC助手按钮');
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,333 @@
+/* AIHC助手 Options 页面样式 */
+
+.options-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color: #333;
+  background: #ffffff;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* 头部样式 */
+.options-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.options-header h1 {
+  font-size: 28px;
+  color: #333;
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+.options-header p {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* 表单样式 */
+.credentials-form {
+  background: #f8f9fa;
+  padding: 32px;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group:last-of-type {
+  margin-bottom: 32px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #4285f4;
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+.form-group input:hover {
+  border-color: #dee2e6;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* 表单操作区域 */
+.form-actions {
+  text-align: center;
+}
+
+.form-actions button {
+  padding: 12px 32px;
+  background: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 140px;
+  font-family: inherit;
+}
+
+.form-actions button:hover {
+  background: #3367d6;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+}
+
+.form-actions button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(66, 133, 244, 0.3);
+}
+
+.form-actions button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 消息样式 */
+.message {
+  padding: 16px 20px;
+  border-radius: 6px;
+  margin: 20px 0;
+  font-size: 14px;
+  border-left: 4px solid;
+  animation: slideInDown 0.3s ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message.success {
+  background-color: #f0f9ff;
+  color: #065f46;
+  border-left-color: #10b981;
+}
+
+.message.error {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border-left-color: #ef4444;
+}
+
+/* 帮助部分样式 */
+.help-section {
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.help-section h3 {
+  font-size: 18px;
+  color: #333;
+  margin: 0 0 16px 0;
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f1f3f4;
+}
+
+.help-section h3:not(:first-child) {
+  margin-top: 32px;
+}
+
+.help-section ol,
+.help-section ul {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.help-section li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+  color: #555;
+}
+
+.help-section li:last-child {
+  margin-bottom: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .options-container {
+    padding: 20px 16px;
+  }
+  
+  .options-header h1 {
+    font-size: 24px;
+  }
+  
+  .credentials-form {
+    padding: 24px;
+  }
+  
+  .help-section {
+    padding: 24px;
+  }
+  
+  .form-actions button {
+    width: 100%;
+    padding: 14px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .options-container {
+    padding: 16px 12px;
+  }
+  
+  .options-header {
+    margin-bottom: 24px;
+  }
+  
+  .options-header h1 {
+    font-size: 20px;
+  }
+  
+  .options-header p {
+    font-size: 14px;
+  }
+  
+  .credentials-form {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .help-section {
+    padding: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group input {
+    padding: 10px 12px;
+  }
+}
+
+/* 焦点可访问性 */
+.form-group input:focus-visible {
+  outline: 2px solid #4285f4;
+  outline-offset: 2px;
+}
+
+.form-actions button:focus-visible {
+  outline: 2px solid #4285f4;
+  outline-offset: 2px;
+}
+
+/* 深色模式支持（可选） */
+@media (prefers-color-scheme: dark) {
+  .options-container {
+    background: #1a1a1a;
+    color: #e0e0e0;
+  }
+  
+  .options-header h1 {
+    color: #ffffff;
+  }
+  
+  .options-header p {
+    color: #b0b0b0;
+  }
+  
+  .credentials-form {
+    background: #2d2d2d;
+    border-color: #404040;
+  }
+  
+  .form-group label {
+    color: #e0e0e0;
+  }
+  
+  .form-group input {
+    background: #3a3a3a;
+    border-color: #555555;
+    color: #ffffff;
+  }
+  
+  .form-group input:focus {
+    border-color: #4285f4;
+    background: #404040;
+  }
+  
+  .form-group small {
+    color: #b0b0b0;
+  }
+  
+  .help-section {
+    background: #2d2d2d;
+    border-color: #404040;
+  }
+  
+  .help-section h3 {
+    color: #ffffff;
+    border-bottom-color: #404040;
+  }
+  
+  .help-section li {
+    color: #b0b0b0;
+  }
+  
+  .message.success {
+    background-color: #1a3a2e;
+    color: #4ade80;
+    border-left-color: #10b981;
+  }
+  
+  .message.error {
+    background-color: #3a1a1a;
+    color: #f87171;
+    border-left-color: #ef4444;
+  }
+}

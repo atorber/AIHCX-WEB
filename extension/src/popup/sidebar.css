@@ -1,0 +1,341 @@
+/* 专门为侧边栏模式设计的CSS样式 */
+
+/* 确保侧边栏中的主容器样式 */
+.popup-container {
+    width: 100% !important;
+    min-height: 100vh !important;
+    padding: 20px !important;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+    color: #333 !important;
+    background: #ffffff !important;
+    box-sizing: border-box !important;
+}
+
+/* 头部样式增强 */
+.header {
+    margin-bottom: 20px !important;
+}
+
+.header h1 {
+    margin: 0 0 16px 0 !important;
+    font-size: 20px !important;
+    text-align: left !important;
+    color: #333 !important;
+    font-weight: 600 !important;
+}
+
+/* 标签页样式增强 */
+.tabs {
+    display: flex !important;
+    border-bottom: 2px solid #e9ecef !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin-bottom: 20px !important;
+}
+
+.tabs button {
+    flex: 1 !important;
+    padding: 12px 16px !important;
+    background: none !important;
+    border: none !important;
+    border-bottom: 3px solid transparent !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    min-width: 90px !important;
+    white-space: nowrap !important;
+    color: #666 !important;
+    transition: all 0.2s ease !important;
+    border-radius: 6px 6px 0 0 !important;
+}
+
+.tabs button.active {
+    color: #4285f4 !important;
+    border-bottom-color: #4285f4 !important;
+    font-weight: 500 !important;
+}
+
+.tabs button:hover {
+    color: #4285f4 !important;
+    background-color: rgba(66, 133, 244, 0.05) !important;
+}
+
+/* 结果容器样式增强 */
+.result-container {
+    margin-top: 16px !important;
+    padding: 16px !important;
+    background: #f8f9fa !important;
+    border-radius: 8px !important;
+    border: 1px solid #e9ecef !important;
+}
+
+.result-container h3 {
+    margin: 0 0 12px 0 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+}
+
+.result-container pre {
+    margin: 0 0 12px 0 !important;
+    white-space: pre-wrap !important;
+    font-size: 12px !important;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace !important;
+    background: #ffffff !important;
+    border: 1px solid #e9ecef !important;
+    padding: 16px !important;
+    border-radius: 6px !important;
+    overflow-x: auto !important;
+    line-height: 1.6 !important;
+    color: #333 !important;
+    position: relative !important;
+    max-height: 400px !important;
+    overflow-y: auto !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.result-container pre:hover {
+    border-color: #dee2e6 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 按钮样式增强 */
+.result-container button {
+    padding: 8px 12px !important;
+    background: #4285f4 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 12px !important;
+    min-width: 80px !important;
+    white-space: nowrap !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    margin-right: 8px !important;
+    margin-bottom: 8px !important;
+}
+
+.result-container button:hover {
+    background: #3367d6 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(66, 133, 244, 0.3) !important;
+}
+
+.result-container button:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 1px 2px rgba(66, 133, 244, 0.3) !important;
+}
+
+.result-container button:disabled {
+    background: #ccc !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* 按钮动画效果 */
+.result-container button.copying {
+    background: #28a745 !important;
+    pointer-events: none !important;
+}
+
+.result-container button.copying::after {
+    content: '✓' !important;
+    margin-left: 4px !important;
+}
+
+/* 消息样式增强 */
+.message {
+    margin: 16px 0 !important;
+    padding: 12px 16px !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    position: relative !important;
+    border-left: 4px solid !important;
+    animation: slideInDown 0.3s ease-out !important;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message.success {
+    background-color: #f0f9ff !important;
+    color: #065f46 !important;
+    border-left-color: #10b981 !important;
+}
+
+.message.error {
+    background-color: #fef2f2 !important;
+    color: #991b1b !important;
+    border-left-color: #ef4444 !important;
+}
+
+.message.warning {
+    background-color: #fffbeb !important;
+    color: #92400e !important;
+    border-left-color: #f59e0b !important;
+}
+
+.message.info {
+    background-color: #eff6ff !important;
+    color: #1e40af !important;
+    border-left-color: #3b82f6 !important;
+}
+
+/* 加载指示器 */
+.loading-indicator {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 20px !important;
+    color: #666 !important;
+    font-size: 14px !important;
+}
+
+.loading-spinner {
+    width: 16px !important;
+    height: 16px !important;
+    border: 2px solid #f3f3f3 !important;
+    border-top: 2px solid #4285f4 !important;
+    border-radius: 50% !important;
+    animation: spin 1s linear infinite !important;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 不支持页面的样式 */
+.unsupported-page {
+    padding: 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 24px !important;
+}
+
+.unsupported-header {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: center !important;
+}
+
+.unsupported-text {
+    font-size: 14px !important;
+    color: #666 !important;
+}
+
+.console-link {
+    color: #4285f4 !important;
+    text-decoration: none !important;
+    font-size: 14px !important;
+    transition: color 0.2s !important;
+}
+
+.console-link:hover {
+    color: #3367d6 !important;
+    text-decoration: underline !important;
+}
+
+.supported-pages-container {
+    background: #f8f9fa !important;
+    border-radius: 8px !important;
+    padding: 16px !important;
+}
+
+.supported-title {
+    font-size: 14px !important;
+    color: #333 !important;
+    margin-bottom: 12px !important;
+    font-weight: bold !important;
+}
+
+.supported-pages {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+}
+
+.supported-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 13px !important;
+    color: #333 !important;
+}
+
+.item-name {
+    font-weight: 500 !important;
+}
+
+.item-hint {
+    color: #4285f4 !important;
+    font-size: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+.hint-icon {
+    font-size: 12px !important;
+}
+
+/* 表单样式增强 */
+.form-group {
+    margin-bottom: 12px !important;
+}
+
+.form-group label {
+    display: block !important;
+    margin-bottom: 4px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #333 !important;
+}
+
+.form-group select,
+.form-group textarea {
+    width: 100% !important;
+    padding: 8px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    font-size: 13px !important;
+    box-sizing: border-box !important;
+}
+
+.form-group textarea {
+    resize: vertical !important;
+}
+
+/* 链接按钮样式 */
+.link-button {
+    background: none !important;
+    border: none !important;
+    color: #4285f4 !important;
+    cursor: pointer !important;
+    text-decoration: underline !important;
+    padding: 0 !important;
+    font-size: 13px !important;
+}
+
+.link-button:hover {
+    color: #3367d6 !important;
+}

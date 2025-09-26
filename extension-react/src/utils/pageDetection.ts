@@ -1,0 +1,113 @@
+import { PageInfo } from '../types';
+
+// URL模式映射表
+export const urlPatterns = {
+  'https://console.bce.baidu.com/aihc/resources': '资源池列表',
+  'https://console.bce.baidu.com/aihc/resource/info?': '资源池详情',
+  'https://console.bce.baidu.com/aihc/resource/queue?': '队列列表',
+  'https://console.bce.baidu.com/aihc/tasks?': '任务列表',
+  'https://console.bce.baidu.com/aihc/infoTaskIndex/detail?': '任务详情',
+};
+
+// 检测当前页面类型
+export const detectPageType = (url: string): PageInfo => {
+  let matched = false;
+  let pageName = '支持的页面列表：';
+
+  for (const [pattern, name] of Object.entries(urlPatterns)) {
+    if (url.startsWith(pattern)) {
+      // 特殊处理任务列表页面
+      if (name === '任务列表' && url.includes('?clusters=all')) {
+        matched = false;
+        break;
+      }
+      matched = true;
+      pageName = name;
+      break;
+    }
+  }
+
+  const { params } = parseUrl(url);
+
+  return {
+    isSupported: matched,
+    pageName,
+    url,
+    params
+  };
+};
+
+// 解析URL，获取url和query参数
+export const parseUrl = (url: string) => {
+  try {
+    const urlObj = new URL(url);
+    const queryParams = urlObj.searchParams;
+    const params: Record<string, string> = {};
+    
+    for (const [key, value] of queryParams.entries()) {
+      params[key] = value;
+    }
+    
+    return {
+      url: urlObj.origin + urlObj.pathname,
+      params: params
+    };
+  } catch (error) {
+    console.error('解析URL失败:', error);
+    return {
+      url: '',
+      params: {}
+    };
+  }
+};
+
+// 检查是否为AIHC控制台页面
+export const isAIHCConsolePage = (url: string = window.location.href): boolean => {
+  return url.startsWith('https://console.bce.baidu.com/aihc');
+};
+
+// 获取当前活动标签页信息
+export const getCurrentTabInfo = (): Promise<PageInfo> => {
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.tabs) {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (chrome.runtime.lastError) {
+          console.error('获取标签页时出错:', chrome.runtime.lastError.message);
+          resolve({
+            isSupported: false,
+            pageName: chrome.runtime.lastError.message || '获取页面信息失败',
+            url: '',
+            params: {}
+          });
+          return;
+        }
+
+        if (!tabs || tabs.length === 0) {
+          resolve({
+            isSupported: false,
+            pageName: '未找到活动标签页',
+            url: '',
+            params: {}
+          });
+          return;
+        }
+
+        const currentUrl = tabs[0].url;
+        if (!currentUrl) {
+          resolve({
+            isSupported: false,
+            pageName: '无法获取页面URL',
+            url: '',
+            params: {}
+          });
+          return;
+        }
+
+        resolve(detectPageType(currentUrl));
+      });
+    } else {
+      // 在content script中直接使用window.location
+      resolve(detectPageType(window.location.href));
+    }
+  });
+};

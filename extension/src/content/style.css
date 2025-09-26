@@ -1,0 +1,101 @@
+/* AIHC助手插件样式 */
+
+/* 右侧边缘按钮样式 */
+#aihcx-helper-toggle {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 60px;
+  background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+  border: none;
+  border-radius: 8px 0 0 8px;
+  cursor: pointer;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: -2px 0 8px rgba(66, 133, 244, 0.3);
+  transition: all 0.3s ease;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+#aihcx-helper-toggle:hover {
+  width: 50px;
+  box-shadow: -4px 0 12px rgba(66, 133, 244, 0.4);
+}
+
+#aihcx-helper-toggle::before {
+  content: 'AIHC';
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 1px;
+}
+
+#aihcx-helper-toggle:hover::before {
+  content: '助手';
+  font-size: 11px;
+}
+
+/* 按钮状态指示 */
+#aihcx-helper-toggle.active {
+  background: linear-gradient(135deg, #34a853 0%, #4285f4 100%);
+}
+
+#aihcx-helper-toggle.active::before {
+  content: '打开';
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  #aihcx-helper-toggle {
+    width: 35px;
+    height: 50px;
+  }
+  
+  #aihcx-helper-toggle:hover {
+    width: 40px;
+  }
+}
+
+/* 在浏览器侧边栏中的样式增强 */
+/* 针对侧边栏内容的全局样式改进 */
+[id*="side-panel"], [class*="side-panel"] {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+}
+
+/* 用户引导样式增强 */
+.user-guide-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 10001 !important;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+}
+
+.user-guide {
+  background: white !important;
+  border-radius: 12px !important;
+  width: 90% !important;
+  max-width: 400px !important;
+  max-height: 500px !important;
+  overflow-y: auto !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* 动画效果 */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+

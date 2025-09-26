@@ -1,0 +1,30 @@
+{
+  "name": "aihc-helper-extension-react",
+  "version": "0.4.1",
+  "description": "AIHC助手浏览器扩展 - React版本",
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "tsc && vite build --mode production && npm run generate-icons",
+    "preview": "vite preview",
+    "generate-icons": "node scripts/generate-icons.js",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@baiducloud/sdk": "^1.0.3",
+    "js-yaml": "^4.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.313",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.14.0",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react": "^4.2.1",
+    "sharp": "^0.33.2",
+    "typescript": "~5.7.2",
+    "vite": "^6.2.0"
+  }
+}
