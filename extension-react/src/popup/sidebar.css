@@ -4,7 +4,7 @@
 .popup-container, #root {
     width: 100% !important;
     min-height: 100vh !important;
-    padding: 5px 2.5px !important;
+    padding: 8px 4px !important;
     font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
     color: #333 !important;
     background: #ffffff !important;
@@ -922,7 +922,7 @@
 /* 侧边栏小屏幕特别优化 */
 @media (max-width: 350px) {
     .popup-container, #root {
-        padding: 6px 1.5px !important;
+        padding: 6px 3px !important;
     }
     
     .header {
