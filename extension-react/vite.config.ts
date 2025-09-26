@@ -86,6 +86,17 @@ export default defineConfig({
               resolve(__dirname, 'dist/popup/index.html')
             )
           }
+          
+          // 复制sidebar.css到popup目录
+          if (existsSync(resolve(__dirname, 'src/popup/sidebar.css'))) {
+            if (!existsSync(resolve(__dirname, 'dist/popup'))) {
+              mkdirSync(resolve(__dirname, 'dist/popup'), { recursive: true })
+            }
+            copyFileSync(
+              resolve(__dirname, 'src/popup/sidebar.css'),
+              resolve(__dirname, 'dist/popup/sidebar.css')
+            )
+          }
 
           // 确保content目录存在
           if (!existsSync(resolve(__dirname, 'dist/content'))) {
@@ -113,11 +124,17 @@ export default defineConfig({
       input: {
         popup: './src/popup/index.html',
         options: './src/options/index.html',
-        background: './src/background/index.ts',
+        background: './src/background/index-simple.ts',
         content: './src/content/index.ts'
       },
       output: {
-        entryFileNames: '[name]/index.js',
+        entryFileNames: (chunkInfo) => {
+          // background script 需要单独处理
+          if (chunkInfo.name === 'background') {
+            return 'background/index.js'
+          }
+          return '[name]/index.js'
+        },
         chunkFileNames: 'chunks/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
           const name = assetInfo.name || ''
@@ -127,12 +144,24 @@ export default defineConfig({
           }
           return 'assets/[name]-[hash][extname]'
         }
+      },
+      // 为background script排除外部依赖
+      external: (id) => {
+        // 对于background script，排除大型依赖
+        if (id.includes('@baiducloud/sdk') || 
+            id.includes('bn.js') || 
+            id.includes('asn1.js')) {
+          return true
+        }
+        return false
       }
     },
     outDir: 'dist',
     emptyOutDir: true,
     // 禁用CSS代码分割
-    cssCodeSplit: false
+    cssCodeSplit: false,
+    // 减小chunk大小警告阈值
+    chunkSizeWarningLimit: 600
   },
   resolve: {
     alias: {

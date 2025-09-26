@@ -27,8 +27,7 @@
     "options_page": "options/index.html",
     
     "background": {
-      "service_worker": "background/index.js",
-      "type": "module"
+      "service_worker": "background/index.js"
     },
     
     "content_scripts": [
@@ -39,7 +38,7 @@
       }
     ],
     
-    "permissions": ["storage", "activeTab", "tabs", "sidePanel"],
+    "permissions": ["storage", "activeTab", "tabs", "sidePanel", "notifications"],
     
     "web_accessible_resources": [
       {

@@ -1,6 +1,53 @@
 /// <reference types="chrome" />
 
-/// <reference types="chrome" />
+// 检查是否为开发环境
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+// 优化的日志函数，减少控制台噪音
+const log = (message: string, data?: any, level: 'info' | 'warn' | 'error' = 'info') => {
+  const logPrefix = '[AIHC助手]';
+  const style = {
+    info: 'color: #2196F3; font-weight: bold',
+    warn: 'color: #FF9800; font-weight: bold', 
+    error: 'color: #F44336; font-weight: bold'
+  };
+  
+  // 只在关键操作时输出日志，避免控制台噪音
+  const importantMessages = [
+    '内容脚本已加载',
+    '检测到AIHC控制台页面',
+    '开始注入组件',
+    '切换按钮已添加到DOM',
+    '侧边栏面板已打开',
+    '发生错误',
+    '插件已被禁用'
+  ];
+  
+  const isImportant = importantMessages.some(msg => message.includes(msg)) || level === 'error';
+  
+  if (isDevelopment && isImportant) {
+    console.log(`%c${logPrefix} ${message}`, style[level], data || '');
+  } else if (level === 'error') {
+    // 生产环境只显示错误日志
+    console.error(`${logPrefix} ${message}`, data || '');
+  }
+};
+
+// 过滤第三方库的警告信息
+if (!isDevelopment) {
+  const originalConsoleWarn = console.warn;
+  console.warn = function(...args: any[]) {
+    const message = args.join(' ');
+    // 过滤掉TrackRoute嵌套警告和其他第三方库警告
+    if (message.includes('TrackRoute') && message.includes('nested') ||
+        message.includes('Tracert before fns') ||
+        message.includes('stop propagation') ||
+        message.includes('Portal Assistant loaded')) {
+      return; // 静默处理这些警告
+    }
+    originalConsoleWarn.apply(console, args);
+  };
+}
 
 // 确保Chrome API类型可用
 
@@ -40,121 +87,107 @@ const openOptionsPage = () => {
 
 // 主要组件注入
 const injectComponent = () => {
-  console.log('[AIHC助手] injectComponent 开始执行');
-  
   // 检查当前页面是否在禁用列表中
   chrome.storage.local.get(['aihcx-helper-disabled-pages'], (result) => {
     const disabledPages = result['aihcx-helper-disabled-pages'] || [];
     const currentPage = window.location.pathname;
     
-    console.log('[AIHC助手] 禁用页面列表:', disabledPages);
-    console.log('[AIHC助手] 当前页面路径:', currentPage);
-    
     if (disabledPages.includes(currentPage)) {
-      console.log('[AIHC助手] 当前页面已被禁用，跳过注入');
+      if (isDevelopment) {
+        log('当前页面已被禁用，跳过注入');
+      }
       return; // 当前页面已被禁用，不注入组件
     }
     
     // 创建右侧边缘切换按钮
-    console.log('[AIHC助手] 创建切换按钮');
-    const toggleButton = document.createElement('button');
-    toggleButton.id = 'aihcx-helper-toggle';
-    toggleButton.innerHTML = '🔧';
-    toggleButton.title = 'AIHC助手';
-    
-    // 设置按钮样式
-    toggleButton.style.cssText = `
-      position: fixed !important;
-      top: 50% !important;
-      right: 0 !important;
-      transform: translateY(-50%) !important;
-      width: 48px !important;
-      height: 48px !important;
-      background: #4285f4 !important;
-      color: white !important;
-      border: none !important;
-      border-radius: 8px 0 0 8px !important;
-      cursor: pointer !important;
-      z-index: 10000 !important;
-      font-size: 18px !important;
-      box-shadow: -2px 0 8px rgba(0,0,0,0.2) !important;
-      transition: all 0.3s ease !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
-    `;
-    
+    const toggleButton = createToggleButton();
     document.body.appendChild(toggleButton);
-    console.log('[AIHC助手] 切换按钮已添加到DOM');
     
-    // 悬停效果
-    toggleButton.addEventListener('mouseenter', () => {
-      toggleButton.style.transform = 'translateY(-50%) translateX(-8px)';
-      toggleButton.style.background = '#3367d6';
-    });
+    // 添加悬停效果和点击交互
+    addButtonInteractions(toggleButton);
     
-    toggleButton.addEventListener('mouseleave', () => {
-      toggleButton.style.transform = 'translateY(-50%)';
-      toggleButton.style.background = '#4285f4';
-    });
-    
-    // 检查按钮是否可见
-    setTimeout(() => {
-      const button = document.getElementById('aihcx-helper-toggle');
-      if (button) {
-        const rect = button.getBoundingClientRect();
-        const styles = window.getComputedStyle(button);
-        console.log('[AIHC助手] 按钮位置信息:', {
-          rect: rect,
-          display: styles.display,
-          visibility: styles.visibility,
-          opacity: styles.opacity,
-          zIndex: styles.zIndex,
-          position: styles.position
-        });
-      }
-    }, 1000);
-
-    // 切换按钮点击事件 - 只使用浏览器侧边栏
-    toggleButton.addEventListener('click', () => {
-      // 发送消息给background script，打开浏览器侧边栏
-      chrome.runtime.sendMessage({ action: 'openSidePanel' }, (response) => {
-        if (response && response.success) {
-          console.log('[AIHC助手] 成功打开浏览器侧边栏');
-          toggleButton.classList.add('active');
-          toggleButton.style.background = '#34a853';
-          
-          // 3秒后恢复原始颜色
-          setTimeout(() => {
-            toggleButton.classList.remove('active');
-            toggleButton.style.background = '#4285f4';
-          }, 3000);
-        } else {
-          console.log('[AIHC助手] 无法打开侧边栏:', response?.error || '未知错误');
-          // 可以显示提示消息给用户
-          showToast('请手动点击浏览器工具栏中的插件图标来使用AIHC助手', 'warning');
-        }
-      });
-    });
-
-    // 长按切换按钮显示关闭对话框
-    let longPressTimer: number;
-    toggleButton.addEventListener('mousedown', () => {
-      longPressTimer = window.setTimeout(() => {
-        createCloseDialog(toggleButton);
-      }, 1000);
-    });
-
-    toggleButton.addEventListener('mouseup', () => {
-      clearTimeout(longPressTimer);
-    });
-
-    toggleButton.addEventListener('mouseleave', () => {
-      clearTimeout(longPressTimer);
-    });
+    log('切换按钮已添加到DOM');
   });
+};
+
+// 创建切换按钮
+const createToggleButton = () => {
+  const toggleButton = document.createElement('button');
+  toggleButton.id = 'aihcx-helper-toggle';
+  toggleButton.innerHTML = '🔧';
+  toggleButton.title = 'AIHC助手 - 点击打开侧边栏';
+  
+  // 设置按钮样式
+  toggleButton.style.cssText = `
+    position: fixed !important;
+    top: 50% !important;
+    right: 0 !important;
+    transform: translateY(-50%) !important;
+    width: 48px !important;
+    height: 48px !important;
+    background: #4285f4 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px 0 0 8px !important;
+    cursor: pointer !important;
+    z-index: 10000 !important;
+    font-size: 18px !important;
+    box-shadow: -2px 0 8px rgba(0,0,0,0.2) !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+  `;
+  
+  return toggleButton;
 }
+
+// 按钮交互逻辑
+const addButtonInteractions = (toggleButton: HTMLElement) => {
+  // 悬停效果
+  toggleButton.addEventListener('mouseenter', () => {
+    toggleButton.style.transform = 'translateY(-50%) translateX(-8px)';
+    toggleButton.style.background = '#3367d6';
+  });
+  
+  toggleButton.addEventListener('mouseleave', () => {
+    toggleButton.style.transform = 'translateY(-50%)';
+    toggleButton.style.background = '#4285f4';
+  });
+
+  // 切换按钮点击事件 - 由于用户手势限制，引导用户点击插件图标
+  toggleButton.addEventListener('click', () => {
+    // 显示提示信息
+    showToast('请点击浏览器工具栏中的 AIHC助手 图标来打开侧边栏', 'info');
+    
+    // 添加视觉反馈
+    toggleButton.style.background = '#ff9800';
+    toggleButton.style.transform = 'translateY(-50%) scale(1.1)';
+    
+    // 2秒后恢复原始状态
+    setTimeout(() => {
+      toggleButton.style.background = '#4285f4';
+      toggleButton.style.transform = 'translateY(-50%)';
+    }, 2000);
+  });
+
+  // 长按切换按钮显示关闭对话框
+  let longPressTimer: number;
+  toggleButton.addEventListener('mousedown', () => {
+    longPressTimer = window.setTimeout(() => {
+      createCloseDialog(toggleButton);
+    }, 1000);
+  });
+
+  toggleButton.addEventListener('mouseup', () => {
+    clearTimeout(longPressTimer);
+  });
+
+  toggleButton.addEventListener('mouseleave', () => {
+    clearTimeout(longPressTimer);
+  });
+};
 
 // 显示提示消息
 const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
@@ -487,49 +520,29 @@ const addAnimationStyles = () => {
 };
 
 // 初始化内容脚本
-console.log('[AIHC助手] 内容脚本已加载，当前URL:', window.location.href);
+log('内容脚本已加载，当前URL: ' + window.location.href);
 
-if (document.readyState === 'complete') {
-  console.log('[AIHC助手] 文档已加载完成');
+const initializePlugin = () => {
   if (isAIHCConsolePage()) {
-    console.log('[AIHC助手] 检测到AIHC控制台页面');
+    log('检测到AIHC控制台页面');
     // 检查是否已禁用
     chrome.storage.local.get(['aihcx-helper-disabled'], (result) => {
-      console.log('[AIHC助手] 禁用状态检查结果:', result);
       if (!result['aihcx-helper-disabled']) {
-        console.log('[AIHC助手] 开始注入组件');
+        log('开始注入组件');
         addAnimationStyles();
         injectComponent();
         loadConfig();
       } else {
-        console.log('[AIHC助手] 插件已被禁用');
+        log('插件已被禁用');
       }
     });
-  } else {
-    console.log('[AIHC助手] 非AIHC控制台页面，跳过注入');
   }
+};
+
+if (document.readyState === 'complete') {
+  initializePlugin();
 } else {
-  console.log('[AIHC助手] 等待文档加载完成');
-  window.addEventListener('load', () => {
-    console.log('[AIHC助手] 文档加载完成事件触发');
-    if (isAIHCConsolePage()) {
-      console.log('[AIHC助手] 检测到AIHC控制台页面');
-      // 检查是否已禁用
-      chrome.storage.local.get(['aihcx-helper-disabled'], (result) => {
-        console.log('[AIHC助手] 禁用状态检查结果:', result);
-        if (!result['aihcx-helper-disabled']) {
-          console.log('[AIHC助手] 开始注入组件');
-          addAnimationStyles();
-          injectComponent();
-          loadConfig();
-        } else {
-          console.log('[AIHC助手] 插件已被禁用');
-        }
-      });
-    } else {
-      console.log('[AIHC助手] 非AIHC控制台页面，跳过注入');
-    }
-  });
+  window.addEventListener('load', initializePlugin);
 }
 
 // 监听URL变化
@@ -548,6 +561,9 @@ new MutationObserver(() => {
     if (isAIHCConsolePage()) {
       chrome.storage.local.get(['aihcx-helper-disabled'], (result) => {
         if (!result['aihcx-helper-disabled']) {
+          if (isDevelopment) {
+            log('URL变化，重新注入组件');
+          }
           injectComponent();
           loadConfig();
         }

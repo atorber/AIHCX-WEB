@@ -34,16 +34,32 @@ const defaultHelperConfig: AIHCXHelperConfig = {
 
 // 监听扩展图标点击事件，打开侧边栏
 chrome.action.onClicked.addListener(async (tab) => {
-  console.log('扩展图标被点击');
+  console.log('[AIHC助手] 扩展图标被点击，当前标签页ID:', tab.id, '窗口ID:', tab.windowId);
   
   try {
+    // 检查权限
+    const hasPermission = await chrome.permissions.contains({ permissions: ['sidePanel'] });
+    console.log('[AIHC助手] sidePanel权限检查:', hasPermission);
+    
+    if (!hasPermission) {
+      console.error('[AIHC助手] 缺少sidePanel权限');
+      return;
+    }
+    
     // 打开侧边栏
-    if (tab.id) {
+    if (tab.id && tab.windowId) {
+      console.log('[AIHC助手] 尝试打开侧边栏...');
       await chrome.sidePanel.open({ windowId: tab.windowId });
-      console.log('侧边栏已打开');
+      console.log('[AIHC助手] 侧边栏已成功打开');
+    } else {
+      console.error('[AIHC助手] 无效的标签页或窗口ID');
     }
   } catch (error) {
-    console.error('打开侧边栏失败:', error);
+    console.error('[AIHC助手] 打开侧边栏失败:', error);
+    // 尝试输出更详细的错误信息
+    if (error instanceof Error) {
+      console.error('[AIHC助手] 错误详情:', error.message, error.stack);
+    }
   }
 });
 
@@ -116,16 +132,38 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 // 打开侧边栏
 async function openSidePanel(): Promise<{ success: boolean; error?: string }> {
   try {
+    console.log('[AIHC助手] openSidePanel函数被调用');
+    
+    // 检查权限
+    const hasPermission = await chrome.permissions.contains({ permissions: ['sidePanel'] });
+    console.log('[AIHC助手] sidePanel权限检查:', hasPermission);
+    
+    if (!hasPermission) {
+      console.error('[AIHC助手] 缺少sidePanel权限');
+      return { success: false, error: '缺少sidePanel权限' };
+    }
+    
     // 获取当前活动标签页
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    console.log('[AIHC助手] 当前活动标签页:', tabs);
+    
     if (tabs && tabs.length > 0 && tabs[0].windowId) {
-      await chrome.sidePanel.open({ windowId: tabs[0].windowId });
+      const tab = tabs[0];
+      console.log('[AIHC助手] 准备打开侧边栏，窗口ID:', tab.windowId);
+      
+      await chrome.sidePanel.open({ windowId: tab.windowId });
+      console.log('[AIHC助手] 侧边栏已成功打开');
       return { success: true };
     } else {
+      console.error('[AIHC助手] 无法获取当前窗口信息，tabs:', tabs);
       return { success: false, error: '无法获取当前窗口信息' };
     }
   } catch (error) {
-    console.error('打开侧边栏失败:', error);
+    console.error('[AIHC助手] 打开侧边栏失败:', error);
+    if (error instanceof Error) {
+      console.error('[AIHC助手] 错误详情:', error.message, error.stack);
+      return { success: false, error: `打开侧边栏失败: ${error.message}` };
+    }
     return { success: false, error: '打开侧边栏失败' };
   }
 }
