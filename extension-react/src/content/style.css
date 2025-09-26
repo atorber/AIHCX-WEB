@@ -1,26 +1,30 @@
 /* AIHC助手 Content Script 样式 */
 
-/* 确保按钮样式不被页面样式覆盖 */
+/* 确保按钮样式不被页面样式覆盖 - 参考Vue版本设计 */
 #aihcx-helper-toggle {
   position: fixed !important;
   top: 50% !important;
   right: 0 !important;
   transform: translateY(-50%) !important;
-  width: 48px !important;
-  height: 48px !important;
-  background: #4285f4 !important;
+  width: 40px !important;
+  height: 60px !important;
+  background: linear-gradient(135deg, #4285f4 0%, #34a853 100%) !important;
   color: white !important;
   border: none !important;
   border-radius: 8px 0 0 8px !important;
   cursor: pointer !important;
-  z-index: 10000 !important;
-  font-size: 18px !important;
-  box-shadow: -2px 0 8px rgba(0,0,0,0.2) !important;
-  transition: all 0.3s ease !important;
+  z-index: 9999 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  box-shadow: -2px 0 8px rgba(66, 133, 244, 0.3) !important;
+  transition: all 0.3s ease !important;
   font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  writing-mode: vertical-rl !important;
+  text-orientation: mixed !important;
+  letter-spacing: 1px !important;
   line-height: 1 !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -30,12 +34,13 @@
 }
 
 #aihcx-helper-toggle:hover {
-  transform: translateY(-50%) translateX(-8px) !important;
-  background: #3367d6 !important;
+  width: 50px !important;
+  box-shadow: -4px 0 12px rgba(66, 133, 244, 0.4) !important;
+  transform: translateY(-50%) !important;
 }
 
 #aihcx-helper-toggle.active {
-  background: #34a853 !important;
+  background: linear-gradient(135deg, #34a853 0%, #4285f4 100%) !important;
 }
 
 /* 图像高亮样式 */
@@ -47,6 +52,19 @@
 .aihcx-image-highlighted:hover {
   cursor: pointer !important;
   box-shadow: 0 0 15px rgba(66, 133, 244, 0.5) !important;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  #aihcx-helper-toggle {
+    width: 35px !important;
+    height: 50px !important;
+    font-size: 9px !important;
+  }
+  
+  #aihcx-helper-toggle:hover {
+    width: 40px !important;
+  }
 }
 
 /* 弹出层样式 */

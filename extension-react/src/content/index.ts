@@ -99,62 +99,83 @@ const injectComponent = () => {
 const createToggleButton = () => {
   const toggleButton = document.createElement('button');
   toggleButton.id = 'aihcx-helper-toggle';
-  toggleButton.innerHTML = '🔧';
   toggleButton.title = 'AIHC助手 - 点击打开侧边栏';
   
-  // 设置按钮样式
+  // 设置按钮样式，参考Vue版本
   toggleButton.style.cssText = `
     position: fixed !important;
     top: 50% !important;
     right: 0 !important;
     transform: translateY(-50%) !important;
-    width: 48px !important;
-    height: 48px !important;
-    background: #4285f4 !important;
-    color: white !important;
+    width: 40px !important;
+    height: 60px !important;
+    background: linear-gradient(135deg, #4285f4 0%, #34a853 100%) !important;
     border: none !important;
     border-radius: 8px 0 0 8px !important;
     cursor: pointer !important;
-    z-index: 10000 !important;
-    font-size: 18px !important;
-    box-shadow: -2px 0 8px rgba(0,0,0,0.2) !important;
-    transition: all 0.3s ease !important;
+    z-index: 9999 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    box-shadow: -2px 0 8px rgba(66, 133, 244, 0.3) !important;
+    transition: all 0.3s ease !important;
     font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif !important;
+    color: white !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    writing-mode: vertical-rl !important;
+    text-orientation: mixed !important;
+    letter-spacing: 1px !important;
   `;
+  
+  // 设置按钮文本
+  toggleButton.textContent = 'AIHC';
   
   return toggleButton;
 }
 
 // 按钮交互逻辑
 const addButtonInteractions = (toggleButton: HTMLElement) => {
-  // 悬停效果
+  // 悬停效果，参考Vue版本
   toggleButton.addEventListener('mouseenter', () => {
-    toggleButton.style.transform = 'translateY(-50%) translateX(-8px)';
-    toggleButton.style.background = '#3367d6';
+    toggleButton.style.width = '50px';
+    toggleButton.style.boxShadow = '-4px 0 12px rgba(66, 133, 244, 0.4)';
+    toggleButton.textContent = '助手';
+    toggleButton.style.fontSize = '11px';
   });
   
   toggleButton.addEventListener('mouseleave', () => {
-    toggleButton.style.transform = 'translateY(-50%)';
-    toggleButton.style.background = '#4285f4';
+    toggleButton.style.width = '40px';
+    toggleButton.style.boxShadow = '-2px 0 8px rgba(66, 133, 244, 0.3)';
+    toggleButton.textContent = 'AIHC';
+    toggleButton.style.fontSize = '10px';
   });
 
-  // 切换按钮点击事件 - 由于用户手势限制，引导用户点击插件图标
+  // 点击事件 - 尝试打开侧边栏
   toggleButton.addEventListener('click', () => {
-    // 显示提示信息
-    showToast('请点击浏览器工具栏中的 AIHC助手 图标来打开侧边栏', 'info');
-    
-    // 添加视觉反馈
-    toggleButton.style.background = '#ff9800';
-    toggleButton.style.transform = 'translateY(-50%) scale(1.1)';
-    
-    // 2秒后恢复原始状态
-    setTimeout(() => {
-      toggleButton.style.background = '#4285f4';
-      toggleButton.style.transform = 'translateY(-50%)';
-    }, 2000);
+    // 尝试直接打开侧边栏
+    chrome.runtime.sendMessage({ action: 'openSidePanel' }, (response) => {
+      if (response && response.success) {
+        log('成功打开浏览器侧边栏');
+        // 更新按钮状态
+        toggleButton.classList.add('active');
+        toggleButton.textContent = '打开';
+      } else {
+        log('无法打开侧边栏，显示引导提示', response?.error, 'warn');
+        // 显示引导提示
+        showToast('📡 请点击浏览器工具栏中的 AIHC助手 图标来打开侧边栏', 'info');
+        
+        // 添加视觉反馈
+        toggleButton.style.background = '#ff9800';
+        toggleButton.style.transform = 'translateY(-50%) scale(1.05)';
+        
+        // 3秒后恢复原始状态
+        setTimeout(() => {
+          toggleButton.style.background = 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)';
+          toggleButton.style.transform = 'translateY(-50%)';
+        }, 3000);
+      }
+    });
   });
 
   // 长按切换按钮显示关闭对话框
