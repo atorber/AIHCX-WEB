@@ -14,7 +14,13 @@ export const urlPatterns = {
   'https://console.bce.baidu.com/aihc/deployments/custom': '自定义部署',
   'https://console.bce.baidu.com/aihc/deployment/custom?': '在线服务部署详情',
   'https://console.bce.baidu.com/aihc/datasets': '数据集管理',
+  'https://console.bce.baidu.com/aihc/dataset/info?': '数据集详情',
+  'https://console.bce.baidu.com/aihc/dataset/info?tab=detail&': '数据集详情',
+  'https://console.bce.baidu.com/aihc/dataset/info?tab=versions&': '数据集版本列表',
   'https://console.bce.baidu.com/aihc/modelManage/list': '模型管理列表',
+  'https://console.bce.baidu.com/aihc/modelManage/info?tab=versions&': '模型版本列表',
+  'https://console.bce.baidu.com/aihc/modelManage/info?tab=detail&': '模型详情',
+  'https://console.bce.baidu.com/aihc/modelManage/info?': '模型详情',
   'https://console.bce.baidu.com/aihc/developmentMachines': '开发机列表',
 };
 
