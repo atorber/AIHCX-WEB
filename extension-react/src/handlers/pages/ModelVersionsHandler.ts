@@ -20,6 +20,14 @@ export class ModelVersionsHandler extends BaseHandler {
             pageNumber: '1',
             pageSize: '10'
           })
+        },
+        {
+          title: '获取模型版本信息',
+          text: 'https://cloud.baidu.com/doc/AIHC/s/Lmc1fr4lc',
+          requestExample: this.generateRequestExample('GET', 'DescribeModelVersion', { 
+            modelId,
+            versionId: 'v1'
+          })
         }
       ]
     };

@@ -406,6 +406,10 @@
   background: #f8f9fa;
   border-radius: 6px;
   border-left: 4px solid #007bff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .api-doc-url strong {
@@ -418,10 +422,32 @@
   color: #007bff;
   text-decoration: none;
   word-break: break-all;
+  flex: 1;
+  min-width: 0;
 }
 
 .api-doc-url a:hover {
   text-decoration: underline;
+}
+
+.api-doc-url button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.api-doc-url button:hover {
+  background: #0056b3;
+}
+
+.api-doc-url button:active {
+  transform: scale(0.95);
 }
 
 .api-request-example {
@@ -436,7 +462,6 @@
 }
 
 .request-example-content {
-  position: relative;
   background: #2d3748;
   border-radius: 8px;
   padding: 16px;
@@ -454,26 +479,24 @@
   word-break: break-all;
 }
 
-.request-example-content .copy-button {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #e2e8f0;
-  padding: 6px 12px;
+.api-request-example .copy-button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
   border-radius: 4px;
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s;
+  margin-top: 12px;
+  display: block;
 }
 
-.request-example-content .copy-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
+.api-request-example .copy-button:hover {
+  background: #0056b3;
 }
 
-.request-example-content .copy-button:active {
+.api-request-example .copy-button:active {
   transform: scale(0.95);
 }
 

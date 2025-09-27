@@ -35,11 +35,6 @@ const APIDocsTab: React.FC<APIDocsTabProps> = ({
           <div key={index} className="result-item">
             <h3 className={isWarning ? 'warning-title' : ''}>
               {item.title}
-              {!isWarning && (
-                <button onClick={() => onOpenUrl(item.text)}>
-                  查看说明文档
-                </button>
-              )}
             </h3>
             <div className="api-doc-content">
               {isWarning ? (
@@ -53,21 +48,24 @@ const APIDocsTab: React.FC<APIDocsTabProps> = ({
                     <a href={item.text} target="_blank" rel="noopener noreferrer">
                       {item.text}
                     </a>
+                    <button onClick={() => onOpenUrl(item.text)}>
+                      查看说明文档
+                    </button>
                   </div>
                   {item.requestExample && (
                     <div className="api-request-example">
                       <strong>请求示例：</strong>
                       <div className="request-example-content">
                         <pre>{item.requestExample}</pre>
-                        {onCopyText && (
-                          <button 
-                            className="copy-button"
-                            onClick={() => handleCopyRequestExample(item.requestExample!)}
-                          >
-                            复制请求示例
-                          </button>
-                        )}
                       </div>
+                      {onCopyText && (
+                        <button 
+                          className="copy-button"
+                          onClick={() => handleCopyRequestExample(item.requestExample!)}
+                        >
+                          复制请求示例
+                        </button>
+                      )}
                     </div>
                   )}
                 </>
