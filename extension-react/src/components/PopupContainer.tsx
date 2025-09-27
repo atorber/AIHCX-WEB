@@ -106,6 +106,12 @@ ${headers.join('\n')}`;
   const handleFetchUrl = async (pageName: string, _url: string, params: Record<string, string>) => {
     console.log('[AIHC助手] 开始处理页面:', pageName, params);
     
+    // 防止重复加载
+    if (isLoading) {
+      console.log('[AIHC助手] 正在加载中，跳过重复请求');
+      return;
+    }
+    
     try {
       setIsLoading(true);
       console.log('[AIHC助手] 设置加载状态为true');
@@ -123,24 +129,28 @@ ${headers.join('\n')}`;
       console.log('[AIHC助手] 任务参数已更新');
       
       // 检查当前activeTab是否仍然有效，如果无效则设置默认tab
-      setTimeout(() => {
-        const currentTabValid = (
-          (activeTab === 'cli' && pageData.cliItems && pageData.cliItems.length > 0) ||
-          (activeTab === 'apiDocs' && pageData.apiDocs && pageData.apiDocs.length > 0) ||
-          (activeTab === 'chat' && pageData.chatConfig) ||
-          (activeTab === 'json' && pageData.jsonItems && pageData.jsonItems.length > 0) ||
-          (activeTab === 'yaml' && pageData.yamlItems && pageData.yamlItems.length > 0) ||
-          (activeTab === 'commandScript' && pageData.commandScript)
-        );
-        
-        if (!currentTabValid) {
-          if (pageData.apiDocs && pageData.apiDocs.length > 0) {
-            setActiveTab('apiDocs');
-          } else if (pageData.cliItems && pageData.cliItems.length > 0) {
-            setActiveTab('cli');
-          }
+      // 使用useCallback包装setActiveTab以避免异步状态问题
+      const setDefaultTab = () => {
+        if (pageData.apiDocs && pageData.apiDocs.length > 0) {
+          setActiveTab('apiDocs');
+        } else if (pageData.cliItems && pageData.cliItems.length > 0) {
+          setActiveTab('cli');
         }
-      }, 0);
+      };
+      
+      // 立即检查并设置默认tab，不使用setTimeout
+      const currentTabValid = (
+        (activeTab === 'cli' && pageData.cliItems && pageData.cliItems.length > 0) ||
+        (activeTab === 'apiDocs' && pageData.apiDocs && pageData.apiDocs.length > 0) ||
+        (activeTab === 'chat' && pageData.chatConfig) ||
+        (activeTab === 'json' && pageData.jsonItems && pageData.jsonItems.length > 0) ||
+        (activeTab === 'yaml' && pageData.yamlItems && pageData.yamlItems.length > 0) ||
+        (activeTab === 'commandScript' && pageData.commandScript)
+      );
+      
+      if (!currentTabValid) {
+        setDefaultTab();
+      }
       
     } catch (error) {
       console.error('处理URL失败:', error);
@@ -324,7 +334,7 @@ ${headers.join('\n')}`;
         showMessage('error', '页面检测失败');
       }
     }, 200); // 200ms防抖延迟
-  }, [handleFetchUrl, showMessage]);
+  }, []); // 移除依赖，避免无限循环
 
   // 初始化页面检测
   useEffect(() => {
@@ -334,22 +344,22 @@ ${headers.join('\n')}`;
   // 监听页面变化
   useEffect(() => {
     const handleTabUpdate = (_tabId: number, changeInfo: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab) => {
-      // 只处理当前活动标签页的变化
-      if (changeInfo.url && tab.active && tab.url) {
-        console.log('[AIHC助手] 检测到URL变化:', changeInfo.url);
-        // 延迟一下再检测，确保页面完全加载
-        setTimeout(() => {
-          detectAndUpdatePage();
-        }, 500);
+      // 只处理当前活动标签页的变化，并且确保是AIHC控制台页面
+      if (changeInfo.url && tab.active && tab.url && tab.url.includes('console.bce.baidu.com/aihc')) {
+        console.log('[AIHC助手] 检测到AIHC页面URL变化:', changeInfo.url);
+        // 使用防抖的detectAndUpdatePage，避免频繁触发
+        detectAndUpdatePage();
       }
     };
 
     const handleTabActivated = (activeInfo: chrome.tabs.TabActiveInfo) => {
       console.log('[AIHC助手] 检测到标签页切换:', activeInfo.tabId);
-      // 延迟一下再检测，确保页面完全加载
-      setTimeout(() => {
-        detectAndUpdatePage();
-      }, 300);
+      // 获取当前标签页信息，只处理AIHC页面
+      chrome.tabs.get(activeInfo.tabId, (tab) => {
+        if (tab.url && tab.url.includes('console.bce.baidu.com/aihc')) {
+          detectAndUpdatePage();
+        }
+      });
     };
 
     // 监听标签页更新

@@ -39,7 +39,15 @@ export class TaskDetailHandler extends BaseHandler {
       const apiUrl = `https://console.bce.baidu.com/api/cce/ai-service/v1/cluster/${clusterUuid}/aijob/${k8sName}?kind=${kind}&namespace=${k8sNamespace}&queueID=${queueID}&locale=zh-cn&_=${Date.now()}`;
       console.log('[AIHC助手] 请求任务详情API:', apiUrl);
       
-      const response = await fetch(apiUrl);
+      // 添加超时控制，防止API调用无限等待
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+      
+      const response = await fetch(apiUrl, {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
       console.log('[AIHC助手] API响应状态:', response.status, response.ok);
       
       const data = await response.json();
