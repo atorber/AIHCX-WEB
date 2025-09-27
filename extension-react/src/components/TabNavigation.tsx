@@ -47,10 +47,21 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
       shortLabel: 'API',
       icon: '📚',
       condition: taskParams.apiDocs.length > 0 
+    },
+    { 
+      key: 'chat' as TabType, 
+      label: 'AI聊天', 
+      shortLabel: 'Chat',
+      icon: '💬',
+      condition: !!taskParams.chatConfig 
     }
   ];
 
   const visibleTabs = tabs.filter(tab => tab.condition);
+  
+  // 调试信息
+  console.log('[AIHC助手] TabNavigation - taskParams.chatConfig:', taskParams.chatConfig);
+  console.log('[AIHC助手] TabNavigation - visibleTabs:', visibleTabs.map(t => t.key));
 
   return (
     <div className="tabs-compact">

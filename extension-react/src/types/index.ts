@@ -22,6 +22,11 @@ export interface TaskParams {
   yamlItems: { title: string; text: string }[];
   cliItems: { title: string; text: string; doc?: string }[];
   apiDocs: { title: string; text: string; requestExample?: string }[];
+  chatConfig?: {
+    serviceUrl: string;
+    accessToken: string;
+    basePath: string;
+  };
 }
 
 export interface Message {
@@ -58,4 +63,4 @@ export interface BaiduCredentials {
   endpoint?: string;
 }
 
-export type TabType = 'cli' | 'commandScript' | 'json' | 'yaml' | 'apiDocs';
+export type TabType = 'cli' | 'commandScript' | 'json' | 'yaml' | 'apiDocs' | 'chat';

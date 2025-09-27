@@ -5,6 +5,7 @@ import CommandScriptTab from './tabs/CommandScriptTab';
 import JSONParamsTab from './tabs/JSONParamsTab';
 import YAMLParamsTab from './tabs/YAMLParamsTab';
 import APIDocsTab from './tabs/APIDocsTab';
+import ChatTab from './tabs/ChatTab';
 
 interface ContentAreaProps {
   activeTab: TabType;
@@ -61,6 +62,12 @@ const ContentArea: React.FC<ContentAreaProps> = ({
             items={taskParams.apiDocs}
             onOpenUrl={onOpenUrl}
             onCopyText={onCopyText}
+          />
+        );
+      case 'chat':
+        return (
+          <ChatTab
+            chatConfig={taskParams.chatConfig}
           />
         );
       default:
