@@ -80,72 +80,6 @@ const DataDownloadInput: React.FC<DataDownloadInputProps> = ({ onParseUrl }) => 
     }
   };
 
-  // 通用的输入框查找函数
-  const findInputBySelectors = (selectors: string[]): HTMLInputElement | null => {
-    for (const selector of selectors) {
-      const input = document.querySelector(selector) as HTMLInputElement;
-      if (input) {
-        return input;
-      }
-    }
-    return null;
-  };
-
-  // 通用的输入框填充函数
-  const fillInput = (input: HTMLInputElement | null, value: string, fieldName: string) => {
-    if (input) {
-      console.log(`🔍 开始填充${fieldName}输入框:`, input);
-      
-      // 先聚焦到输入框
-      input.focus();
-      
-      // 清除现有值
-      input.value = '';
-      
-      // 设置新值
-      input.value = value;
-      
-      // 触发多种事件以确保表单框架能够识别变化
-      const events = [
-        new Event('input', { bubbles: true }),
-        new Event('change', { bubbles: true }),
-        new Event('blur', { bubbles: true }),
-        new Event('focus', { bubbles: true }),
-        new KeyboardEvent('keydown', { bubbles: true, key: 'Tab' }),
-        new KeyboardEvent('keyup', { bubbles: true, key: 'Tab' })
-      ];
-      
-      events.forEach(event => {
-        input.dispatchEvent(event);
-      });
-      
-      // 强制触发React/Vue等框架的更新
-      if ((input as any)._valueTracker) {
-        (input as any)._valueTracker.setValue('');
-        (input as any)._valueTracker.setValue(value);
-      }
-      
-      // 尝试触发React合成事件
-      const reactEvent = new Event('input', { bubbles: true });
-      Object.defineProperty(reactEvent, 'target', { writable: false, value: input });
-      input.dispatchEvent(reactEvent);
-      
-      console.log(`✅ 已填充${fieldName}:`, value);
-      console.log(`   输入框元素:`, input);
-      console.log(`   输入框值:`, input.value);
-      console.log(`   输入框属性:`, {
-        placeholder: input.placeholder,
-        className: input.className,
-        type: input.type,
-        maxLength: input.maxLength
-      });
-      return true;
-    } else {
-      console.warn(`❌ 未找到${fieldName}输入框`);
-      return false;
-    }
-  };
-
   const fillPageForm = async (parsed: {
     datasetName: string;
     storagePath: string;
@@ -156,10 +90,18 @@ const DataDownloadInput: React.FC<DataDownloadInputProps> = ({ onParseUrl }) => 
     console.log('解析结果:', parsed);
     console.log('原始URL:', url.trim());
     
-    // 使用content script的方式来操作页面DOM
+    // 直接使用chrome.tabs.sendMessage方式，跳过background script
     try {
-      // 发送消息给content script来执行填充
-      const response = await chrome.runtime.sendMessage({
+      // 获取当前活动标签页
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab?.id) {
+        throw new Error('无法获取当前活动标签页');
+      }
+      
+      console.log('📤 直接向content script发送消息...', tab.url);
+      
+      // 直接发送消息给content script
+      const response = await chrome.tabs.sendMessage(tab.id, {
         type: 'FILL_DATASET_FORM',
         data: {
           datasetName: parsed.datasetName,
@@ -168,85 +110,53 @@ const DataDownloadInput: React.FC<DataDownloadInputProps> = ({ onParseUrl }) => 
         }
       });
       
+      console.log('📥 收到content script响应:', response);
+      
       if (response && response.success) {
         console.log('✅ 页面表单填充成功:', response);
         setParsedResult(parsed);
       } else {
         console.error('❌ 页面表单填充失败:', response);
-        setError('填充页面表单失败，请手动填充');
+        setError(`填充失败：${response?.error || '未知错误'}`);
       }
     } catch (error) {
       console.error('❌ 发送填充消息失败:', error);
-      // 回退到直接DOM操作
-      await fillPageFormDirect(parsed);
-    }
-  };
-
-  // 直接DOM操作的回退方案
-  const fillPageFormDirect = async (parsed: {
-    datasetName: string;
-    storagePath: string;
-    organization: string;
-    dataset: string;
-  }) => {
-    console.log('🔄 使用直接DOM操作方式填充...');
-    
-    // 等待页面加载完成
-    console.log('⏳ 等待页面加载完成...');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    let successCount = 0;
-
-    // 填充数据集名称 - 使用多种选择器尝试
-    console.log('📝 正在填充数据集名称...');
-    const datasetNameInput = findInputBySelectors([
-      'input[placeholder="请输入数据集名称"]',
-      'input[maxlength="64"][placeholder*="数据集名称"]',
-      'input.ant-input[placeholder*="数据集名称"]',
-      'input.osui-input[placeholder*="数据集名称"]',
-      'input[type="text"][placeholder*="数据集名称"]'
-    ]);
-    if (fillInput(datasetNameInput, parsed.datasetName, '数据集名称')) {
-      successCount++;
-    }
-
-    // 填充存储子路径
-    console.log('📁 正在填充存储子路径...');
-    const storagePathInput = findInputBySelectors([
-      'input[placeholder="请输入子路径名称"]',
-      'input[placeholder*="子路径名称"]',
-      'input.ant-input[placeholder*="子路径名称"]',
-      'input.osui-input[placeholder*="子路径名称"]',
-      'input[placeholder*="子路径"]'
-    ]);
-    if (fillInput(storagePathInput, parsed.storagePath, '存储子路径')) {
-      successCount++;
-    }
-
-    // 填充开源数据集输入框
-    console.log('🔗 正在填充开源数据集地址...');
-    const openSourceInput = findInputBySelectors([
-      'input[placeholder="请输入开源数据集"]',
-      'input[placeholder*="开源数据集"]',
-      'input.ant-input[placeholder*="开源数据集"]',
-      'input.osui-input[placeholder*="开源数据集"]',
-      'input[placeholder*="开源"]'
-    ]);
-    if (fillInput(openSourceInput, parsed.datasetName, '开源数据集地址')) {
-      successCount++;
-    }
-
-    console.log(`🎉 填充完成！成功填充了 ${successCount}/3 个字段`);
-    
-    if (successCount === 0) {
-      console.warn('⚠️ 警告：没有找到任何可填充的输入框，请检查页面是否正确加载');
-      setError('未找到页面表单，请确保在正确的页面');
-    } else if (successCount < 3) {
-      console.warn(`⚠️ 只填充了 ${successCount}/3 个字段，请检查页面表单`);
-      setError(`只填充了 ${successCount}/3 个字段`);
-    } else {
-      console.log('🎉 所有字段都填充成功！');
-      setParsedResult(parsed);
+      
+      // 提供手动填充指导
+      const instructions = [
+        '自动填充失败，请手动在浏览器控制台中执行以下代码：',
+        '',
+        '// 填充数据集名称',
+        'const datasetInput = document.querySelector(\'input[placeholder="请输入数据集名称"]\')',
+        'if(datasetInput) {',
+        '  datasetInput.value = "' + parsed.datasetName + '";',
+        '  datasetInput.dispatchEvent(new Event("input", {bubbles: true}));',
+        '}',
+        '',
+        '// 填充存储子路径',
+        'const pathInput = document.querySelector(\'input[placeholder="请输入子路径名称"]\')',
+        'if(pathInput) {',
+        '  pathInput.value = "' + parsed.storagePath + '";',
+        '  pathInput.dispatchEvent(new Event("input", {bubbles: true}));',
+        '}',
+        '',
+        '// 填充开源数据集',
+        'const sourceInput = document.querySelector(\'input[placeholder="请输入开源数据集"]\')',
+        'if(sourceInput) {',
+        '  sourceInput.value = "' + parsed.datasetName + '";',
+        '  sourceInput.dispatchEvent(new Event("input", {bubbles: true}));',
+        '}'
+      ].join('\n');
+      
+      setError('自动填充失败，请在控制台手动执行填充代码');
+      
+      // 复制指令到剪贴板
+      try {
+        await navigator.clipboard.writeText(instructions);
+        console.log('📋 手动填充指令已复制到剪贴板');
+      } catch {
+        console.log('📋 手动填充指令:', instructions);
+      }
     }
   };
 

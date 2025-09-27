@@ -253,6 +253,31 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     }
     return true;
   }
+  
+  // 处理表单填充消息，转发给content script
+  if (message.type === 'FILL_DATASET_FORM') {
+    console.log('[AIHC助手] Background收到表单填充请求:', message.data);
+    
+    // 获取当前活动标签页
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs && tabs.length > 0 && tabs[0].id) {
+        // 转发消息给content script
+        chrome.tabs.sendMessage(tabs[0].id, message, (response) => {
+          if (chrome.runtime.lastError) {
+            console.error('[AIHC助手] 转发消息失败:', chrome.runtime.lastError.message);
+            sendResponse({ success: false, error: chrome.runtime.lastError.message });
+          } else {
+            console.log('[AIHC助手] 表单填充消息转发成功:', response);
+            sendResponse(response);
+          }
+        });
+      } else {
+        console.error('[AIHC助手] 无法获取当前活动标签页');
+        sendResponse({ success: false, error: '无法获取当前活动标签页' });
+      }
+    });
+    return true; // 异步响应
+  }
 });
 
 // 获取凭证
