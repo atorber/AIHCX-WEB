@@ -241,51 +241,83 @@ const DataDownloadInput: React.FC<DataDownloadInputProps> = ({ onParseUrl }) => 
       <div className="input-container">
         <div className="input-group">
           <label htmlFor="dataset-url">数据集/模型地址</label>
-          <input
-            id="dataset-url"
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="https://huggingface.co/datasets/nvidia/PhysicalAI-SmartSpaces"
-            className={error ? 'error' : ''}
-            disabled={isLoading}
-          />
-          {error && <div className="error-message">{error}</div>}
+          <div className="input-with-button">
+            <input
+              id="dataset-url"
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="请输入HuggingFace地址，如：https://huggingface.co/datasets/..."
+              className={`url-input ${error ? 'error' : ''} ${isLoading ? 'loading' : ''}`}
+              disabled={isLoading}
+            />
+            <button
+              onClick={handleParseUrl}
+              disabled={isLoading || !url.trim()}
+              className={`parse-button ${isLoading ? 'loading' : ''} ${!url.trim() ? 'disabled' : ''}`}
+              title={isLoading ? '解析中...' : !url.trim() ? '请输入地址' : '点击解析并填充表单'}
+            >
+              {isLoading ? (
+                <>
+                  <span className="loading-spinner"></span>
+                  解析中...
+                </>
+              ) : (
+                <>
+                  <span className="parse-icon">🚀</span>
+                  解析填充
+                </>
+              )}
+            </button>
+          </div>
+          {error && <div className="error-message">❌ {error}</div>}
+          {url.trim() && !error && !isLoading && (
+            <div className="input-hint">
+              💡 按Enter键或点击按钮开始解析
+            </div>
+          )}
         </div>
-        
-        <button
-          onClick={handleParseUrl}
-          disabled={isLoading || !url.trim()}
-          className="parse-button"
-        >
-          {isLoading ? '解析中...' : '解析并填充'}
-        </button>
       </div>
 
       <div className="example-section">
-        <h4>示例地址</h4>
+        <h4>📋 示例地址</h4>
         <div className="example-urls">
           <button
             type="button"
             onClick={() => setUrl('https://huggingface.co/datasets/nvidia/PhysicalAI-SmartSpaces')}
-            className="example-button"
+            className="example-button dataset"
+            disabled={isLoading}
           >
-            📄 nvidia/PhysicalAI-SmartSpaces (数据集)
+            <span className="example-icon">📄</span>
+            <div className="example-content">
+              <div className="example-name">nvidia/PhysicalAI-SmartSpaces</div>
+              <div className="example-type">数据集示例</div>
+            </div>
           </button>
           <button
             type="button"
             onClick={() => setUrl('https://huggingface.co/datasets/openai/gdpval')}
-            className="example-button"
+            className="example-button dataset"
+            disabled={isLoading}
           >
-            📄 openai/gdpval (数据集)
+            <span className="example-icon">📄</span>
+            <div className="example-content">
+              <div className="example-name">openai/gdpval</div>
+              <div className="example-type">数据集示例</div>
+            </div>
           </button>
           <button
             type="button"
             onClick={() => setUrl('https://huggingface.co/Alibaba-NLP/Tongyi-DeepResearch-30B-A3B')}
-            className="example-button"
+            className="example-button model"
+            disabled={isLoading}
           >
-            🤖 Alibaba-NLP/Tongyi-DeepResearch-30B-A3B (模型)
+            <span className="example-icon">🤖</span>
+            <div className="example-content">
+              <div className="example-name">Alibaba-NLP/Tongyi-DeepResearch-30B-A3B</div>
+              <div className="example-type">模型示例</div>
+            </div>
           </button>
         </div>
       </div>
@@ -296,25 +328,36 @@ const DataDownloadInput: React.FC<DataDownloadInputProps> = ({ onParseUrl }) => 
           <h4>📋 解析结果</h4>
           <div className="result-grid">
             <div className="result-item">
-              <label>内容类型</label>
-              <div className="result-value">
-                {parsedResult.type === 'DATASET' ? '📄 数据集' : '🤖 模型'}
+              <label>创建内容</label>
+              <div className="result-value type-badge">
+                <span className={`type-icon ${parsedResult.type.toLowerCase()}`}>
+                  {parsedResult.type === 'DATASET' ? '📄' : '🤖'}
+                </span>
+                {parsedResult.type === 'DATASET' ? '数据集' : '模型'}
               </div>
             </div>
             <div className="result-item">
               <label>{parsedResult.type === 'DATASET' ? '数据集名称' : '模型名称'}</label>
-              <div className="result-value">{parsedResult.fullName}</div>
-            </div>
-            <div className="result-item">
-              <label>开源地址</label>
-              <div className="result-value">{url.trim()}</div>
+              <div className="result-value name-value">{parsedResult.fullName}</div>
             </div>
             <div className="result-item">
               <label>子路径名称</label>
-              <div className="result-value">{parsedResult.storagePath}</div>
+              <div className="result-value path-value">{parsedResult.storagePath}</div>
+            </div>
+            <div className="result-item">
+              <label>{parsedResult.type === 'DATASET' ? '开源数据集' : '开源模型'}</label>
+              <div className="result-value name-value">{parsedResult.fullName}</div>
+            </div>
+            <div className="result-item">
+              <label>原始地址</label>
+              <div className="result-value url-value">
+                <a href={url.trim()} target="_blank" rel="noopener noreferrer">
+                  {url.trim()}
+                </a>
+              </div>
             </div>
           </div>
-          <div className="result-note">
+          <div className="result-note success">
             ✅ 以上信息已自动填充到页面表单中
           </div>
         </div>

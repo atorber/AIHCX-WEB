@@ -2,33 +2,39 @@
 
 /* 数据下载输入组件样式 */
 .data-download-input {
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 8px;
+  padding: 24px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 12px;
   margin: 16px 0;
+  border: 1px solid #e1e5e9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .data-download-input .input-header {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   text-align: center;
 }
 
 .data-download-input .input-header h3 {
   margin: 0 0 8px 0;
-  font-size: 18px;
-  color: #333;
-  font-weight: 600;
+  font-size: 20px;
+  color: #2c3e50;
+  font-weight: 700;
+  background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .data-download-input .input-header p {
   margin: 0;
   font-size: 14px;
-  color: #666;
-  line-height: 1.4;
+  color: #6c757d;
+  line-height: 1.5;
 }
 
 .data-download-input .input-container {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .data-download-input .input-group {
@@ -39,166 +45,393 @@
   display: block;
   margin-bottom: 8px;
   font-size: 14px;
-  font-weight: 500;
-  color: #333;
+  font-weight: 600;
+  color: #495057;
 }
 
-.data-download-input .input-group input {
-  width: 100%;
-  padding: 12px 16px;
+/* 输入框和按钮组合布局 */
+.data-download-input .input-with-button {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.data-download-input .url-input {
+  flex: 1;
+  padding: 14px 16px;
   border: 2px solid #e1e5e9;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
-  color: #333;
+  color: #495057;
   background: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: all 0.3s ease;
   box-sizing: border-box;
+  position: relative;
 }
 
-.data-download-input .input-group input:focus {
+.data-download-input .url-input:focus {
   outline: none;
   border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+  transform: translateY(-1px);
 }
 
-.data-download-input .input-group input.error {
+.data-download-input .url-input.error {
   border-color: #dc3545;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15);
 }
 
-.data-download-input .input-group input:disabled {
+.data-download-input .url-input.loading {
+  border-color: #ffc107;
+  background: linear-gradient(90deg, #fff 25%, #fff3cd 50%, #fff 75%);
+  background-size: 200% 100%;
+  animation: loadingGradient 2s ease-in-out infinite;
+}
+
+@keyframes loadingGradient {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.data-download-input .url-input:disabled {
   background: #f8f9fa;
   color: #6c757d;
   cursor: not-allowed;
 }
 
-.data-download-input .error-message {
-  margin-top: 8px;
-  font-size: 12px;
-  color: #dc3545;
-  line-height: 1.4;
-}
-
 .data-download-input .parse-button {
-  width: 100%;
-  padding: 12px 20px;
+  padding: 14px 20px;
   background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
 }
 
 .data-download-input .parse-button:hover:not(:disabled) {
   background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
-  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
-  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+  transform: translateY(-2px);
 }
 
-.data-download-input .parse-button:disabled {
+.data-download-input .parse-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.data-download-input .parse-button.disabled {
   background: #6c757d;
   cursor: not-allowed;
   transform: none;
-  box-shadow: none;
+  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2);
+}
+
+.data-download-input .parse-button.loading {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+  cursor: wait;
+}
+
+.data-download-input .loading-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.data-download-input .parse-icon {
+  font-size: 16px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-3px); }
+  60% { transform: translateY(-1px); }
+}
+
+.data-download-input .error-message {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #721c24;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.data-download-input .input-hint {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #d1ecf1;
+  border: 1px solid #bee5eb;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #0c5460;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .data-download-input .example-section {
-  border-top: 1px solid #e1e5e9;
-  padding-top: 16px;
+  border-top: 1px solid #e9ecef;
+  padding-top: 20px;
+  margin-top: 4px;
 }
 
 .data-download-input .example-section h4 {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  color: #333;
-  font-weight: 500;
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: #495057;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .data-download-input .example-urls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .data-download-input .example-button {
-  padding: 6px 12px;
+  padding: 16px;
   background: #fff;
-  border: 1px solid #e1e5e9;
-  border-radius: 4px;
-  font-size: 12px;
-  color: #007bff;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
 }
 
-.data-download-input .example-button:hover {
+.data-download-input .example-button:hover:not(:disabled) {
   background: #f8f9fa;
   border-color: #007bff;
-  color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+.data-download-input .example-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.15);
+}
+
+.data-download-input .example-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f8f9fa;
+}
+
+.data-download-input .example-button.dataset {
+  border-left: 4px solid #28a745;
+}
+
+.data-download-input .example-button.model {
+  border-left: 4px solid #6610f2;
+}
+
+.data-download-input .example-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 123, 255, 0.1);
+  border-radius: 8px;
+}
+
+.data-download-input .example-button.dataset .example-icon {
+  background: rgba(40, 167, 69, 0.1);
+}
+
+.data-download-input .example-button.model .example-icon {
+  background: rgba(102, 16, 242, 0.1);
+}
+
+.data-download-input .example-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.data-download-input .example-name {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+
+.data-download-input .example-type {
+  font-size: 12px;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
 /* 解析结果显示区域样式 */
 .data-download-input .parsed-result-section {
-  margin-top: 20px;
-  padding: 16px;
-  background: #e8f5e8;
-  border: 1px solid #28a745;
-  border-radius: 6px;
+  margin-top: 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, #e8f5e8 0%, #f0f9f0 100%);
+  border: 2px solid #28a745;
+  border-radius: 12px;
+  animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .data-download-input .parsed-result-section h4 {
-  margin: 0 0 16px 0;
-  font-size: 16px;
+  margin: 0 0 20px 0;
+  font-size: 18px;
   color: #155724;
-  font-weight: 600;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .data-download-input .result-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .data-download-input .result-item {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #c3e6cb;
+  transition: all 0.3s ease;
+}
+
+.data-download-input .result-item:hover {
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15);
+  transform: translateY(-1px);
 }
 
 .data-download-input .result-item label {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin: 0;
+}
+
+.data-download-input .result-value {
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #495057;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  word-break: break-all;
+  line-height: 1.5;
+  position: relative;
+}
+
+.data-download-input .type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.data-download-input .result-value {
-  padding: 8px 12px;
-  background: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  font-size: 14px;
-  color: #333;
-  font-family: 'Courier New', monospace;
-  word-break: break-all;
-  line-height: 1.4;
+.data-download-input .type-badge .type-icon.dataset {
+  color: #28a745;
+}
+
+.data-download-input .type-badge .type-icon.model {
+  color: #6610f2;
+}
+
+.data-download-input .name-value {
+  font-weight: 600;
+  color: #007bff;
+}
+
+.data-download-input .url-value a {
+  color: #007bff;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.data-download-input .url-value a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.data-download-input .path-value {
+  font-style: italic;
+  color: #6c757d;
 }
 
 .data-download-input .result-note {
-  padding: 8px 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.data-download-input .result-note.success {
   background: #d4edda;
   border: 1px solid #c3e6cb;
-  border-radius: 4px;
-  font-size: 13px;
   color: #155724;
-  text-align: center;
-  font-weight: 500;
 }
 
 /* 响应式设计 */
