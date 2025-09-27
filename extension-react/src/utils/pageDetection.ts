@@ -12,8 +12,10 @@ export const urlPatterns = {
   'https://console.bce.baidu.com/aihc/tasks': '任务列表',
   'https://console.bce.baidu.com/aihc/infoTaskIndex/detail?': '任务详情',
   'https://console.bce.baidu.com/aihc/deployments/custom': '自定义部署',
+  'https://console.bce.baidu.com/aihc/deployment/custom?': '在线服务部署详情',
   'https://console.bce.baidu.com/aihc/datasets': '数据集管理',
   'https://console.bce.baidu.com/aihc/modelManage/list': '模型管理列表',
+  'https://console.bce.baidu.com/aihc/developmentMachines': '开发机列表',
 };
 
 // 检测当前页面类型

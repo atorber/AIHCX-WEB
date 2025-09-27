@@ -101,12 +101,26 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
       } else if (pageName === '任务列表') {
         await handleTaskList(params);
       } else if (pageName === '自定义部署') {
-        await handleCustomDeployment(params);
+        await handleCustomDeployment();
       } else if (pageName === '数据集管理') {
-        await handleDatasets(params);
+        await handleDatasets();
       } else if (pageName === '模型管理列表') {
-        await handleModelManageList(params);
+        await handleModelManageList();
+      } else if (pageName === '开发机列表') {
+        await handleDevelopmentMachines();
+      } else if (pageName === '在线服务部署详情') {
+        await handleOnlineServiceDeploymentDetail(params);
       }
+      
+      // 检查是否有CLI命令，如果没有则默认显示API tab
+      setTimeout(() => {
+        setTaskParams(currentParams => {
+          if (currentParams.cliItems.length === 0 && currentParams.apiDocs.length > 0) {
+            setActiveTab('apiDocs');
+          }
+          return currentParams;
+        });
+      }, 0);
     } catch (error) {
       console.error('处理URL失败:', error);
       showMessage('error', '加载页面数据失败');
@@ -119,7 +133,7 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
   const generateRequestExample = (
     method: 'GET' | 'POST', 
     action: string, 
-    params?: { resourcePoolId?: string; resourcePoolType?: string }
+    params?: { resourcePoolId?: string; resourcePoolType?: string; serviceId?: string }
   ) => {
     const baseUrl = 'aihc.bj.baidubce.com';
     let endpoint = `?action=${action}`;
@@ -129,6 +143,9 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
     }
     if (params?.resourcePoolType) {
       endpoint += `&resourcePoolType=${params.resourcePoolType}`;
+    }
+    if (params?.serviceId) {
+      endpoint += `&serviceId=${params.serviceId}`;
     }
     
     const headers = [
@@ -360,7 +377,7 @@ ${headers.join('\n')}`;
       apiDocs: [
         {
           title: '获取任务列表',
-          text: 'https://cloud.baidu.com/doc/AIHC/s/rm56ipjsz',
+          text: 'https://cloud.baidu.com/doc/AIHC/s/xmayvctia',
           requestExample: generateRequestExample('POST', 'DescribeJobs', { resourcePoolId: params.clusterUuid })
         }
       ]
@@ -368,95 +385,77 @@ ${headers.join('\n')}`;
   };
 
   // 处理自定义部署页面
-  const handleCustomDeployment = async (params: Record<string, string>) => {
+  const handleCustomDeployment = async () => {
     setTaskParams(prev => ({
       ...prev,
       cliItems: [],
       apiDocs: [
         {
-          title: '创建自定义部署',
-          text: 'https://cloud.baidu.com/doc/AIHC/s/custom-deployment-create',
-          requestExample: generateRequestExample('POST', 'CreateCustomDeployment')
-        },
-        {
-          title: '获取部署列表',
-          text: 'https://cloud.baidu.com/doc/AIHC/s/custom-deployment-list',
-          requestExample: generateRequestExample('GET', 'ListCustomDeployments')
-        },
-        {
-          title: '获取部署详情',
-          text: 'https://cloud.baidu.com/doc/AIHC/s/custom-deployment-detail',
-          requestExample: generateRequestExample('GET', 'GetCustomDeployment', { 
-            resourcePoolId: params.deploymentId || 'deployment-id' 
-          })
+          title: '获取在线服务部署列表',
+          text: 'https://cloud.baidu.com/doc/AIHC/s/Imb4v5905',
+          requestExample: generateRequestExample('GET', 'DescribeServices')
         }
       ]
     }));
   };
 
   // 处理数据集管理页面
-  const handleDatasets = async (params: Record<string, string>) => {
+  const handleDatasets = async () => {
     setTaskParams(prev => ({
       ...prev,
       cliItems: [],
       apiDocs: [
         {
-          title: '创建数据集',
-          text: 'https://cloud.baidu.com/doc/AIHC/s/dataset-create',
-          requestExample: generateRequestExample('POST', 'CreateDataset')
-        },
-        {
           title: '获取数据集列表',
-          text: 'https://cloud.baidu.com/doc/AIHC/s/dataset-list',
-          requestExample: generateRequestExample('GET', 'ListDatasets')
-        },
-        {
-          title: '获取数据集详情',
-          text: 'https://cloud.baidu.com/doc/AIHC/s/dataset-detail',
-          requestExample: generateRequestExample('GET', 'GetDataset', { 
-            resourcePoolId: params.datasetId || 'dataset-id' 
-          })
-        },
-        {
-          title: '上传数据到数据集',
-          text: 'https://cloud.baidu.com/doc/AIHC/s/dataset-upload',
-          requestExample: generateRequestExample('POST', 'UploadToDataset', { 
-            resourcePoolId: params.datasetId || 'dataset-id' 
-          })
+          text: 'https://cloud.baidu.com/doc/AIHC/s/Emc099va4',
+          requestExample: generateRequestExample('GET', 'DescribeDatasets')
         }
       ]
     }));
   };
 
   // 处理模型管理列表页面
-  const handleModelManageList = async (params: Record<string, string>) => {
+  const handleModelManageList = async () => {
     setTaskParams(prev => ({
       ...prev,
       cliItems: [],
       apiDocs: [
         {
-          title: '创建模型',
-          text: 'https://cloud.baidu.com/doc/AIHC/s/model-create',
-          requestExample: generateRequestExample('POST', 'CreateModel')
-        },
-        {
           title: '获取模型列表',
-          text: 'https://cloud.baidu.com/doc/AIHC/s/model-list',
-          requestExample: generateRequestExample('GET', 'ListModels')
-        },
+          text: 'https://cloud.baidu.com/doc/AIHC/s/amc1fmz95',
+          requestExample: generateRequestExample('GET', 'DescribeModels')
+        }
+      ]
+    }));
+  };
+
+  // 处理开发机列表页面
+  const handleDevelopmentMachines = async () => {
+    setTaskParams(prev => ({
+      ...prev,
+      cliItems: [],
+      apiDocs: [
         {
-          title: '获取模型详情',
-          text: 'https://cloud.baidu.com/doc/AIHC/s/model-detail',
-          requestExample: generateRequestExample('GET', 'GetModel', { 
-            resourcePoolId: params.modelId || 'model-id' 
-          })
-        },
+          title: '获取开发机列表',
+          text: 'https://cloud.baidu.com/doc/AIHC/s/Nmbkpgnrm',
+          requestExample: generateRequestExample('GET', 'DescribeDevInstances')
+        }
+      ]
+    }));
+  };
+
+  // 处理在线服务部署详情页面
+  const handleOnlineServiceDeploymentDetail = async (params: Record<string, string>) => {
+    const serviceId = params.appId;
+    
+    setTaskParams(prev => ({
+      ...prev,
+      cliItems: [],
+      apiDocs: [
         {
-          title: '上传模型文件',
-          text: 'https://cloud.baidu.com/doc/AIHC/s/model-upload',
-          requestExample: generateRequestExample('POST', 'UploadModel', { 
-            resourcePoolId: params.modelId || 'model-id' 
-          })
+          title: '获取在线服务部署详情',
+          text: 'https://cloud.baidu.com/doc/AIHC/s/4mb4v7wn5',
+          requestExample: generateRequestExample('GET', 'DescribeService', { serviceId })
         }
       ]
     }));
