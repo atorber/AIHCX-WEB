@@ -713,9 +713,155 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       sendResponse({ success: true });
     }
 
-    // 处理数据集表单填充消息
-    if (message.type === 'FILL_DATASET_FORM') {
+    // 处理表单填充消息（数据集和模型）
+    if (message.type === 'FILL_FORM') {
       console.log('[AIHC助手] 收到表单填充请求:', message.data);
+      
+      try {
+        const data = message.data;
+        
+        // 通用字段填充函数 - 适配React输入框
+        const fillField = (fieldName: string, value: string) => {
+          const field = document.querySelector(`[data-name="${fieldName}"] input`) as HTMLInputElement;
+          if (field) {
+            // 使用React兼容的填充方法
+            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+            if (nativeInputValueSetter) {
+              nativeInputValueSetter.call(field, value);
+            } else {
+              field.value = value;
+            }
+            
+            // 创建React合成事件
+            const inputEvent = new Event('input', { bubbles: true });
+            const changeEvent = new Event('change', { bubbles: true });
+            
+            // 触发事件序列
+            field.focus();
+            field.dispatchEvent(inputEvent);
+            field.dispatchEvent(changeEvent);
+            field.blur();
+            
+            console.log(`[AIHC助手] ✅ 字段 ${fieldName} 已填充:`, value);
+            return true;
+          } else {
+            console.warn(`[AIHC助手] ❌ 未找到字段 ${fieldName}`);
+            return false;
+          }
+        };
+        
+        // React输入框填充函数（用于placeholder选择器）
+        const fillReactInput = (selector: string, value: string, description: string) => {
+          const field = document.querySelector(selector) as HTMLInputElement;
+          if (field && value) {
+            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+            if (nativeInputValueSetter) {
+              nativeInputValueSetter.call(field, value);
+            } else {
+              field.value = value;
+            }
+            
+            const inputEvent = new Event('input', { bubbles: true });
+            const changeEvent = new Event('change', { bubbles: true });
+            
+            field.focus();
+            field.dispatchEvent(inputEvent);
+            field.dispatchEvent(changeEvent);
+            field.blur();
+            
+            console.log(`[AIHC助手] ✅ ${description}已填充:`, value);
+            return true;
+          } else {
+            console.warn(`[AIHC助手] ❌ 未找到${description}字段`);
+            return false;
+          }
+        };
+        
+        let successCount = 0;
+        
+        // 1. 切换创建内容类型（数据集/模型）
+        if (data.type) {
+          const typeRadios = document.querySelectorAll('input[type="radio"][value="DATASET"], input[type="radio"][value="MODEL"]');
+          console.log('[AIHC助手] 找到类型单选按钮:', typeRadios.length);
+          
+          typeRadios.forEach((radio: any) => {
+            if (radio.value === data.type) {
+              console.log(`[AIHC助手] 尝试切换到${data.type === 'DATASET' ? '数据集' : '模型'}`);
+              
+              // 先取消所有选中状态
+              typeRadios.forEach((r: any) => r.checked = false);
+              
+              // 设置目标选项为选中
+              radio.checked = true;
+              
+              // 触发多种事件确保切换生效
+              radio.dispatchEvent(new Event('change', { bubbles: true }));
+              radio.dispatchEvent(new Event('click', { bubbles: true }));
+              radio.dispatchEvent(new Event('input', { bubbles: true }));
+              
+              // 同时触发父元素的点击事件
+              const label = radio.closest('label');
+              if (label) {
+                label.click();
+              }
+              
+              console.log(`[AIHC助手] 已选择${data.type === 'DATASET' ? '数据集' : '模型'}，当前checked:`, radio.checked);
+              successCount++;
+            }
+          });
+        }
+
+        // 等待页面更新后再填充字段
+        setTimeout(() => {
+          console.log('[AIHC助手] 开始填充字段...');
+          
+          // 2. 填充名称字段（数据集名称/模型名称都使用同一个data-name="datasetName"）
+          const nameValue = data.type === 'DATASET' ? data.datasetName : data.modelName;
+          if (nameValue) {
+            console.log(`[AIHC助手] 填充${data.type === 'DATASET' ? '数据集' : '模型'}名称:`, nameValue);
+            if (fillField('datasetName', nameValue)) {
+              successCount++;
+            }
+          }
+
+          // 3. 填充子路径名称字段
+          if (data.storagePath) {
+            console.log('[AIHC助手] 填充子路径名称:', data.storagePath);
+            if (fillReactInput('input[placeholder="请输入子路径名称"]', data.storagePath, '子路径名称')) {
+              successCount++;
+            }
+          }
+
+          // 4. 填充开源地址字段
+          const sourceValue = data.type === 'DATASET' ? data.openSourceDataset : data.openSourceModel;
+          if (sourceValue) {
+            console.log(`[AIHC助手] 填充开源${data.type === 'DATASET' ? '数据集' : '模型'}地址:`, sourceValue);
+            if (fillField('datasetSourceUri', sourceValue)) {
+              successCount++;
+            }
+          }
+          
+          console.log(`[AIHC助手] 🎉 表单填充完成！成功填充了 ${successCount} 个字段`);
+          sendResponse({ 
+            success: successCount > 0, 
+            filledCount: successCount
+          });
+        }, 2000); // 增加等待时间确保页面更新完成
+        
+      } catch (error) {
+        console.error('[AIHC助手] ❌ 表单填充失败:', error);
+        sendResponse({ 
+          success: false, 
+          error: error instanceof Error ? error.message : '未知错误'
+        });
+      }
+      
+      return true; // 保持消息通道开放以支持异步响应
+    }
+
+    // 保持旧的数据集表单填充消息兼容性
+    if (message.type === 'FILL_DATASET_FORM') {
+      console.log('[AIHC助手] 收到旧版数据集表单填充请求:', message.data);
       
       try {
         const { datasetName, storagePath } = message.data;
