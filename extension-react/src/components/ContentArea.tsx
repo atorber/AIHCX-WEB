@@ -13,6 +13,7 @@ interface ContentAreaProps {
   onCopyText: (text: string) => Promise<void>;
   onSaveFile: (content: string, type: 'json' | 'yaml' | 'txt') => void;
   onOpenUrl: (url: string) => void;
+  onLoadChatConfig?: (serviceId: string) => Promise<void>;
 }
 
 const ContentArea: React.FC<ContentAreaProps> = ({
@@ -20,7 +21,8 @@ const ContentArea: React.FC<ContentAreaProps> = ({
   taskParams,
   onCopyText,
   onSaveFile,
-  onOpenUrl
+  onOpenUrl,
+  onLoadChatConfig
 }) => {
   const renderTabContent = () => {
     switch (activeTab) {
@@ -70,6 +72,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
             chatConfig={taskParams.chatConfig}
             isLoading={taskParams.chatLoading}
             error={taskParams.chatError}
+            onLoadConfig={onLoadChatConfig}
           />
         );
       default:

@@ -26,8 +26,8 @@ export interface TaskParams {
     serviceUrl: string;
     accessToken: string;
     basePath: string;
-    isLoading?: boolean;
-    error?: string;
+    serviceId?: string;
+    isLoaded?: boolean;
   };
   chatLoading?: boolean;
   chatError?: string;

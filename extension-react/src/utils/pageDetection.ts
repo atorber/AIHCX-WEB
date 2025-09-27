@@ -3,8 +3,8 @@ import { PageInfo } from '../types';
 // URL模式映射表
 export const urlPatterns = {
   'https://console.bce.baidu.com/aihc/resources': '自运维资源池列表',
-  'https://console.bce.baidu.com/aihc/serverless/resource/list': '全托管资源池列表',
   'https://console.bce.baidu.com/aihc/serverless/resource/list?tab=resourcePool': '全托管资源池列表',
+  'https://console.bce.baidu.com/aihc/serverless/resource/list': '全托管资源池列表',
   'https://console.bce.baidu.com/aihc/serverless/resource/list?tab=resourceQueue': '全托管队列列表',
   'https://console.bce.baidu.com/aihc/resource/info?': '自运维资源池详情',
   'https://console.bce.baidu.com/aihc/serverless/resource/info?': '全托管资源池详情',
@@ -14,8 +14,8 @@ export const urlPatterns = {
   'https://console.bce.baidu.com/aihc/deployments/custom': '自定义部署',
   'https://console.bce.baidu.com/aihc/deployment/custom?': '在线服务部署详情',
   'https://console.bce.baidu.com/aihc/datasets': '数据集管理',
-  'https://console.bce.baidu.com/aihc/dataset/info?': '数据集详情',
   'https://console.bce.baidu.com/aihc/dataset/info?tab=detail&': '数据集详情',
+  'https://console.bce.baidu.com/aihc/dataset/info?': '数据集详情',
   'https://console.bce.baidu.com/aihc/dataset/info?tab=versions&': '数据集版本列表',
   'https://console.bce.baidu.com/aihc/modelManage/list': '模型管理列表',
   'https://console.bce.baidu.com/aihc/modelManage/info?tab=versions&': '模型版本列表',

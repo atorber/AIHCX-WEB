@@ -55,7 +55,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
       label: 'AI聊天', 
       shortLabel: 'Chat',
       icon: '💬',
-      condition: pageName === '在线服务部署详情' && !!taskParams.chatConfig 
+      condition: !!taskParams.chatConfig 
     }
   ];
 

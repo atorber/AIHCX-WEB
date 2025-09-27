@@ -119,11 +119,11 @@ ${headers.join('\n')}`;
           ...pageData
         };
         
-        // 检查是否有CLI命令，如果没有则默认显示API tab，如果有chatConfig则优先显示Chat tab
-        if (pageData.chatConfig) {
-          setActiveTab('chat');
-        } else if (pageData.cliItems && pageData.cliItems.length === 0 && pageData.apiDocs && pageData.apiDocs.length > 0) {
+        // 设置默认tab：优先API，其次CLI
+        if (pageData.apiDocs && pageData.apiDocs.length > 0) {
           setActiveTab('apiDocs');
+        } else if (pageData.cliItems && pageData.cliItems.length > 0) {
+          setActiveTab('cli');
         }
         
         return updatedParams;
@@ -157,6 +157,119 @@ ${headers.join('\n')}`;
   const handleOpenUrl = (url: string) => {
     openUrl(url);
   };
+
+  // 加载Chat配置
+  const handleLoadChatConfig = useCallback(async (serviceId: string) => {
+    console.log('[PopupContainer] handleLoadChatConfig 被调用，serviceId:', serviceId);
+    try {
+      setIsLoading(true);
+      setTaskParams(prev => ({ ...prev, chatLoading: true, chatError: undefined }));
+      
+      console.log('[AIHC助手] 开始加载Chat配置，serviceId:', serviceId);
+      
+      // 调用API获取服务详情
+      const apiUrl = `https://console.bce.baidu.com/api/aihcpom/app/v1/details?appId=${serviceId}&locale=zh-cn&_=${Date.now()}`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      const response = await fetch(apiUrl, {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[AIHC助手] 服务详情数据完整响应:', JSON.stringify(data, null, 2));
+        
+        // 尝试不同的数据结构路径
+        let status = null;
+        let serviceInfo = null;
+        
+        // 检查可能的路径
+        if (data.data?.status) {
+          status = data.data.status;
+          console.log('[AIHC助手] 从 data.data.status 获取状态信息');
+        } else if (data.status) {
+          status = data.status;
+          console.log('[AIHC助手] 从 data.status 获取状态信息');
+        } else if (data.data) {
+          serviceInfo = data.data;
+          console.log('[AIHC助手] 从 data 获取服务信息');
+        } else {
+          console.log('[AIHC助手] 数据结构:', Object.keys(data));
+          throw new Error('无法找到服务状态信息，请检查API响应格式');
+        }
+        
+        // 从状态信息中提取配置
+        let internalIP, port, token, basePath;
+        
+        if (status) {
+          internalIP = status.accessIPs?.internal;
+          port = status.accessPorts?.[0]?.servicePort || 8000;
+          token = status.aiGateway?.tokens?.serveless;
+          basePath = status.aiGateway?.basePath || '';
+        } else if (serviceInfo) {
+          // 尝试从服务信息中提取
+          internalIP = serviceInfo.accessIPs?.internal;
+          port = serviceInfo.accessPorts?.[0]?.servicePort || 8000;
+          token = serviceInfo.aiGateway?.tokens?.serveless;
+          basePath = serviceInfo.aiGateway?.basePath || '';
+        }
+        
+        console.log('[AIHC助手] 提取的服务信息:', {
+          internalIP,
+          port,
+          token: token ? `${token.substring(0, 20)}...` : 'none',
+          basePath,
+          hasStatus: !!status,
+          hasServiceInfo: !!serviceInfo
+        });
+        
+        if (internalIP && token) {
+          const chatConfig = {
+            serviceUrl: `http://${internalIP}${basePath}${port}`,
+            accessToken: token,
+            basePath: '',
+            serviceId: serviceId,
+            isLoaded: true
+          };
+          
+          console.log('[AIHC助手] Chat配置创建成功:', {
+            serviceUrl: chatConfig.serviceUrl,
+            basePath: chatConfig.basePath,
+            hasToken: !!chatConfig.accessToken
+          });
+          
+          setTaskParams(prev => ({
+            ...prev,
+            chatConfig,
+            chatLoading: false,
+            chatError: undefined
+          }));
+          
+          showMessage('success', 'Chat配置加载成功！');
+        } else {
+          throw new Error(`服务状态信息不完整，缺少必要的访问信息。IP: ${internalIP}, Token: ${token ? '有' : '无'}`);
+        }
+      } else {
+        throw new Error(`API请求失败，状态码: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('[AIHC助手] Chat配置加载失败:', error);
+      const errorMessage = error instanceof Error ? error.message : '未知错误';
+      
+      setTaskParams(prev => ({
+        ...prev,
+        chatLoading: false,
+        chatError: errorMessage
+      }));
+      
+      showMessage('error', `Chat配置加载失败: ${errorMessage}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [showMessage]);
 
 
   // 页面检测和更新函数
@@ -263,6 +376,7 @@ ${headers.join('\n')}`;
           onCopyText={handleCopyText}
           onSaveFile={handleSaveFile}
           onOpenUrl={handleOpenUrl}
+          onLoadChatConfig={handleLoadChatConfig}
         />
       </>
     );

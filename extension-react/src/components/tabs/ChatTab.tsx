@@ -12,12 +12,15 @@ interface ChatTabProps {
     serviceUrl: string;
     accessToken: string;
     basePath: string;
+    serviceId?: string;
+    isLoaded?: boolean;
   };
   isLoading?: boolean;
   error?: string;
+  onLoadConfig?: (serviceId: string) => Promise<void>;
 }
 
-const ChatTab: React.FC<ChatTabProps> = ({ chatConfig, isLoading: isConfigLoading, error }) => {
+const ChatTab: React.FC<ChatTabProps> = ({ chatConfig, isLoading: isConfigLoading, error, onLoadConfig }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -33,11 +36,11 @@ const ChatTab: React.FC<ChatTabProps> = ({ chatConfig, isLoading: isConfigLoadin
 
   // 初始化欢迎消息
   useEffect(() => {
-    if (chatConfig && messages.length === 0) {
+    if (chatConfig && chatConfig.isLoaded && messages.length === 0) {
       setMessages([{
         id: '1',
         type: 'assistant',
-        content: `你好！我是AI助手，已连接到您的在线服务部署。\n\n服务信息：\n- 服务地址: ${chatConfig.serviceUrl}\n\n我可以帮助您与服务进行交互，请发送您的消息。`,
+        content: `你好！我是AI助手，已连接到您的在线服务部署。\n\n服务信息：\n- 服务地址: ${chatConfig.serviceUrl}\n- 认证方式: Bearer Token\n\n我可以帮助您与服务进行交互，请发送您的消息。`,
         timestamp: new Date()
       }]);
     }
@@ -160,6 +163,28 @@ const ChatTab: React.FC<ChatTabProps> = ({ chatConfig, isLoading: isConfigLoadin
     setMessages([]);
   }, []);
 
+  const handleLoadConfig = useCallback(async () => {
+    console.log('[ChatTab] handleLoadConfig 被调用');
+    console.log('[ChatTab] chatConfig:', chatConfig);
+    console.log('[ChatTab] onLoadConfig:', onLoadConfig);
+    console.log('[ChatTab] serviceId:', chatConfig?.serviceId);
+    
+    if (chatConfig?.serviceId && onLoadConfig) {
+      try {
+        console.log('[ChatTab] 开始调用 onLoadConfig');
+        await onLoadConfig(chatConfig.serviceId);
+        console.log('[ChatTab] onLoadConfig 调用完成');
+      } catch (error) {
+        console.error('[ChatTab] 加载配置失败:', error);
+      }
+    } else {
+      console.warn('[ChatTab] 无法加载配置，缺少必要条件:', {
+        hasServiceId: !!chatConfig?.serviceId,
+        hasOnLoadConfig: !!onLoadConfig
+      });
+    }
+  }, [chatConfig?.serviceId, onLoadConfig]);
+
   // 显示配置加载状态
   if (isConfigLoading) {
     return (
@@ -211,16 +236,47 @@ const ChatTab: React.FC<ChatTabProps> = ({ chatConfig, isLoading: isConfigLoadin
     );
   }
 
-  // 显示配置不可用状态
-  if (!chatConfig) {
+  // 显示配置未加载状态
+  if (!chatConfig || !chatConfig.isLoaded) {
     return (
       <div className="chat-container">
         <div className="chat-header">
           <h3>💬 AI 聊天助手</h3>
         </div>
-        <div className="chat-error">
-          <h3>⚠️ 聊天功能不可用</h3>
-          <p>当前页面不支持聊天功能，或者服务配置信息不完整。</p>
+        <div className="chat-messages">
+          <div className="message assistant">
+            <div className="message-content">
+              <div className="message-text">
+                <div style={{ marginBottom: '16px', color: '#666', fontSize: '14px' }}>
+                  💡 点击下方按钮加载聊天配置，即可开始与服务进行对话
+                </div>
+                <div style={{ marginBottom: '8px', color: '#999', fontSize: '12px' }}>
+                  配置信息将包含服务的访问地址和认证token
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="chat-input" style={{ justifyContent: 'center', padding: '20px' }}>
+          <button 
+            onClick={handleLoadConfig}
+            disabled={isConfigLoading}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: isConfigLoading ? '#ccc' : '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '14px',
+              cursor: isConfigLoading ? 'not-allowed' : 'pointer',
+              transition: 'background-color 0.2s'
+            }}
+          >
+            {isConfigLoading ? '正在加载配置...' : '加载配置'}
+          </button>
+          <div style={{ marginTop: '8px', fontSize: '12px', color: '#999' }}>
+            ServiceId: {chatConfig?.serviceId || '未设置'}
+          </div>
         </div>
       </div>
     );
