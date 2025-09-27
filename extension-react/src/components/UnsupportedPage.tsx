@@ -53,7 +53,7 @@ const UnsupportedPage: React.FC<UnsupportedPageProps> = ({ currentUrl }) => {
               {name === '任务详情' && (
                 <span className="item-hint">
                   <i className="hint-icon">✨</i>
-                  生成创建任务CLI命令、保存参数为文件
+                  生成CLI命令、保存参数文件
                 </span>
               )}
             </li>

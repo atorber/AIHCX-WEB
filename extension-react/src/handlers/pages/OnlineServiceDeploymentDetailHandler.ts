@@ -11,9 +11,20 @@ export class OnlineServiceDeploymentDetailHandler extends BaseHandler {
     
     // 获取服务详情信息用于Chat功能
     let chatConfig = undefined;
+    let chatError = null;
+    
     try {
       console.log('[AIHC助手] 开始获取服务详情信息...');
-      const response = await fetch(`https://console.bce.baidu.com/api/aihcpom/app/v1/details?appId=${serviceId}&locale=zh-cn&_=${Date.now()}`);
+      
+      // 添加超时控制，避免长时间等待
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+      
+      const response = await fetch(`https://console.bce.baidu.com/api/aihcpom/app/v1/details?appId=${serviceId}&locale=zh-cn&_=${Date.now()}`, {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
       console.log('[AIHC助手] API响应状态:', response.status);
       
       if (response.ok) {
@@ -46,29 +57,38 @@ export class OnlineServiceDeploymentDetailHandler extends BaseHandler {
               hasToken: !!chatConfig.accessToken
             });
           } else {
+            chatError = '服务状态信息不完整，缺少必要的访问信息';
             console.log('[AIHC助手] 缺少必要信息，无法创建Chat配置:', {
               hasInternalIP: !!internalIP,
               hasToken: !!token
             });
           }
         } else {
+          chatError = '服务详情数据中没有状态信息';
           console.log('[AIHC助手] 服务详情数据中没有status字段');
         }
       } else {
+        chatError = `API请求失败，状态码: ${response.status}`;
         console.log('[AIHC助手] API请求失败，状态码:', response.status);
       }
     } catch (error) {
-      console.error('[AIHC助手] 获取服务详情失败:', error);
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          chatError = '请求超时，请稍后重试';
+          console.error('[AIHC助手] 请求超时:', error);
+        } else {
+          chatError = `获取服务详情失败: ${error.message}`;
+          console.error('[AIHC助手] 获取服务详情失败:', error);
+        }
+      } else {
+        chatError = '获取服务详情失败: 未知错误';
+        console.error('[AIHC助手] 获取服务详情失败:', error);
+      }
     }
     
-    // 如果没有获取到chatConfig，使用测试配置
-    if (!chatConfig && serviceId) {
-      console.log('[AIHC助手] 使用测试Chat配置');
-      chatConfig = {
-        serviceUrl: 'http://10.192.26.245/auth/s-rbb72e0754ef/8000',
-        accessToken: 'Bearer 5253c7eb-01f3f99a5c64-c025373ef83c',
-        basePath: ''
-      };
+    // 只有在成功获取到配置时才设置chatConfig，避免使用测试配置
+    if (!chatConfig) {
+      console.log('[AIHC助手] 无法创建Chat配置:', chatError);
     }
     
     console.log('[AIHC助手] 最终Chat配置:', chatConfig);

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 interface ChatMessage {
   id: string;
@@ -39,9 +39,9 @@ const ChatTab: React.FC<ChatTabProps> = ({ chatConfig }) => {
         timestamp: new Date()
       }]);
     }
-  }, [chatConfig, messages.length]);
+  }, [chatConfig]);
 
-  const sendMessage = async () => {
+  const sendMessage = useCallback(async () => {
     if (!inputMessage.trim() || !chatConfig || isLoading) return;
 
     const userMessage: ChatMessage = {
@@ -58,6 +58,10 @@ const ChatTab: React.FC<ChatTabProps> = ({ chatConfig }) => {
     try {
       // 构建请求URL
       const fullUrl = `${chatConfig.serviceUrl}/chat/completions`;
+      
+      // 添加超时控制，避免长时间等待
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
       
       // 发送请求到OpenAI兼容接口
       const response = await fetch(fullUrl, {
@@ -79,46 +83,80 @@ const ChatTab: React.FC<ChatTabProps> = ({ chatConfig }) => {
             }
           ],
           stream: false
-        })
+        }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        let errorMsg = `HTTP ${response.status}`;
+        if (response.status === 401) {
+          errorMsg = '认证失败，请检查访问令牌';
+        } else if (response.status === 403) {
+          errorMsg = '访问被拒绝，权限不足';
+        } else if (response.status === 404) {
+          errorMsg = '服务不存在或URL错误';
+        } else if (response.status >= 500) {
+          errorMsg = '服务器内部错误，请稍后重试';
+        }
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();
+      
+      // 检查响应数据格式
+      if (!data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
+        throw new Error('服务返回了无效的响应格式');
+      }
+
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: data.choices?.[0]?.message?.content || '抱歉，我没有收到有效的回复。',
+        content: data.choices[0].message?.content || '抱歉，我没有收到有效的回复。',
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Chat error:', error);
+      
+      let errorContent = '抱歉，发送消息时出现错误';
+      
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          errorContent = '请求超时，请检查网络连接或稍后重试';
+        } else if (error.message.includes('Failed to fetch')) {
+          errorContent = '网络连接失败，请检查网络或服务地址';
+        } else if (error.message.includes('CORS')) {
+          errorContent = '跨域请求被阻止，请检查服务配置';
+        } else {
+          errorContent = `错误：${error.message}`;
+        }
+      }
+      
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: `抱歉，发送消息时出现错误：${error instanceof Error ? error.message : '未知错误'}`,
+        content: errorContent,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [inputMessage, chatConfig, isLoading, messages]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
-  };
+  }, [sendMessage]);
 
-  const clearChat = () => {
+  const clearChat = useCallback(() => {
     setMessages([]);
-  };
+  }, []);
 
   if (!chatConfig) {
     return (

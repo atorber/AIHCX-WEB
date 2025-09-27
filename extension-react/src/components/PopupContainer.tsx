@@ -112,23 +112,22 @@ ${headers.join('\n')}`;
       // 使用页面处理器管理器处理页面
       const pageData = await pageHandlerManager.handlePage(pageName, params);
       
-      // 更新任务参数
-      setTaskParams(prev => ({
-        ...prev,
-        ...pageData
-      }));
-      
-      // 检查是否有CLI命令，如果没有则默认显示API tab，如果有chatConfig则优先显示Chat tab
-      setTimeout(() => {
-        setTaskParams(currentParams => {
-          if (currentParams.chatConfig) {
-            setActiveTab('chat');
-          } else if (currentParams.cliItems.length === 0 && currentParams.apiDocs.length > 0) {
-            setActiveTab('apiDocs');
-          }
-          return currentParams;
-        });
-      }, 0);
+      // 更新任务参数并设置默认tab
+      setTaskParams(prev => {
+        const updatedParams = {
+          ...prev,
+          ...pageData
+        };
+        
+        // 检查是否有CLI命令，如果没有则默认显示API tab，如果有chatConfig则优先显示Chat tab
+        if (pageData.chatConfig) {
+          setActiveTab('chat');
+        } else if (pageData.cliItems && pageData.cliItems.length === 0 && pageData.apiDocs && pageData.apiDocs.length > 0) {
+          setActiveTab('apiDocs');
+        }
+        
+        return updatedParams;
+      });
       
     } catch (error) {
       console.error('处理URL失败:', error);
