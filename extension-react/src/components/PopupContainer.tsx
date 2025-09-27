@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { TaskParams, Message, PageInfo, TabType } from '../types';
 import { getCurrentTabInfo } from '../utils/pageDetection';
 import { copyToClipboard, saveToFile, openUrl, createMessage } from '../utils/helpers';
@@ -108,31 +108,45 @@ ${headers.join('\n')}`;
     
     try {
       setIsLoading(true);
+      console.log('[AIHC助手] 设置加载状态为true');
       
       // 使用页面处理器管理器处理页面
+      console.log('[AIHC助手] 调用页面处理器管理器');
       const pageData = await pageHandlerManager.handlePage(pageName, params);
+      console.log('[AIHC助手] 页面处理器返回数据:', pageData);
       
-      // 更新任务参数并设置默认tab
-      setTaskParams(prev => {
-        const updatedParams = {
-          ...prev,
-          ...pageData
-        };
+      // 更新任务参数
+      setTaskParams(prev => ({
+        ...prev,
+        ...pageData
+      }));
+      console.log('[AIHC助手] 任务参数已更新');
+      
+      // 检查当前activeTab是否仍然有效，如果无效则设置默认tab
+      setTimeout(() => {
+        const currentTabValid = (
+          (activeTab === 'cli' && pageData.cliItems && pageData.cliItems.length > 0) ||
+          (activeTab === 'apiDocs' && pageData.apiDocs && pageData.apiDocs.length > 0) ||
+          (activeTab === 'chat' && pageData.chatConfig) ||
+          (activeTab === 'json' && pageData.jsonItems && pageData.jsonItems.length > 0) ||
+          (activeTab === 'yaml' && pageData.yamlItems && pageData.yamlItems.length > 0) ||
+          (activeTab === 'commandScript' && pageData.commandScript)
+        );
         
-        // 设置默认tab：优先API，其次CLI
-        if (pageData.apiDocs && pageData.apiDocs.length > 0) {
-          setActiveTab('apiDocs');
-        } else if (pageData.cliItems && pageData.cliItems.length > 0) {
-          setActiveTab('cli');
+        if (!currentTabValid) {
+          if (pageData.apiDocs && pageData.apiDocs.length > 0) {
+            setActiveTab('apiDocs');
+          } else if (pageData.cliItems && pageData.cliItems.length > 0) {
+            setActiveTab('cli');
+          }
         }
-        
-        return updatedParams;
-      });
+      }, 0);
       
     } catch (error) {
       console.error('处理URL失败:', error);
       showMessage('error', '加载页面数据失败');
     } finally {
+      console.log('[AIHC助手] 设置加载状态为false');
       setIsLoading(false);
     }
   };
@@ -272,33 +286,44 @@ ${headers.join('\n')}`;
   }, [showMessage]);
 
 
+  // 防抖计时器
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // 页面检测和更新函数
   const detectAndUpdatePage = useCallback(async () => {
-    try {
-      const currentTabInfo = await getCurrentTabInfo();
-      console.log('[AIHC助手] 检测到页面变化:', currentTabInfo);
-      
-      setPageInfo(currentTabInfo);
-      
-      if (currentTabInfo.isSupported) {
-        await handleFetchUrl(currentTabInfo.pageName, currentTabInfo.url, currentTabInfo.params);
-      } else {
-        // 清空不支持页面的数据
-        setTaskParams(prev => ({
-          ...prev,
-          cliItems: [],
-          apiDocs: [],
-          jsonItems: [],
-          yamlItems: [],
-          commandScript: '',
-          chatConfig: undefined
-        }));
-        setActiveTab('cli');
-      }
-    } catch (error) {
-      console.error('页面检测失败:', error);
-      showMessage('error', '页面检测失败');
+    // 清除之前的防抖计时器
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
     }
+
+    // 设置新的防抖计时器
+    debounceTimerRef.current = setTimeout(async () => {
+      try {
+        const currentTabInfo = await getCurrentTabInfo();
+        console.log('[AIHC助手] 检测到页面变化:', currentTabInfo);
+        
+        setPageInfo(currentTabInfo);
+        
+        if (currentTabInfo.isSupported) {
+          await handleFetchUrl(currentTabInfo.pageName, currentTabInfo.url, currentTabInfo.params);
+        } else {
+          // 清空不支持页面的数据
+          setTaskParams(prev => ({
+            ...prev,
+            cliItems: [],
+            apiDocs: [],
+            jsonItems: [],
+            yamlItems: [],
+            commandScript: '',
+            chatConfig: undefined
+          }));
+          setActiveTab('cli');
+        }
+      } catch (error) {
+        console.error('页面检测失败:', error);
+        showMessage('error', '页面检测失败');
+      }
+    }, 200); // 200ms防抖延迟
   }, [handleFetchUrl, showMessage]);
 
   // 初始化页面检测
