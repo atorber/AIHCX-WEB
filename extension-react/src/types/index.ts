@@ -21,7 +21,7 @@ export interface TaskParams {
   jsonItems: { title: string; text: string }[];
   yamlItems: { title: string; text: string }[];
   cliItems: { title: string; text: string; doc?: string }[];
-  apiDocs: { title: string; text: string }[];
+  apiDocs: { title: string; text: string; requestExample?: string }[];
 }
 
 export interface Message {

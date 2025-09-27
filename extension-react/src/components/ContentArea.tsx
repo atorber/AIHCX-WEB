@@ -60,6 +60,7 @@ const ContentArea: React.FC<ContentAreaProps> = ({
           <APIDocsTab
             items={taskParams.apiDocs}
             onOpenUrl={onOpenUrl}
+            onCopyText={onCopyText}
           />
         );
       default:

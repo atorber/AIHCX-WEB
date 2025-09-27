@@ -38,27 +38,34 @@ const CLICommandTab: React.FC<CLICommandTabProps> = ({
 
   return (
     <div className="result-container">
-      {items.map((item, index) => (
-        <div key={index} className="result-item">
-          <h3>
-            {item.title}
-            <span className="action-buttons">
-              <button
-                className={copyingItems.has(item.title) ? 'copying' : ''}
-                onClick={() => handleCopy(item.text, item.title)}
-              >
-                {copyingItems.has(item.title) ? '已复制' : '一键复制'}
-              </button>
-              {item.doc && (
-                <button onClick={() => onOpenUrl(item.doc!)}>
-                  CLI使用手册
-                </button>
+      {items.map((item, index) => {
+        const isWarning = item.title.includes('⚠️');
+        return (
+          <div key={index} className="result-item">
+            <h3 className={isWarning ? 'warning-title' : ''}>
+              {item.title}
+              {!isWarning && (
+                <span className="action-buttons">
+                  <button
+                    className={copyingItems.has(item.title) ? 'copying' : ''}
+                    onClick={() => handleCopy(item.text, item.title)}
+                  >
+                    {copyingItems.has(item.title) ? '已复制' : '一键复制'}
+                  </button>
+                  {item.doc && (
+                    <button onClick={() => onOpenUrl(item.doc!)}>
+                      CLI使用手册
+                    </button>
+                  )}
+                </span>
               )}
-            </span>
-          </h3>
-          <pre>{item.text}</pre>
-        </div>
-      ))}
+            </h3>
+            <div className={isWarning ? 'warning-text' : ''}>
+              {isWarning ? item.text : <pre>{item.text}</pre>}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };
