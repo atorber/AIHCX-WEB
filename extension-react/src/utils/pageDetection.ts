@@ -4,6 +4,8 @@ import { PageInfo } from '../types';
 export const urlPatterns = {
   'https://console.bce.baidu.com/aihc/resources': '自运维资源池列表',
   'https://console.bce.baidu.com/aihc/serverless/resource/list': '全托管资源池列表',
+  'https://console.bce.baidu.com/aihc/serverless/resource/list?tab=resourcePool': '全托管资源池列表',
+  'https://console.bce.baidu.com/aihc/serverless/resource/list?tab=resourceQueue': '全托管队列列表',
   'https://console.bce.baidu.com/aihc/resource/info?': '自运维资源池详情',
   'https://console.bce.baidu.com/aihc/serverless/resource/info?': '全托管资源池详情',
   'https://console.bce.baidu.com/aihc/resource/queue?': '队列列表',
@@ -26,7 +28,10 @@ export const detectPageType = (url: string): PageInfo => {
   let matched = false;
   let pageName = '支持的页面列表：';
 
-  for (const [pattern, name] of Object.entries(urlPatterns)) {
+  // 按模式长度降序排序，确保更具体的模式优先匹配
+  const sortedPatterns = Object.entries(urlPatterns).sort((a, b) => b[0].length - a[0].length);
+  
+  for (const [pattern, name] of sortedPatterns) {
     if (url.startsWith(pattern)) {
       // 特殊处理任务列表页面
       if (name === '任务列表' && url.includes('?clusters=all')) {

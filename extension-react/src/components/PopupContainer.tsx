@@ -96,8 +96,8 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
         await handleResourcePoolList(pageName);
       } else if (pageName === '自运维资源池详情' || pageName === '全托管资源池详情') {
         await handleResourcePoolDetail(pageName, params);
-      } else if (pageName === '队列列表') {
-        await handleQueueList(params);
+      } else if (pageName === '队列列表' || pageName === '全托管队列列表') {
+        await handleQueueList(pageName, params);
       } else if (pageName === '任务列表') {
         await handleTaskList(params);
       }
@@ -252,19 +252,28 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
   };
 
   // 处理队列列表页面
-  const handleQueueList = async (params: Record<string, string>) => {
+  const handleQueueList = async (pageName: string, params: Record<string, string>) => {
+    // 根据页面名称确定队列类型
+    const isServerlessQueue = pageName === '全托管队列列表';
+    const pageTypeName = isServerlessQueue ? '全托管' : '自运维';
+    
+    // 根据页面类型获取正确的资源池ID参数
+    // 全托管队列列表使用固定参数 aihc-serverless
+    // 自运维队列列表使用URL参数 clusterUuid
+    const resourcePoolId = isServerlessQueue ? 'aihc-serverless' : params.clusterUuid;
+    
     setTaskParams(prev => ({
       ...prev,
       cliItems: [
         {
-          title: '获取队列列表',
-          text: `aihc queue list -p ${params.clusterUuid}`,
+          title: `获取${pageTypeName}队列列表`,
+          text: `aihc queue list -p ${resourcePoolId}`,
           doc: 'https://cloud.baidu.com/doc/AIHC/s/Tm7x702fo#%E8%8E%B7%E5%8F%96%E9%98%9F%E5%88%97%E5%88%97%E8%A1%A8'
         }
       ],
       apiDocs: [
         {
-          title: '获取队列列表',
+          title: `获取${pageTypeName}队列列表`,
           text: 'https://cloud.baidu.com/doc/AIHC/s/zm569o5xc'
         }
       ]
