@@ -713,6 +713,71 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       sendResponse({ success: true });
     }
 
+    // 处理数据集表单填充消息
+    if (message.type === 'FILL_DATASET_FORM') {
+      console.log('[AIHC助手] 收到表单填充请求:', message.data);
+      
+      try {
+        const { datasetName, storagePath } = message.data;
+        let successCount = 0;
+        
+        // 填充数据集名称
+        const datasetNameInput = document.querySelector('input[placeholder="请输入数据集名称"]') as HTMLInputElement;
+        if (datasetNameInput) {
+          datasetNameInput.focus();
+          datasetNameInput.value = datasetName;
+          datasetNameInput.dispatchEvent(new Event('input', { bubbles: true }));
+          datasetNameInput.dispatchEvent(new Event('change', { bubbles: true }));
+          successCount++;
+          console.log('[AIHC助手] ✅ 数据集名称已填充:', datasetName);
+        } else {
+          console.warn('[AIHC助手] ❌ 未找到数据集名称输入框');
+        }
+        
+        // 填充存储子路径
+        const storagePathInput = document.querySelector('input[placeholder="请输入子路径名称"]') as HTMLInputElement;
+        if (storagePathInput) {
+          storagePathInput.focus();
+          storagePathInput.value = storagePath;
+          storagePathInput.dispatchEvent(new Event('input', { bubbles: true }));
+          storagePathInput.dispatchEvent(new Event('change', { bubbles: true }));
+          successCount++;
+          console.log('[AIHC助手] ✅ 存储子路径已填充:', storagePath);
+        } else {
+          console.warn('[AIHC助手] ❌ 未找到存储子路径输入框');
+        }
+        
+        // 填充开源数据集地址
+        const openSourceInput = document.querySelector('input[placeholder="请输入开源数据集"]') as HTMLInputElement;
+        if (openSourceInput) {
+          openSourceInput.focus();
+          openSourceInput.value = datasetName; // 注意：这里应该是datasetName，不是完整URL
+          openSourceInput.dispatchEvent(new Event('input', { bubbles: true }));
+          openSourceInput.dispatchEvent(new Event('change', { bubbles: true }));
+          successCount++;
+          console.log('[AIHC助手] ✅ 开源数据集地址已填充:', datasetName);
+        } else {
+          console.warn('[AIHC助手] ❌ 未找到开源数据集输入框');
+        }
+        
+        console.log(`[AIHC助手] 🎉 表单填充完成！成功填充了 ${successCount}/3 个字段`);
+        sendResponse({ 
+          success: successCount > 0, 
+          filledCount: successCount,
+          totalCount: 3
+        });
+        
+      } catch (error) {
+        console.error('[AIHC助手] ❌ 表单填充失败:', error);
+        sendResponse({ 
+          success: false, 
+          error: error instanceof Error ? error.message : '未知错误'
+        });
+      }
+      
+      return true; // 保持消息通道开放以支持异步响应
+    }
+
     return true;
   } catch (error) {
     // 扩展上下文失效时的处理

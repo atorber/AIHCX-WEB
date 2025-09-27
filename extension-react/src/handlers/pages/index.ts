@@ -8,6 +8,7 @@ export { ModelDetailHandler } from './ModelDetailHandler';
 export { ModelVersionsHandler } from './ModelVersionsHandler';
 export { DevelopmentMachinesHandler } from './DevelopmentMachinesHandler';
 export { OnlineServiceDeploymentDetailHandler } from './OnlineServiceDeploymentDetailHandler';
+export { DataDownloadHandler } from './DataDownloadHandler';
 export { ResourcePoolListHandler } from './ResourcePoolListHandler';
 export { ResourcePoolDetailHandler } from './ResourcePoolDetailHandler';
 export { QueueListHandler } from './QueueListHandler';

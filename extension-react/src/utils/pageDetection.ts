@@ -22,6 +22,7 @@ export const urlPatterns = {
   'https://console.bce.baidu.com/aihc/modelManage/info?tab=detail&': '模型详情',
   'https://console.bce.baidu.com/aihc/modelManage/info?': '模型详情',
   'https://console.bce.baidu.com/aihc/developmentMachines': '开发机列表',
+  'https://console.bce.baidu.com/aihc/dataDownload/create': '数据下载',
 };
 
 // 检测当前页面类型

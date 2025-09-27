@@ -6,6 +6,7 @@ import JSONParamsTab from './tabs/JSONParamsTab';
 import YAMLParamsTab from './tabs/YAMLParamsTab';
 import APIDocsTab from './tabs/APIDocsTab';
 import ChatTab from './tabs/ChatTab';
+import DataDownloadInput from './DataDownloadInput';
 
 interface ContentAreaProps {
   activeTab: TabType;
@@ -24,6 +25,15 @@ const ContentArea: React.FC<ContentAreaProps> = ({
   onOpenUrl,
   onLoadChatConfig
 }) => {
+  // 如果是数据下载页面，直接显示输入框
+  if (taskParams.isDataDownloadPage) {
+    return (
+      <div className="tab-content">
+        <DataDownloadInput />
+      </div>
+    );
+  }
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'cli':

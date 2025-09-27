@@ -14,6 +14,11 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   taskParams,
   pageName
 }) => {
+  // 如果是数据下载页面，不显示Tab导航
+  if (taskParams.isDataDownloadPage) {
+    return null;
+  }
+
   const tabs = [
     { 
       key: 'cli' as TabType, 

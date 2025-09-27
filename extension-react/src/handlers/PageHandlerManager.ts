@@ -15,7 +15,8 @@ import {
   ModelDetailHandler,
   ModelVersionsHandler,
   DevelopmentMachinesHandler,
-  OnlineServiceDeploymentDetailHandler
+  OnlineServiceDeploymentDetailHandler,
+  DataDownloadHandler
 } from './pages';
 
 export class PageHandlerManager {
@@ -52,6 +53,7 @@ export class PageHandlerManager {
     this.handlers.set('模型版本列表', new ModelVersionsHandler(this.context));
     this.handlers.set('开发机列表', new DevelopmentMachinesHandler(this.context));
     this.handlers.set('在线服务部署详情', new OnlineServiceDeploymentDetailHandler(this.context));
+    this.handlers.set('数据下载', new DataDownloadHandler(this.context));
   }
 
   /**

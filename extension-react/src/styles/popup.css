@@ -1,5 +1,217 @@
 /* AIHC助手 Popup 样式 */
 
+/* 数据下载输入组件样式 */
+.data-download-input {
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.data-download-input .input-header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.data-download-input .input-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: #333;
+  font-weight: 600;
+}
+
+.data-download-input .input-header p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.data-download-input .input-container {
+  margin-bottom: 20px;
+}
+
+.data-download-input .input-group {
+  margin-bottom: 16px;
+}
+
+.data-download-input .input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.data-download-input .input-group input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.data-download-input .input-group input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.data-download-input .input-group input.error {
+  border-color: #dc3545;
+}
+
+.data-download-input .input-group input:disabled {
+  background: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.data-download-input .error-message {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #dc3545;
+  line-height: 1.4;
+}
+
+.data-download-input .parse-button {
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.data-download-input .parse-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.data-download-input .parse-button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.data-download-input .example-section {
+  border-top: 1px solid #e1e5e9;
+  padding-top: 16px;
+}
+
+.data-download-input .example-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.data-download-input .example-urls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.data-download-input .example-button {
+  padding: 6px 12px;
+  background: #fff;
+  border: 1px solid #e1e5e9;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #007bff;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.data-download-input .example-button:hover {
+  background: #f8f9fa;
+  border-color: #007bff;
+  color: #0056b3;
+}
+
+/* 解析结果显示区域样式 */
+.data-download-input .parsed-result-section {
+  margin-top: 20px;
+  padding: 16px;
+  background: #e8f5e8;
+  border: 1px solid #28a745;
+  border-radius: 6px;
+}
+
+.data-download-input .parsed-result-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: #155724;
+  font-weight: 600;
+}
+
+.data-download-input .result-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.data-download-input .result-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.data-download-input .result-item label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.data-download-input .result-value {
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+  font-family: 'Courier New', monospace;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.data-download-input .result-note {
+  padding: 8px 12px;
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #155724;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* 响应式设计 */
+@media (min-width: 480px) {
+  .data-download-input .result-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .data-download-input .result-item:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+}
+
 .popup-container {
   width: 100%;
   min-height: 100vh;

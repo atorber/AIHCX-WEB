@@ -31,6 +31,7 @@ export interface TaskParams {
   };
   chatLoading?: boolean;
   chatError?: string;
+  isDataDownloadPage?: boolean;
 }
 
 export interface Message {
