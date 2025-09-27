@@ -26,7 +26,11 @@ export interface TaskParams {
     serviceUrl: string;
     accessToken: string;
     basePath: string;
+    isLoading?: boolean;
+    error?: string;
   };
+  chatLoading?: boolean;
+  chatError?: string;
 }
 
 export interface Message {

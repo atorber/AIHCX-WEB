@@ -255,6 +255,7 @@ ${headers.join('\n')}`;
           activeTab={activeTab}
           onTabChange={setActiveTab}
           taskParams={taskParams}
+          pageName={pageInfo.pageName}
         />
         <ContentArea
           activeTab={activeTab}

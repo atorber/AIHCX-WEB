@@ -36,6 +36,34 @@ const log = (message: string, data?: any, level: 'info' | 'warn' | 'error' = 'in
 
 // 确保Chrome API类型可用
 
+// 扩展上下文检查函数
+const isExtensionContextValid = (): boolean => {
+  try {
+    // 尝试访问chrome.runtime来检查上下文是否有效
+    return !!chrome.runtime && !!chrome.runtime.id;
+  } catch (error) {
+    return false;
+  }
+};
+
+// 安全的Chrome API调用包装器
+const safeChromeCall = <T>(apiCall: () => T, fallback?: T): T | undefined => {
+  try {
+    if (!isExtensionContextValid()) {
+      console.warn('[AIHC助手] 扩展上下文已失效，跳过Chrome API调用');
+      return fallback;
+    }
+    return apiCall();
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('Extension context invalidated')) {
+      console.warn('[AIHC助手] 扩展上下文已失效，跳过API调用');
+      return fallback;
+    }
+    console.error('[AIHC助手] Chrome API调用失败:', error);
+    return fallback;
+  }
+};
+
 interface AIHCXHelperConfig {
   enabled: boolean;
   highlightImages: boolean;
@@ -51,22 +79,42 @@ let config: AIHCXHelperConfig = {
 
 // 从存储中加载配置
 const loadConfig = () => {
-  chrome.runtime.sendMessage({ action: 'getHelperConfig' }, (response) => {
-    if (response && response.config) {
-      config = { ...config, ...response.config };
-      if (config.enabled) {
-        setupImageHelpers();
+  safeChromeCall(() => {
+    chrome.runtime.sendMessage({ action: 'getHelperConfig' }, (response) => {
+      try {
+        if (response && response.config) {
+          config = { ...config, ...response.config };
+          if (config.enabled) {
+            setupImageHelpers();
+          }
+        }
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('Extension context invalidated')) {
+          console.warn('[AIHC助手] 扩展上下文已失效，跳过配置加载');
+          return;
+        }
+        console.error('[AIHC助手] 配置加载失败:', error);
       }
-    }
+    });
   });
 }
 
 // 打开设置页面
 const openOptionsPage = () => {
-  chrome.runtime.sendMessage({ action: 'openOptionsPage' }, (response) => {
-    if (!response || !response.success) {
-      console.error('打开设置页面失败');
-    }
+  safeChromeCall(() => {
+    chrome.runtime.sendMessage({ action: 'openOptionsPage' }, (response) => {
+      try {
+        if (!response || !response.success) {
+          console.error('打开设置页面失败');
+        }
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('Extension context invalidated')) {
+          console.warn('[AIHC助手] 扩展上下文已失效，跳过打开设置页面');
+          return;
+        }
+        console.error('[AIHC助手] 打开设置页面失败:', error);
+      }
+    });
   });
 };
 
@@ -585,66 +633,95 @@ new MutationObserver(() => {
     
     // 在AIHC页面重新注入组件
     if (isAIHCConsolePage()) {
-      chrome.storage.local.get(['aihcx-helper-disabled'], (result) => {
-        if (!result['aihcx-helper-disabled']) {
-          if (isDevelopment) {
-            log('URL变化，重新注入组件');
+      try {
+        chrome.storage.local.get(['aihcx-helper-disabled'], (result) => {
+          try {
+            if (!result['aihcx-helper-disabled']) {
+              if (isDevelopment) {
+                log('URL变化，重新注入组件');
+              }
+              injectComponent();
+              loadConfig();
+            }
+          } catch (error) {
+            // 扩展上下文失效时的处理
+            if (error instanceof Error && error.message.includes('Extension context invalidated')) {
+              console.warn('[AIHC助手] 扩展上下文已失效，跳过组件注入');
+              return;
+            }
+            console.error('[AIHC助手] 组件注入失败:', error);
           }
-          injectComponent();
-          loadConfig();
+        });
+      } catch (error) {
+        // 扩展上下文失效时的处理
+        if (error instanceof Error && error.message.includes('Extension context invalidated')) {
+          console.warn('[AIHC助手] 扩展上下文已失效，跳过存储访问');
+          return;
         }
-      });
+        console.error('[AIHC助手] 存储访问失败:', error);
+      }
     }
   }
 }).observe(document, { subtree: true, childList: true });
 
 // 监听来自popup或background的消息
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message.action === 'getPageInfo') {
-    const pageInfo = {
-      title: document.title,
-      url: window.location.href,
-      images: Array.from(document.querySelectorAll('img'))
-        .filter(img => img.width > 100 && img.height > 100)
-        .map(img => ({
-          src: img.src,
-          width: img.width,
-          height: img.height,
-          alt: img.alt || '无描述'
-        }))
-    };
-    sendResponse(pageInfo);
-  }
-  
-  if (message.action === 'updateConfig') {
-    config = { ...config, ...message.config };
-    if (config.enabled && config.highlightImages) {
-      setupImageHelpers();
+  try {
+    if (message.action === 'getPageInfo') {
+      const pageInfo = {
+        title: document.title,
+        url: window.location.href,
+        images: Array.from(document.querySelectorAll('img'))
+          .filter(img => img.width > 100 && img.height > 100)
+          .map(img => ({
+            src: img.src,
+            width: img.width,
+            height: img.height,
+            alt: img.alt || '无描述'
+          }))
+      };
+      sendResponse(pageInfo);
     }
-    sendResponse({ success: true });
-  }
-
-  if (message.action === 'updateSidebarState') {
-    const toggleButton = document.getElementById('aihcx-helper-toggle') as HTMLElement;
-    if (toggleButton) {
-      if (message.state) {
-        // 侧边栏已打开
-        sidebarOpen = true;
-        toggleButton.classList.add('active');
-        toggleButton.style.background = 'linear-gradient(135deg, #34a853 0%, #4285f4 100%)';
-        toggleButton.textContent = '已开';
-        log('侧边栏状态更新为已打开');
-      } else {
-        // 侧边栏已关闭
-        sidebarOpen = false;
-        toggleButton.classList.remove('active');
-        toggleButton.style.background = 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)';
-        toggleButton.textContent = 'AIHC';
-        log('侧边栏状态更新为已关闭');
+    
+    if (message.action === 'updateConfig') {
+      config = { ...config, ...message.config };
+      if (config.enabled && config.highlightImages) {
+        setupImageHelpers();
       }
+      sendResponse({ success: true });
     }
-    sendResponse({ success: true });
-  }
 
-  return true;
+    if (message.action === 'updateSidebarState') {
+      const toggleButton = document.getElementById('aihcx-helper-toggle') as HTMLElement;
+      if (toggleButton) {
+        if (message.state) {
+          // 侧边栏已打开
+          sidebarOpen = true;
+          toggleButton.classList.add('active');
+          toggleButton.style.background = 'linear-gradient(135deg, #34a853 0%, #4285f4 100%)';
+          toggleButton.textContent = '已开';
+          log('侧边栏状态更新为已打开');
+        } else {
+          // 侧边栏已关闭
+          sidebarOpen = false;
+          toggleButton.classList.remove('active');
+          toggleButton.style.background = 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)';
+          toggleButton.textContent = 'AIHC';
+          log('侧边栏状态更新为已关闭');
+        }
+      }
+      sendResponse({ success: true });
+    }
+
+    return true;
+  } catch (error) {
+    // 扩展上下文失效时的处理
+    if (error instanceof Error && error.message.includes('Extension context invalidated')) {
+      console.warn('[AIHC助手] 扩展上下文已失效，消息处理中断');
+      return false;
+    }
+    console.error('[AIHC助手] 消息处理失败:', error);
+    sendResponse({ success: false, error: error instanceof Error ? error.message : '未知错误' });
+    return false;
+  }
 })

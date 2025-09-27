@@ -13,9 +13,11 @@ interface ChatTabProps {
     accessToken: string;
     basePath: string;
   };
+  isLoading?: boolean;
+  error?: string;
 }
 
-const ChatTab: React.FC<ChatTabProps> = ({ chatConfig }) => {
+const ChatTab: React.FC<ChatTabProps> = ({ chatConfig, isLoading: isConfigLoading, error }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -158,9 +160,64 @@ const ChatTab: React.FC<ChatTabProps> = ({ chatConfig }) => {
     setMessages([]);
   }, []);
 
+  // 显示配置加载状态
+  if (isConfigLoading) {
+    return (
+      <div className="chat-container">
+        <div className="chat-header">
+          <h3>💬 AI 聊天助手</h3>
+        </div>
+        <div className="chat-messages">
+          <div className="message assistant">
+            <div className="message-content">
+              <div className="message-text">
+                <div className="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div style={{ marginTop: '8px', color: '#666', fontSize: '14px' }}>
+                  正在加载聊天配置...
+                </div>
+                <div style={{ marginTop: '4px', color: '#999', fontSize: '12px' }}>
+                  正在获取服务详情信息，请稍候...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 显示错误状态
+  if (error) {
+    return (
+      <div className="chat-container">
+        <div className="chat-header">
+          <h3>💬 AI 聊天助手</h3>
+        </div>
+        <div className="chat-error">
+          <h3>⚠️ 聊天功能不可用</h3>
+          <p>加载聊天配置时出现错误：</p>
+          <p style={{ color: '#f44336', fontSize: '14px', marginTop: '8px' }}>
+            {error}
+          </p>
+          <p style={{ fontSize: '12px', color: '#666', marginTop: '12px' }}>
+            请检查网络连接或稍后重试
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 显示配置不可用状态
   if (!chatConfig) {
     return (
       <div className="chat-container">
+        <div className="chat-header">
+          <h3>💬 AI 聊天助手</h3>
+        </div>
         <div className="chat-error">
           <h3>⚠️ 聊天功能不可用</h3>
           <p>当前页面不支持聊天功能，或者服务配置信息不完整。</p>

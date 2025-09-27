@@ -5,12 +5,14 @@ interface TabNavigationProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
   taskParams: TaskParams;
+  pageName: string;
 }
 
 const TabNavigation: React.FC<TabNavigationProps> = ({
   activeTab,
   onTabChange,
-  taskParams
+  taskParams,
+  pageName
 }) => {
   const tabs = [
     { 
@@ -53,13 +55,14 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
       label: 'AI聊天', 
       shortLabel: 'Chat',
       icon: '💬',
-      condition: !!taskParams.chatConfig 
+      condition: pageName === '在线服务部署详情' && !!taskParams.chatConfig 
     }
   ];
 
   const visibleTabs = tabs.filter(tab => tab.condition);
   
   // 调试信息
+  console.log('[AIHC助手] TabNavigation - pageName:', pageName);
   console.log('[AIHC助手] TabNavigation - taskParams.chatConfig:', taskParams.chatConfig);
   console.log('[AIHC助手] TabNavigation - visibleTabs:', visibleTabs.map(t => t.key));
 

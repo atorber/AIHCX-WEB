@@ -68,6 +68,8 @@ const ContentArea: React.FC<ContentAreaProps> = ({
         return (
           <ChatTab
             chatConfig={taskParams.chatConfig}
+            isLoading={taskParams.chatLoading}
+            error={taskParams.chatError}
           />
         );
       default:

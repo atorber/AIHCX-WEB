@@ -13,7 +13,12 @@ const WARNING_FILTERS = [
   'PermissionProvider.tsx',
   'Tracert before fns',
   'stop propagation',
-  'Portal Assistant loaded'
+  'Portal Assistant loaded',
+  'beforelog',
+  'Loading "vs/css!vs/editor/editor.main" failed',
+  'Could not find https://code.bdstatic.com/npm/monaco-editor',
+  'overrideMethod @ hook.js',
+  'Here are the modules that depend on it'
 ];
 
 // 需要过滤的错误关键词
@@ -21,7 +26,11 @@ const ERROR_FILTERS = [
   'Could not establish connection',
   'Receiving end does not exist',
   'runtime.lastError',
-  'Extension context invalidated'
+  'Extension context invalidated',
+  'Could not find https://code.bdstatic.com/npm/monaco-editor@0.28.1/min/vs/editor/editor.main.css',
+  'Error: Could not find https://code.bdstatic.com/npm/monaco-editor',
+  'or it was empty',
+  'MutationObserver.observe.subtree'
 ];
 
 // 初始化错误过滤器
