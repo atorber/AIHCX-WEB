@@ -248,14 +248,48 @@
 /* 复制按钮动画效果 */
 .result-container button.copying,
 .action-buttons button.copying {
-  background: #28a745;
-  pointer-events: none;
+  background: #28a745 !important;
+  pointer-events: none !important;
+  animation: copySuccess 0.3s ease-out !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3) !important;
 }
 
 .result-container button.copying::after,
 .action-buttons button.copying::after {
   content: '✓';
-  margin-left: 4px;
+  margin-left: 6px;
+  font-weight: bold;
+  animation: checkmarkPulse 0.5s ease-out;
+}
+
+@keyframes copySuccess {
+  0% {
+    background: #4285f4;
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    background: #28a745;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes checkmarkPulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* 消息显示 */
@@ -296,52 +330,69 @@
 }
 
 .message-close {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
-  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: none !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  transition: all 0.2s ease !important;
+  flex-shrink: 0 !important;
+  color: inherit !important;
+  opacity: 0.8 !important;
 }
 
 .message-close:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.3) !important;
+  opacity: 1 !important;
+  transform: scale(1.1) !important;
+}
+
+.message-close:active {
+  transform: scale(0.95) !important;
 }
 
 .message-close span {
-  font-size: 16px;
-  font-weight: bold;
-  line-height: 1;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  line-height: 1 !important;
+  color: inherit !important;
 }
 
 .message.success {
-  background-color: #f0f9ff;
-  color: #065f46;
-  border-left-color: #10b981;
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+  color: #155724 !important;
+  border-left-color: #28a745 !important;
+  border: 1px solid rgba(40, 167, 69, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.1) !important;
 }
 
 .message.error {
-  background-color: #fef2f2;
-  color: #991b1b;
-  border-left-color: #ef4444;
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%) !important;
+  color: #721c24 !important;
+  border-left-color: #dc3545 !important;
+  border: 1px solid rgba(220, 53, 69, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.1) !important;
 }
 
 .message.warning {
-  background-color: #fffbeb;
-  color: #92400e;
-  border-left-color: #f59e0b;
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%) !important;
+  color: #856404 !important;
+  border-left-color: #ffc107 !important;
+  border: 1px solid rgba(255, 193, 7, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.1) !important;
 }
 
 .message.info {
-  background-color: #eff6ff;
-  color: #1e40af;
-  border-left-color: #3b82f6;
+  background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%) !important;
+  color: #0c5460 !important;
+  border-left-color: #17a2b8 !important;
+  border: 1px solid rgba(23, 162, 184, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(23, 162, 184, 0.1) !important;
 }
 
 /* 不支持页面样式 */

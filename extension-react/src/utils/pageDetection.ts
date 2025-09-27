@@ -2,8 +2,10 @@ import { PageInfo } from '../types';
 
 // URL模式映射表
 export const urlPatterns = {
-  'https://console.bce.baidu.com/aihc/resources': '资源池列表',
-  'https://console.bce.baidu.com/aihc/resource/info?': '资源池详情',
+  'https://console.bce.baidu.com/aihc/resources': '自运维资源池列表',
+  'https://console.bce.baidu.com/aihc/serverless/resource/list': '全托管资源池列表',
+  'https://console.bce.baidu.com/aihc/resource/info?': '自运维资源池详情',
+  'https://console.bce.baidu.com/aihc/serverless/resource/info?': '全托管资源池详情',
   'https://console.bce.baidu.com/aihc/resource/queue?': '队列列表',
   'https://console.bce.baidu.com/aihc/tasks?': '任务列表',
   'https://console.bce.baidu.com/aihc/infoTaskIndex/detail?': '任务详情',

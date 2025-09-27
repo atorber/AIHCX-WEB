@@ -92,10 +92,10 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
 
       if (pageName === '任务详情') {
         await handleTaskDetail(params);
-      } else if (pageName === '资源池列表') {
-        await handleResourcePoolList();
-      } else if (pageName === '资源池详情') {
-        await handleResourcePoolDetail(params);
+      } else if (pageName === '自运维资源池列表' || pageName === '全托管资源池列表') {
+        await handleResourcePoolList(pageName);
+      } else if (pageName === '自运维资源池详情' || pageName === '全托管资源池详情') {
+        await handleResourcePoolDetail(pageName, params);
       } else if (pageName === '队列列表') {
         await handleQueueList(params);
       } else if (pageName === '任务列表') {
@@ -200,19 +200,24 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
   };
 
   // 处理资源池列表页面
-  const handleResourcePoolList = async () => {
+  const handleResourcePoolList = async (pageName: string) => {
+    // 根据传入的页面名称确定资源池类型
+    const isServerlessResource = pageName === '全托管资源池列表';
+    const resourcePoolType = isServerlessResource ? 'dedicatedV2' : 'common';
+    const pageTypeName = isServerlessResource ? '全托管' : '自运维';
+    
     setTaskParams(prev => ({
       ...prev,
       cliItems: [
         {
-          title: '获取资源池列表',
-          text: 'aihc pool list',
+          title: `获取${pageTypeName}资源池列表`,
+          text: `aihc pool list --resourcePoolType ${resourcePoolType}`,
           doc: 'https://cloud.baidu.com/doc/AIHC/s/Tm7x702fo#%E8%8E%B7%E5%8F%96%E8%B5%84%E6%BA%90%E6%B1%A0%E5%88%97%E8%A1%A8'
         }
       ],
       apiDocs: [
         {
-          title: '获取资源池列表',
+          title: `获取${pageTypeName}资源池列表`,
           text: 'https://cloud.baidu.com/doc/AIHC/s/Km569l8xl'
         }
       ]
@@ -220,19 +225,26 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
   };
 
   // 处理资源池详情页面
-  const handleResourcePoolDetail = async (params: Record<string, string>) => {
+  const handleResourcePoolDetail = async (pageName: string, params: Record<string, string>) => {
+    // 根据传入的页面名称确定资源池类型
+    const isServerlessResource = pageName === '全托管资源池详情';
+    const pageTypeName = isServerlessResource ? '全托管' : '自运维';
+    
+    // 根据页面类型获取正确的资源池ID参数
+    const resourcePoolId = isServerlessResource ? params.resourcePoolId : params.clusterUuid;
+    
     setTaskParams(prev => ({
       ...prev,
       cliItems: [
         {
-          title: '获取资源池详情',
-          text: `aihc pool get -p ${params.clusterUuid}`,
+          title: `获取${pageTypeName}资源池详情`,
+          text: `aihc pool get -p ${resourcePoolId}`,
           doc: 'https://cloud.baidu.com/doc/AIHC/s/Tm7x702fo#%E8%8E%B7%E5%8F%96%E8%B5%84%E6%BA%90%E6%B1%A0%E8%AF%A6%E6%83%85'
         }
       ],
       apiDocs: [
         {
-          title: '获取资源池详情',
+          title: `获取${pageTypeName}资源池详情`,
           text: 'https://cloud.baidu.com/doc/AIHC/s/9m569kh7t'
         }
       ]
@@ -305,27 +317,6 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
     openUrl(url);
   };
 
-  // 关闭侧边栏处理
-  const handleCloseSidebar = () => {
-    try {
-      // 向content script发送消息更新状态
-      chrome.runtime.sendMessage({ action: 'updateSidebarState', state: false }, (response) => {
-        if (response && response.success) {
-          console.log('[AIHC助手] 侧边栏状态已更新');
-        }
-      });
-
-      // 尝试关闭窗口
-      setTimeout(() => {
-        window.close();
-      }, 100);
-    } catch (error) {
-      console.error('[AIHC助手] 关闭侧边栏时出错:', error);
-      // 尝试直接关闭窗口
-      window.close();
-    }
-  };
-
   // 初始化
   useEffect(() => {
     checkCurrentPage();
@@ -365,7 +356,7 @@ const PopupContainer: React.FC<PopupContainerProps> = () => {
   return (
     <div className="popup-container">
       <UserGuide />
-      <Header pageName={pageInfo.pageName} onClose={handleCloseSidebar} />
+      <Header pageName={pageInfo.pageName} />
       
       {pageInfo.isSupported ? (
         <>
